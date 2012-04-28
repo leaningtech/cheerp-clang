@@ -792,6 +792,11 @@ void CodeGenModule::SetLLVMFunctionAttributesForDefinition(const Decl *D,
   // C++ ABI requires 2-byte alignment for member functions.
   if (F->getAlignment() < 2 && isa<CXXMethodDecl>(D))
     F->setAlignment(2);
+
+  if(D->hasAttr<ClientAttr>())
+    F->addFnAttr(llvm::Attribute::Client);
+  if(D->hasAttr<ServerAttr>())
+    F->addFnAttr(llvm::Attribute::Server);
 }
 
 void CodeGenModule::SetCommonAttributes(const Decl *D,

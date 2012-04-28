@@ -977,6 +977,16 @@ def NoThrow : InheritableAttr {
   let Documentation = [Undocumented];
 }
 
+def Client : InheritableAttr {
+  let Spellings = [CXX11<"", "client", 12>];
+  let Documentation = [Undocumented];
+}
+
+def Server : InheritableAttr {
+  let Spellings = [CXX11<"", "server", 12>];
+  let Documentation = [Undocumented];
+}
+
 def ObjCBridge : InheritableAttr {
   let Spellings = [GNU<"objc_bridge">];
   let Subjects = SubjectList<[Record], ErrorDiag>;

@@ -28,6 +28,8 @@
 #include "clang/Sema/DelayedDiagnostic.h"
 #include "clang/Sema/Lookup.h"
 #include "clang/Sema/Scope.h"
+#include "clang/Sema/Template.h"
+#include "clang/Sema/TemplateDeduction.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/MathExtras.h"
 using namespace clang;
@@ -4269,6 +4271,64 @@ static bool handleCommonAttributeFeatures(Sema &S, Scope *scope, Decl *D,
   return false;
 }
 
+static FunctionTemplateDecl* getTemplateFromName(Sema& S, const char* tName)
+{
+  const IdentifierInfo& info=S.Context.Idents.get(tName);
+  DeclContext::lookup_result l=S.CurContext->lookup(DeclarationName(&info));
+  if(l.size() != 1)
+  {
+   llvm::errs() << "Missing special definition\n";
+   ::abort();
+  }
+  return dyn_cast<FunctionTemplateDecl>(l[0]);
+}
+
+static void handleClient(Sema &S, Decl *D, const AttributeList &Attr)
+{
+  D->addAttr(::new (S.Context) ClientAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
+}
+
+static void handleServer(Sema &S, Decl *D, const AttributeList &Attr)
+{
+  D->addAttr(::new (S.Context) ServerAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
+  //This should be a function
+  FunctionDecl* F=dyn_cast<FunctionDecl>(D);
+  assert(F);
+  //Skel for the server
+  FunctionTemplateDecl* skelTemplateDecl=getTemplateFromName(S,"serverSkel");
+  QualType funcType=F->getType();
+  QualType funcPtrType=S.Context.getPointerType(funcType);
+  QualType resultType=F->getCallResultType();
+  CanQualType canonicalFuncPtrType=S.Context.getCanonicalType(funcPtrType);
+  CanQualType canonicalResultType=S.Context.getCanonicalType(resultType);
+  SmallVector<DeducedTemplateArgument,4> Deduced;
+  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(canonicalFuncPtrType)));
+  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(F, F->getType())));
+  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(canonicalResultType)));
+  //Add the types of the function argument
+  FunctionDecl::param_iterator it=F->param_begin();
+  SmallVector<TemplateArgument,4> FArgsPack;
+  for(;it!=F->param_end();++it)
+    FArgsPack.push_back(TemplateArgument((*it)->getOriginalType()));
+
+  if(F->param_size()!=0)
+    Deduced.push_back(DeducedTemplateArgument(TemplateArgument(&FArgsPack[0],FArgsPack.size())));
+  else
+    Deduced.push_back(DeducedTemplateArgument(TemplateArgument((const TemplateArgument*)NULL,0)));
+
+  sema::TemplateDeductionInfo info2(Attr.getLoc());
+  FunctionDecl* skelFn;
+#ifndef NDEBUG
+  Sema::TemplateDeductionResult ret2=
+#endif
+    S.FinishTemplateArgumentDeduction(skelTemplateDecl, Deduced, 1, skelFn, info2, NULL);
+  assert(ret2==Sema::TDK_Success);
+  S.InstantiateFunctionDefinition(Attr.getLoc(), skelFn, true, true);
+  S.WeakTopLevelDecls().push_back(skelFn);
+  //Force the function to be used, so that it's emitted
+  skelFn->addAttr(::new (S.Context) UsedAttr(Attr.getLoc(), S.Context, Attr.getAttributeSpellingListIndex()));
+}
+
 //===----------------------------------------------------------------------===//
 // Top Level Sema Entry Points
 //===----------------------------------------------------------------------===//
@@ -4782,6 +4842,13 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
     break;
   case AttributeList::AT_TypeTagForDatatype:
     handleTypeTagForDatatypeAttr(S, D, Attr);
+    break;
+  // Duetto attributes
+  case AttributeList::AT_Client:
+    handleClient(S, D, Attr);
+    break;
+  case AttributeList::AT_Server:
+    handleServer(S, D, Attr);
     break;
   }
 }
