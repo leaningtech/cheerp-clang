@@ -506,6 +506,14 @@ def NoThrow : InheritableAttr {
   let Spellings = [GNU<"nothrow">, CXX11<"gnu", "nothrow">];
 }
 
+def Client : InheritableAttr {
+  let Spellings = [CXX11<"", "client">];
+}
+
+def Server : InheritableAttr {
+  let Spellings = [CXX11<"", "server">];
+}
+
 def NSBridged : InheritableAttr {
   let Spellings = [GNU<"ns_bridged">];
   let Subjects = [Record];

@@ -4657,6 +4657,16 @@ static void handleSelectAnyAttr(Sema &S, Decl *D, const AttributeList &Attr) {
                            Attr.getAttributeSpellingListIndex()));
 }
 
+static void handleClient(Sema &S, Decl *D, const AttributeList &attr)
+{
+  D->addAttr(::new (S.Context) ClientAttr(attr.getRange(), S.Context));
+}
+
+static void handleServer(Sema &S, Decl *D, const AttributeList &attr)
+{
+  D->addAttr(::new (S.Context) ServerAttr(attr.getRange(), S.Context));
+}
+
 //===----------------------------------------------------------------------===//
 // Top Level Sema Entry Points
 //===----------------------------------------------------------------------===//
@@ -4971,6 +4981,13 @@ static void ProcessInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
     handleTypeTagForDatatypeAttr(S, D, Attr);
     break;
 
+  // Duetto attributed
+  case AttributeList::AT_Client:
+    handleClient(S, D, Attr);
+    break;
+  case AttributeList::AT_Server:
+    handleServer(S, D, Attr);
+    break;
   default:
     // Ask target about the attribute.
     const TargetAttributesSema &TargetAttrs = S.getTargetAttributesSema();
