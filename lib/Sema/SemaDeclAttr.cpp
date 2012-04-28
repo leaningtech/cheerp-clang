@@ -7393,6 +7393,13 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
     break;
   case ParsedAttr::AT_RenderScriptKernel:
     handleSimpleAttribute<RenderScriptKernelAttr>(S, D, AL);
+
+  // Duetto attributes
+  case AttributeList::AT_Client:
+    handleClient(S, D, AL);
+    break;
+  case AttributeList::AT_Server:
+    handleServer(S, D, AL);
     break;
   // XRay attributes.
   case ParsedAttr::AT_XRayInstrument:
