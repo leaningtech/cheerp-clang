@@ -300,7 +300,6 @@ namespace {
          llvm::errs() << "Missing special definition\n";
          ::abort();
       }
-      //Instantiate the serverSkel function template for this server method
       return dyn_cast<FunctionTemplateDecl>(l[0]);
     }
     void handleClient(Sema &S, Decl* D, const AttributeList &attr) const
