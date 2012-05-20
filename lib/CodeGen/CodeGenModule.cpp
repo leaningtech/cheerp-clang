@@ -2106,6 +2106,21 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
     AddGlobalDtor(Fn, DA->getPriority());
   if (D->hasAttr<AnnotateAttr>())
     AddGlobalAnnotations(D, Fn);
+
+  if(D->hasAttr<ServerAttr>())
+  {
+     FunctionDecl* skel=D->skelFunction;
+     GlobalDecl g(skel);
+
+     const CGFunctionInfo &skelFI = getTypes().arrangeGlobalDeclaration(g);
+     llvm::FunctionType *skelTy = getTypes().GetFunctionType(skelFI);
+     llvm::Constant *skelEntry = GetAddrOfFunction(g, skelTy);
+     llvm::Function* skelLLVMFunction = dyn_cast<llvm::Function>(skelEntry);
+     llvm::NamedMDNode* meta=getModule().getOrInsertNamedMetadata((D->getName()+"_duettoSkel").str());
+     SmallVector<llvm::Value*, 1> Operands;
+     Operands.push_back(skelLLVMFunction);
+     meta->addOperand(llvm::MDNode::get(VMContext, Operands));
+  }
 }
 
 void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {

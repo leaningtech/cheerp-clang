@@ -345,6 +345,7 @@ namespace {
       S.WeakTopLevelDecls().push_back(skelFn);
       //Force the function to be used, so that it's emitted
       skelFn->addAttr(::new (S.Context) UsedAttr(attr.getLoc(), S.Context));
+      F->skelFunction = skelFn;
     }
   public:
     DuettoAttributesSema() { }

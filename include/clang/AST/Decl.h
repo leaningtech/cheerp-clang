@@ -1504,7 +1504,8 @@ protected:
       IsConstexpr(isConstexprSpecified), HasSkippedBody(false),
       EndRangeLoc(NameInfo.getEndLoc()),
       TemplateOrSpecialization(),
-      DNLoc(NameInfo.getInfo()) {}
+      DNLoc(NameInfo.getInfo()),
+      skelFunction(NULL) {}
 
   typedef Redeclarable<FunctionDecl> redeclarable_base;
   virtual FunctionDecl *getNextRedeclaration() { return RedeclLink.getNext(); }
@@ -2053,6 +2054,9 @@ public:
 
   friend class ASTDeclReader;
   friend class ASTDeclWriter;
+
+  //Duetto, pointer to the skel function for this server function
+  FunctionDecl* skelFunction;
 };
 
 
