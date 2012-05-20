@@ -6441,10 +6441,11 @@ namespace {
 class DuettoTargetInfo : public TargetInfo {
 public:
   DuettoTargetInfo(const llvm::Triple &triple) : TargetInfo(triple) {
-    DescriptionString = "e-p:32:8-i16:8-i32:8-"
+    DescriptionString = "b-e-p:32:8-i16:8-i32:8-"
                         "i64:8-f32:8-f64:8-"
                         "a:0:8-f80:8-n8:8:8-S8";
     BigEndian = false;
+    ByteAddressable = false;
   }
 
   virtual void getTargetBuiltins(const Builtin::Info *&Records,

@@ -53,6 +53,7 @@ protected:
   // Target values set by the ctor of the actual target implementation.  Default
   // values are specified by the TargetInfo constructor.
   bool BigEndian;
+  bool ByteAddressable;
   bool TLSSupported;
   bool NoAsmVariants;  // True if {|} are normal characters.
   unsigned char PointerWidth, PointerAlign;
@@ -818,6 +819,8 @@ public:
   VersionTuple getPlatformMinVersion() const { return PlatformMinVersion; }
 
   bool isBigEndian() const { return BigEndian; }
+
+  bool isByteAddressable() const { return ByteAddressable; }
 
   enum CallingConvMethodType {
     CCMT_Unknown,
