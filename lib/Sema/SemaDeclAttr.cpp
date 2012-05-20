@@ -4327,6 +4327,7 @@ static void handleServer(Sema &S, Decl *D, const AttributeList &Attr)
   S.WeakTopLevelDecls().push_back(skelFn);
   //Force the function to be used, so that it's emitted
   skelFn->addAttr(::new (S.Context) UsedAttr(Attr.getLoc(), S.Context, Attr.getAttributeSpellingListIndex()));
+  F->skelFunction = skelFn;
 }
 
 //===----------------------------------------------------------------------===//
