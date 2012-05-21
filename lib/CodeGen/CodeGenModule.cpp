@@ -2117,7 +2117,7 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
      llvm::FunctionType *skelTy = getTypes().GetFunctionType(skelFI);
      llvm::Constant *skelEntry = GetAddrOfFunction(g, skelTy);
      llvm::Function* skelLLVMFunction = dyn_cast<llvm::Function>(skelEntry);
-     llvm::NamedMDNode* meta=getModule().getOrInsertNamedMetadata((D->getName()+"_duettoSkel").str());
+     llvm::NamedMDNode* meta=getModule().getOrInsertNamedMetadata((Fn->getName()+"_duettoSkel").str());
      SmallVector<llvm::Value*, 1> Operands;
      Operands.push_back(skelLLVMFunction);
      //Also add the stub
