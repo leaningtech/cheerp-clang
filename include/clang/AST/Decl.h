@@ -2362,6 +2362,8 @@ public:
 
   //Duetto, pointer to the skel function for this server function
   FunctionDecl* skelFunction;
+  //Duetto, pointer to the stub function for this server function
+  FunctionDecl* stubFunction;
 };
 
 
