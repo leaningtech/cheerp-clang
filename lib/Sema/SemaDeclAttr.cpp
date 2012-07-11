@@ -4328,6 +4328,26 @@ static void handleServer(Sema &S, Decl *D, const AttributeList &Attr)
   //Force the function to be used, so that it's emitted
   skelFn->addAttr(::new (S.Context) UsedAttr(Attr.getLoc(), S.Context, Attr.getAttributeSpellingListIndex()));
   F->skelFunction = skelFn;
+  //Stub for the client
+  FunctionTemplateDecl* stubTemplateDecl=getTemplateFromName(S,"clientStub");
+  Deduced.clear();
+  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(F->getCallResultType())));
+  //Add the types of the function argument
+  if(F->param_size()!=0)
+      Deduced.push_back(DeducedTemplateArgument(TemplateArgument(&FArgsPack[0],FArgsPack.size())));
+  else
+    Deduced.push_back(DeducedTemplateArgument(TemplateArgument((const TemplateArgument*)NULL,0)));
+
+  FunctionDecl* stubFn;
+#ifndef NDEBUG
+  ret2=
+#endif
+    S.FinishTemplateArgumentDeduction(stubTemplateDecl, Deduced, 1, stubFn, info2, NULL);
+  S.InstantiateFunctionDefinition(Attr.getLoc(), stubFn, true, true);
+  S.WeakTopLevelDecls().push_back(stubFn);
+  //Force the function to be used, so that it's emitted
+  stubFn->addAttr(::new (S.Context) UsedAttr(Attr.getLoc(), S.Context, Attr.getAttributeSpellingListIndex()));
+  F->stubFunction = stubFn;
 }
 
 //===----------------------------------------------------------------------===//

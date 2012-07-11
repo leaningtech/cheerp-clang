@@ -2457,6 +2457,7 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
      FunctionDecl* skel=D->skelFunction;
      GlobalDecl g(skel);
 
+     //Add metadata for duetto use
      const CGFunctionInfo &skelFI = getTypes().arrangeGlobalDeclaration(g);
      llvm::FunctionType *skelTy = getTypes().GetFunctionType(skelFI);
      llvm::Constant *skelEntry = GetAddrOfFunction(g, skelTy);
@@ -2464,6 +2465,13 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
      llvm::NamedMDNode* meta=getModule().getOrInsertNamedMetadata((Fn->getName()+"_duettoSkel").str());
      SmallVector<llvm::Metadata*, 1> Operands;
      Operands.push_back(llvm::ConstantAsMetadata::get(skelLLVMFunction));
+     //Also add the stub
+     GlobalDecl g2(D->stubFunction);
+     const CGFunctionInfo &stubFI = getTypes().arrangeGlobalDeclaration(g2);
+     llvm::FunctionType *stubTy = getTypes().GetFunctionType(stubFI);
+     llvm::Constant *stubEntry = GetAddrOfFunction(g2, stubTy);
+     llvm::Function* stubLLVMFunction = dyn_cast<llvm::Function>(stubEntry);
+     Operands.push_back(llvm::ConstantAsMetadata::get(stubLLVMFunction));
      meta->addOperand(llvm::MDNode::get(VMContext, Operands));
   }
 }
