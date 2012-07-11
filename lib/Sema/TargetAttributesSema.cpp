@@ -339,13 +339,33 @@ namespace {
 #ifndef NDEBUG
       Sema::TemplateDeductionResult ret2=
 #endif
-	  S.FinishTemplateArgumentDeduction(skelTemplateDecl, Deduced, 1, skelFn, info2, NULL);
+      S.FinishTemplateArgumentDeduction(skelTemplateDecl, Deduced, 1, skelFn, info2, NULL);
       assert(ret2==Sema::TDK_Success);
       S.InstantiateFunctionDefinition(attr.getLoc(), skelFn, true, true);
       S.WeakTopLevelDecls().push_back(skelFn);
       //Force the function to be used, so that it's emitted
       skelFn->addAttr(::new (S.Context) UsedAttr(attr.getLoc(), S.Context));
       F->skelFunction = skelFn;
+      //Stub for the client
+      FunctionTemplateDecl* stubTemplateDecl=getTemplateFromName(S,"clientStub");
+      Deduced.clear();
+      Deduced.push_back(DeducedTemplateArgument(TemplateArgument(F->getResultType())));
+      //Add the types of the function argument
+      if(F->param_size()!=0)
+          Deduced.push_back(DeducedTemplateArgument(TemplateArgument(&FArgsPack[0],FArgsPack.size())));
+      else
+	  Deduced.push_back(DeducedTemplateArgument(TemplateArgument((const TemplateArgument*)NULL,0)));
+
+      FunctionDecl* stubFn;
+#ifndef NDEBUG
+      ret2=
+#endif
+      S.FinishTemplateArgumentDeduction(stubTemplateDecl, Deduced, 1, stubFn, info2, NULL);
+      S.InstantiateFunctionDefinition(attr.getLoc(), stubFn, true, true);
+      S.WeakTopLevelDecls().push_back(stubFn);
+      //Force the function to be used, so that it's emitted
+      stubFn->addAttr(::new (S.Context) UsedAttr(attr.getLoc(), S.Context));
+      F->stubFunction = stubFn;
     }
   public:
     DuettoAttributesSema() { }

@@ -1,4 +1,11 @@
+Server skeletons
+----------------
 For each server method a serverSkel instance is created with the right types
 The FunctionDecl for such instantiation is added as the skelFunction member of the server function
-During code generation of the server a NamedMDNode called <serverFuncName>_skel is created that
+During code generation of the server a NamedMDNode called <serverFuncName>_duettoSkel is created that
 contains the LLVMFunction for the skelFunction
+
+Client stubs
+------------
+For each server method a clientStub instance is created with the right types
+The FunctionDecl for such instantiation is added as the stubFunction member of the server function
