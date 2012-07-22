@@ -349,7 +349,7 @@ namespace {
       //Stub for the client
       FunctionTemplateDecl* stubTemplateDecl=getTemplateFromName(S,"clientStub");
       Deduced.clear();
-      Deduced.push_back(DeducedTemplateArgument(TemplateArgument(F->getResultType())));
+      Deduced.push_back(DeducedTemplateArgument(TemplateArgument(resultType)));
       //Add the types of the function argument
       if(F->param_size()!=0)
           Deduced.push_back(DeducedTemplateArgument(TemplateArgument(&FArgsPack[0],FArgsPack.size())));
