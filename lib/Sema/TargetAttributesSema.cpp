@@ -362,6 +362,17 @@ namespace {
 #endif
       S.FinishTemplateArgumentDeduction(stubTemplateDecl, Deduced, 1, stubFn, info2, NULL);
       S.InstantiateFunctionDefinition(attr.getLoc(), stubFn, true, true);
+      //HACK: look into the toplevel array to find out if this specific instantiation already exists
+      //This may happen when there is more than a server method with the same signature
+      const llvm::SmallVectorImpl<Decl*>& weakDecl = S.WeakTopLevelDecls();
+      for(uint32_t i=0;i<weakDecl.size();i++)
+      {
+          if(weakDecl[i]==stubFn)
+          {
+              F->stubFunction = stubFn;
+              return;
+          }
+      }
       S.WeakTopLevelDecls().push_back(stubFn);
       //Force the function to be used, so that it's emitted
       stubFn->addAttr(::new (S.Context) UsedAttr(attr.getLoc(), S.Context));
