@@ -26,6 +26,32 @@
 using namespace clang;
 using namespace CodeGen;
 
+static void
+ComputeNonVirtualBaseClassGepPath(CodeGenTypes& Types,
+                                  SmallVector<llvm::Value*, 4>& GEPIndexes,
+                                  llvm::Type *PtrDiffTy,
+                                  const CXXRecordDecl *DerivedClass,
+                                  CastExpr::path_const_iterator Start,
+                                  CastExpr::path_const_iterator End) {
+  const CXXRecordDecl *RD = DerivedClass;
+
+  for (CastExpr::path_const_iterator I = Start; I != End; ++I) {
+    const CXXBaseSpecifier *Base = *I;
+    assert(!Base->isVirtual() && "Should not see virtual bases here!");
+
+    const CXXRecordDecl *BaseDecl =
+      cast<CXXRecordDecl>(Base->getType()->getAs<RecordType>()->getDecl());
+
+    // Get the layout.
+    const CGRecordLayout &Layout = Types.getCGRecordLayout(RD);
+    uint32_t index=Layout.getNonVirtualBaseLLVMFieldNo(BaseDecl);
+
+    GEPIndexes.push_back(llvm::ConstantInt::get(PtrDiffTy, index));
+
+    RD = BaseDecl;
+  }
+}
+
 static CharUnits 
 ComputeNonVirtualBaseClassOffset(ASTContext &Context, 
                                  const CXXRecordDecl *DerivedClass,
@@ -153,6 +179,9 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
     ++Start;
   }
 
+  if (VBase && !getTarget().isByteAddressable())
+    CGM.ErrorUnsupported(Derived, "Duetto: Virtual bases on non-byte addressable targets are not supported yet");
+
   // Compute the static offset of the ultimate destination within its
   // allocating subobject (the virtual base, if there is one, or else
   // the "complete" object that we see).
@@ -176,7 +205,7 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
 
   // If the static offset is zero and we don't have a virtual step,
   // just do a bitcast; null checks are unnecessary.
-  if (NonVirtualOffset.isZero() && !VBase) {
+  if (NonVirtualOffset.isZero() && !VBase && getTarget().isByteAddressable()) {
     return Builder.CreateBitCast(Value, BasePtrTy);
   }    
 
@@ -202,13 +231,28 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
       CGM.getCXXABI().GetVirtualBaseClassOffset(*this, Value, Derived, VBase);
   }
 
-  // Apply both offsets.
-  Value = ApplyNonVirtualAndVirtualOffset(*this, Value, 
+  // First handle the non-byte addressable case (Duetto)
+  if (!getTarget().isByteAddressable())
+  {
+    //Use type safe path
+    SmallVector<llvm::Value*, 4> GEPConstantIndexes;
+
+    GEPConstantIndexes.push_back(llvm::ConstantInt::get(PtrDiffTy, 0));
+    ComputeNonVirtualBaseClassGepPath(getTypes(), GEPConstantIndexes, PtrDiffTy,
+                                    Derived, PathBegin, PathEnd);
+    assert(GEPConstantIndexes.size()>1);
+    Value = Builder.CreateGEP(Value, GEPConstantIndexes);
+  }
+  else
+  {
+    // Apply both offsets.
+    Value = ApplyNonVirtualAndVirtualOffset(*this, Value, 
                                           NonVirtualOffset,
                                           VirtualOffset);
-  
-  // Cast to the destination type.
-  Value = Builder.CreateBitCast(Value, BasePtrTy);
+
+    // Cast to the destination type.
+    Value = Builder.CreateBitCast(Value, BasePtrTy);
+  }
 
   // Build a phi if we needed a null check.
   if (NullCheckValue) {
