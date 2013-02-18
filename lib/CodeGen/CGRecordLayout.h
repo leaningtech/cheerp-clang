@@ -136,6 +136,9 @@ private:
   /// Map from virtual bases to their field index in the complete object.
   llvm::DenseMap<const CXXRecordDecl *, unsigned> CompleteObjectVirtualBases;
 
+  // Maps base field no to base offset
+  llvm::SmallVector<unsigned, 4> BaseOffsetFromNo;
+
   /// False if any direct or indirect subobject of this class, when
   /// considered as a complete object, requires a non-zero bitpattern
   /// when zero-initialized.
@@ -154,7 +157,9 @@ public:
     : CompleteObjectType(CompleteObjectType),
       BaseSubobjectType(BaseSubobjectType),
       IsZeroInitializable(IsZeroInitializable),
-      IsZeroInitializableAsBase(IsZeroInitializableAsBase) {}
+      IsZeroInitializableAsBase(IsZeroInitializableAsBase),
+      firstBaseElement(0),
+      totalNumberOfBases(0) {}
 
   /// \brief Return the "complete object" LLVM type associated with
   /// this record.
@@ -208,6 +213,18 @@ public:
       it = BitFields.find(FD);
     assert(it != BitFields.end() && "Unable to find bitfield info");
     return it->second;
+  }
+
+  // Duetto: Fields to handle down and dynamic casting
+  // The first element which is a base (e.g. not the vtable)
+  unsigned firstBaseElement;
+  // The total number of bases including inherited ones
+  unsigned totalNumberOfBases;
+
+  unsigned getTotalOffsetToBase(unsigned baseIndex) const {
+    // Used in the downcast code path
+    assert(baseIndex < BaseOffsetFromNo.size());
+    return BaseOffsetFromNo[baseIndex];
   }
 
   void print(raw_ostream &OS) const;

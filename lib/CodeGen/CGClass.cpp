@@ -54,6 +54,34 @@ ComputeNonVirtualBaseClassGepPath(CodeGenTypes& Types,
   }
 }
 
+static unsigned ComputeBaseIdOffset(CodeGenTypes& Types,
+                                 const CXXRecordDecl *DerivedClass,
+                                 CastExpr::path_const_iterator Start,
+                                 CastExpr::path_const_iterator End) {
+  unsigned Offset=0;
+
+  const CXXRecordDecl *RD = DerivedClass;
+
+  for (CastExpr::path_const_iterator I = Start; I != End; ++I) {
+    const CXXBaseSpecifier *Base = *I;
+    assert(!Base->isVirtual() && "Should not see virtual bases here!");
+
+    const CXXRecordDecl *BaseDecl =
+      cast<CXXRecordDecl>(Base->getType()->getAs<RecordType>()->getDecl());
+
+    // Get the layout.
+    const CGRecordLayout &Layout = Types.getCGRecordLayout(RD);
+
+    unsigned baseId = Layout.getNonVirtualBaseLLVMFieldNo(BaseDecl);
+
+    Offset += Layout.getTotalOffsetToBase(baseId);
+
+    RD = BaseDecl;
+  }
+
+  return Offset;
+}
+
 static CharUnits 
 ComputeNonVirtualBaseClassOffset(ASTContext &Context, 
                                  const CXXRecordDecl *DerivedClass,
@@ -311,8 +339,8 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
 
   llvm::Value *NonVirtualOffset =
     CGM.GetNonVirtualBaseClassOffset(Derived, PathBegin, PathEnd);
-  
-  if (!NonVirtualOffset) {
+
+  if (!NonVirtualOffset && getTarget().isByteAddressable()) {
     // No offset, we can just cast back.
     return Builder.CreateBitCast(Value, DerivedPtrTy);
   }
@@ -331,13 +359,26 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
     EmitBlock(CastNotNull);
   }
   
-  // Apply the offset.
-  Value = Builder.CreateBitCast(Value, Int8PtrTy);
-  Value = Builder.CreateGEP(Value, Builder.CreateNeg(NonVirtualOffset),
+  if (!getTarget().isByteAddressable())
+  {
+    unsigned BaseIdOffset = ComputeBaseIdOffset(getTypes(), Derived, PathBegin, PathEnd);
+    llvm::Constant* baseOffset = llvm::ConstantInt::get(PtrDiffTy, BaseIdOffset);
+    Value=Builder.CreateBitCast(Value, DerivedPtrTy);
+    llvm::SmallVector<llvm::Metadata*, 1> tmp;
+    tmp.push_back(llvm::ConstantAsMetadata::get(baseOffset));
+    llvm::MDNode* md=llvm::MDNode::get(getLLVMContext(), tmp);
+    //The builder returns values, but we know it's an instruction
+    cast<llvm::Instruction>(Value)->setMetadata("duetto.downcast", md);
+  }
+  else
+  {
+    // Apply the offset.
+    Value = Builder.CreateBitCast(Value, Int8PtrTy);
+    Value = Builder.CreateGEP(Value, Builder.CreateNeg(NonVirtualOffset),
                             "sub.ptr");
-
-  // Just cast.
-  Value = Builder.CreateBitCast(Value, DerivedPtrTy);
+    // Just cast.
+    Value = Builder.CreateBitCast(Value, DerivedPtrTy);
+  }
 
   if (NullCheckValue) {
     Builder.CreateBr(CastEnd);
