@@ -632,6 +632,12 @@ protected:
   /// \brief Externally-provided virtual base offsets.
   llvm::DenseMap<const CXXRecordDecl *, CharUnits> ExternalVirtualBaseOffsets;
 
+  llvm::SmallVector<unsigned, 4> BaseOffsetFromNo;
+  // The first element which is a base (e.g. not the vtable)
+  unsigned firstBaseElement;
+  // The total count of bases, including the inherited ones
+  unsigned totalNumberOfBases;
+
   RecordLayoutBuilder(const ASTContext &Context,
                       EmptySubobjectMap *EmptySubobjects)
     : Context(Context), EmptySubobjects(EmptySubobjects), Size(0), 
@@ -644,7 +650,10 @@ protected:
       NonVirtualAlignment(CharUnits::One()), 
       PrimaryBase(0), PrimaryBaseIsVirtual(false),
       HasOwnVFPtr(false),
-      FirstNearlyEmptyVBase(0) { }
+      FirstNearlyEmptyVBase(0),
+      firstBaseElement(0xffffffff),
+      totalNumberOfBases(1) //Initialized to 1, counting itself
+      { }
 
   /// Reset this RecordLayoutBuilder to a fresh state, using the given
   /// alignment as the initial alignment.  This is used for the
@@ -1225,6 +1234,13 @@ CharUnits RecordLayoutBuilder::LayoutBase(const BaseSubobjectInfo *Base) {
 
   // Remember max struct/class alignment.
   UpdateAlignment(BaseAlign, UnpackedBaseAlign);
+
+  if (firstBaseElement==0xffffffff)
+    firstBaseElement = HasOwnVFPtr ? 1 : 0;
+
+  BaseOffsetFromNo.push_back(totalNumberOfBases);
+
+  totalNumberOfBases += Layout.getTotalNumberOfBases();
 
   return Offset;
 }
@@ -2821,7 +2837,8 @@ ASTContext::BuildMicrosoftASTRecordLayout(const RecordDecl *D) const {
         Builder.Alignment, CharUnits::Zero(), Builder.PrimaryBase,
         false, Builder.SharedVBPtrBase,
         Builder.HasZeroSizedSubObject, Builder.LeadsWithZeroSizedBase,
-        Builder.Bases, Builder.VBases);
+        Builder.Bases, Builder.VBases,
+        llvm::SmallVector<unsigned,4>(), 0, 0);
   } else {
     Builder.layout(D);
     return new (*this) ASTRecordLayout(
@@ -2891,7 +2908,8 @@ ASTContext::getASTRecordLayout(const RecordDecl *D) const {
                                   Builder.PrimaryBase,
                                   Builder.PrimaryBaseIsVirtual,
                                   0, false, false,
-                                  Builder.Bases, Builder.VBases);
+                                  Builder.Bases, Builder.VBases,
+                                  Builder.BaseOffsetFromNo, Builder.firstBaseElement, Builder.totalNumberOfBases);
   } else {
     RecordLayoutBuilder Builder(*this, /*EmptySubobjects=*/0);
     Builder.Layout(D);
