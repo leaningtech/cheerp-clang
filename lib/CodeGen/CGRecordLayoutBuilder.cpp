@@ -63,6 +63,12 @@ public:
   llvm::DenseMap<const CXXRecordDecl *, unsigned> NonVirtualBases;
   llvm::DenseMap<const CXXRecordDecl *, unsigned> VirtualBases;
 
+  llvm::SmallVector<unsigned, 4> BaseOffsetFromNo;
+  // The first element which is a base (e.g. not the vtable)
+  unsigned firstBaseElement;
+  // The total count of bases, including the inherited ones
+  unsigned totalNumberOfBases;
+
   /// IndirectPrimaryBases - Virtual base classes, direct or indirect, that are
   /// primary base classes for some other direct or indirect base class.
   CXXIndirectPrimaryBaseSet IndirectPrimaryBases;
@@ -191,6 +197,8 @@ private:
 public:
   CGRecordLayoutBuilder(CodeGenTypes &Types)
     : BaseSubobjectType(0),
+      firstBaseElement(0xffffffff),
+      totalNumberOfBases(1), //Initialized to 1, counting itself
       IsZeroInitializable(true), IsZeroInitializableAsBase(true),
       Packed(false), Types(Types) { }
 
@@ -553,6 +561,13 @@ bool CGRecordLayoutBuilder::LayoutBase(const CXXRecordDecl *base,
     return false;
 
   AppendField(baseOffset, subobjectType);
+
+  if (firstBaseElement==0xffffffff)
+    firstBaseElement = (FieldTypes.size() - 1);
+
+  BaseOffsetFromNo.push_back(totalNumberOfBases);
+
+  totalNumberOfBases += baseLayout.totalNumberOfBases;
   return true;
 }
 
@@ -967,6 +982,10 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
 
   RL->NonVirtualBases.swap(Builder.NonVirtualBases);
   RL->CompleteObjectVirtualBases.swap(Builder.VirtualBases);
+
+  RL->firstBaseElement = Builder.firstBaseElement;
+  RL->totalNumberOfBases = Builder.totalNumberOfBases;
+  RL->BaseOffsetFromNo.swap(Builder.BaseOffsetFromNo);
 
   // Add all the field numbers.
   RL->FieldInfo.swap(Builder.Fields);
