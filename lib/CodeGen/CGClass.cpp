@@ -156,11 +156,12 @@ CodeGenFunction::GetAddressOfDirectBaseInCompleteClass(llvm::Value *This,
   if (!getTarget().isByteAddressable())
   {
     SmallVector<llvm::Value*, 4> GEPConstantIndexes;
-    GEPConstantIndexes.push_back(llvm::ConstantInt::get(PtrDiffTy, 0));
+    GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
     // Get the layout.
+    // TODO: Duetto: if the base class has no members this will fail, fix it
     const CGRecordLayout &Layout = getTypes().getCGRecordLayout(Derived);
     uint32_t index=Layout.getNonVirtualBaseLLVMFieldNo(Base);
-    GEPConstantIndexes.push_back(llvm::ConstantInt::get(PtrDiffTy, index));
+    GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, index));
     return Builder.CreateGEP(This, GEPConstantIndexes);
   }
 
@@ -280,8 +281,8 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
     //Use type safe path
     SmallVector<llvm::Value*, 4> GEPConstantIndexes;
 
-    GEPConstantIndexes.push_back(llvm::ConstantInt::get(PtrDiffTy, 0));
-    ComputeNonVirtualBaseClassGepPath(getTypes(), GEPConstantIndexes, PtrDiffTy,
+    GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+    ComputeNonVirtualBaseClassGepPath(getTypes(), GEPConstantIndexes, Int32Ty,
                                     Derived, PathBegin, PathEnd);
     assert(GEPConstantIndexes.size()>1);
     Value = Builder.CreateGEP(Value, GEPConstantIndexes);
@@ -353,7 +354,7 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
     Value=Builder.CreateBitCast(Value, DerivedPtrTy);
     llvm::SmallVector<llvm::Value*, 1> tmp;
     tmp.push_back(baseOffset);
-    llvm::MDNode* md=llvm::MDNode::get(getTypes().getLLVMContext(), tmp);
+    llvm::MDNode* md=llvm::MDNode::get(getLLVMContext(), tmp);
     //The builder returns values, but we know it's an instruction
     cast<llvm::Instruction>(Value)->setMetadata("duetto.downcast", md);
   }
