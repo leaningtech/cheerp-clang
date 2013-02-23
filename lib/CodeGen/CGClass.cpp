@@ -2063,6 +2063,9 @@ CodeGenFunction::InitializeVTablePointer(BaseSubobject Base,
   llvm::Value *VirtualOffset = nullptr;
   CharUnits NonVirtualOffset = CharUnits::Zero();
   
+  if (NeedsVirtualOffset && !getTarget().isByteAddressable())
+    CGM.ErrorUnsupported(VTableClass, "Duetto: Virtual bases on non-byte addressable targets are not supported yet");
+
   if (NeedsVirtualOffset) {
     // We need to use the virtual base offset offset because the virtual base
     // might have a different offset in the most derived class.
@@ -2079,7 +2082,16 @@ CodeGenFunction::InitializeVTablePointer(BaseSubobject Base,
   // Apply the offsets.
   llvm::Value *VTableField = LoadCXXThis();
   
-  if (!NonVirtualOffset.isZero() || VirtualOffset)
+  if (!getTarget().isByteAddressable())
+  {
+    if(VTableClass != Base.getBase())
+    {
+      VTableField = GetAddressOfDirectBaseInCompleteClass(VTableField,
+                                                          VTableClass, Base.getBase(),
+                                                          false);
+    }
+  }
+  else if (!NonVirtualOffset.isZero() || VirtualOffset)
     VTableField = ApplyNonVirtualAndVirtualOffset(*this, VTableField, 
                                                   NonVirtualOffset,
                                                   VirtualOffset);
