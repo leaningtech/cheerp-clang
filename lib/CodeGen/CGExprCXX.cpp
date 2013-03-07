@@ -1267,6 +1267,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
   // CXXNewExpr::shouldNullCheckAllocation()) and we have an
   // interesting initializer.
   bool nullCheck = allocatorType->isNothrow(getContext()) &&
+    !allocator->isReservedGlobalPlacementOperator() &&
     (!allocType.isPODType(getContext()) || E->hasInitializer());
 
   llvm::BasicBlock *nullCheckBB = 0;
