@@ -83,7 +83,10 @@ namespace Test5 {
     // FIXME: It should be possible to devirtualize this case, but that is
     // not implemented yet.
     // CHECK: getelementptr
-    // CHECK-NEXT: %[[FUNC:.*]] = load
+    // CHECK-NEXT: %[[FUNCTMP1:.*]] = load
+    // CHECK-NEXT: %[[FUNCTMP2:.*]] = bitcast i32 (...)** %[[FUNCTMP1]] to void (%"struct.Test5::A"*)**
+    // CHECK-NEXT: %[[FUNCTMP3:.*]] = getelementptr inbounds void (%"struct.Test5::A"*)** %[[FUNCTMP2]], i64 0
+    // CHECK-NEXT: %[[FUNC:.*]] = load void (%"struct.Test5::A"*)** %[[FUNCTMP3]]
     // CHECK-NEXT: call void %[[FUNC]]
     static_cast<A*>(d)->f();
   }
@@ -179,9 +182,11 @@ namespace Test9 {
     // FIXME: It should be possible to devirtualize this case, but that is
     // not implemented yet.
     // CHECK: getelementptr
-    // CHECK-NEXT: %[[FUNC:.*]] = load
-    // CHECK-NEXT: bitcast
-    // CHECK-NEXT: = call {{.*}} %[[FUNC]]
+    // CHECK-NEXT: %[[FUNCTMP1:.*]] = load
+    // CHECK-NEXT: %[[FUNCTMP2:.*]] = bitcast {{.*}} %[[FUNCTMP1]]
+    // CHECK-NEXT: %[[FUNCTMP3:.*]] = getelementptr {{.*}} %[[FUNCTMP2]], i64 0
+    // CHECK-NEXT: %[[FUNC:.*]] = load {{.*}} %[[FUNCTMP3]]
+    // CHECK: = call {{.*}} %[[FUNC]]
     return static_cast<RA*>(x)->f();
   }
 }

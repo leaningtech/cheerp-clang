@@ -96,7 +96,9 @@ namespace InitVTable {
   // CHECK: define void @_ZN10InitVTable1BC2Ev(%"struct.InitVTable::B"* %this) unnamed_addr
   // CHECK:      [[T0:%.*]] = bitcast [[B:%.*]]* [[THIS:%.*]] to i8***
   // CHECK-NEXT: store i8** getelementptr inbounds ([3 x i8*]* @_ZTVN10InitVTable1BE, i64 0, i64 2), i8*** [[T0]]
-  // CHECK:      [[VTBL:%.*]] = load i32 ([[B]]*)*** {{%.*}}
+  // CHECK: [[VTBLTMP1:%.*]] = getelementptr [[B]]* [[THIS]], i32 0, i32 0
+  // CHECK-NEXT: [[VTBLTMP2:%.*]] = load i32 (...)*** [[VTBLTMP1]]
+  // CHECK-NEXT: [[VTBL:%.*]] = bitcast i32 (...)** [[VTBLTMP2]] to i32 ([[B]]*)**
   // CHECK-NEXT: [[FNP:%.*]] = getelementptr inbounds i32 ([[B]]*)** [[VTBL]], i64 0
   // CHECK-NEXT: [[FN:%.*]] = load i32 ([[B]]*)** [[FNP]]
   // CHECK-NEXT: [[ARG:%.*]] = call i32 [[FN]]([[B]]* [[THIS]])
