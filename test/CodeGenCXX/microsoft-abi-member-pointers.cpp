@@ -619,8 +619,7 @@ void (C::*getmp())() {
 //
 
 // CHECK-LABEL: define linkonce_odr x86_thiscallcc void @"\01??_9C@Test4@@$BA@AE"(%"struct.Test4::C"* %this, ...)
-// CHECK-NOT:  getelementptr
-// CHECK:  load void (%"struct.Test4::C"*, ...)*** %{{.*}}
+// CHECK:  load i32 (...)*** %{{.*}}
 // CHECK:  getelementptr inbounds void (%"struct.Test4::C"*, ...)** %{{.*}}, i64 0
 // CHECK-NOT:  getelementptr
 // CHECK:  musttail call x86_thiscallcc void (%"struct.Test4::C"*, ...)* %

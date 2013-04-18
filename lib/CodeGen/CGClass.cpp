@@ -2205,10 +2205,27 @@ void CodeGenFunction::InitializeVTablePointers(const CXXRecordDecl *RD) {
 
 llvm::Value *CodeGenFunction::GetVTablePtr(llvm::Value *This,
                                            llvm::Type *Ty) {
-  llvm::Value *VTablePtrSrc = Builder.CreateBitCast(This, Ty->getPointerTo());
+  //HACK: Not really clean, it will iterate until structs are found on the first element
+  SmallVector<llvm::Value*, 4> GEPIndexes;
+  llvm::Type* t=This->getType();
+  assert(t->isPointerTy());
+  GEPIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+  t=cast<llvm::PointerType>(t)->getElementType();
+  while(t->isStructTy())
+  {
+    GEPIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+    llvm::StructType* st=cast<llvm::StructType>(t);
+    t=st->getElementType(0);
+  }
+  llvm::Value *VTablePtrSrc = Builder.CreateGEP(This, GEPIndexes);
+  if(!VTablePtrSrc->getType()->getPointerElementType()->isPointerTy())
+  {
+    // We did not find a pointer, use the type unsafe code path
+    VTablePtrSrc = Builder.CreateBitCast(This, Ty->getPointerTo());
+  }
   llvm::Instruction *VTable = Builder.CreateLoad(VTablePtrSrc, "vtable");
   CGM.DecorateInstruction(VTable, CGM.getTBAAInfoForVTablePtr());
-  return VTable;
+  return Builder.CreateBitCast(VTable, Ty);
 }
 
 
