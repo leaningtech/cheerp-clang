@@ -575,8 +575,7 @@ void (C::*getmp())() {
 //
 
 // CHECK-LABEL: define linkonce_odr x86_thiscallcc void @"\01??_9C@Test4@@$BA@AE"(i8*)
-// CHECK-NOT:  getelementptr
-// CHECK:  load void (i8*)*** %{{.*}}
+// CHECK:  load i32 (...)*** %{{.*}}
 // CHECK:  getelementptr inbounds void (i8*)** %{{.*}}, i64 0
 // CHECK-NOT:  getelementptr
 // CHECK:  call x86_thiscallcc void %
