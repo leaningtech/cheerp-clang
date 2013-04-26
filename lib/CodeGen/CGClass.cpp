@@ -55,34 +55,6 @@ ComputeNonVirtualBaseClassGepPath(CodeGenTypes& Types,
   }
 }
 
-static unsigned ComputeBaseIdOffset(CodeGenTypes& Types,
-                                 const CXXRecordDecl *DerivedClass,
-                                 CastExpr::path_const_iterator Start,
-                                 CastExpr::path_const_iterator End) {
-  unsigned Offset=0;
-
-  const CXXRecordDecl *RD = DerivedClass;
-
-  for (CastExpr::path_const_iterator I = Start; I != End; ++I) {
-    const CXXBaseSpecifier *Base = *I;
-    assert(!Base->isVirtual() && "Should not see virtual bases here!");
-
-    const CXXRecordDecl *BaseDecl =
-      cast<CXXRecordDecl>(Base->getType()->getAs<RecordType>()->getDecl());
-
-    if(!BaseDecl->isEmpty())
-    {
-      // Get the layout.
-      const CGRecordLayout &Layout = Types.getCGRecordLayout(RD);
-      unsigned baseId = Layout.getNonVirtualBaseLLVMFieldNo(BaseDecl);
-      Offset += Layout.getTotalOffsetToBase(baseId);
-    }
-    RD = BaseDecl;
-  }
-
-  return Offset;
-}
-
 static CharUnits 
 ComputeNonVirtualBaseClassOffset(ASTContext &Context, 
                                  const CXXRecordDecl *DerivedClass,
@@ -335,6 +307,31 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
   return Value;
 }
 
+unsigned
+CodeGenFunction::ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
+                                     llvm::SmallVector<const CXXBaseSpecifier*, 4>& path) {
+  unsigned Offset=0;
+  const CXXRecordDecl *RD = DerivedClass;
+
+  for (unsigned i=0;i<path.size();++i) {
+    const CXXBaseSpecifier *Base = path[i];
+    assert(!Base->isVirtual() && "Should not see virtual bases here!");
+
+    const CXXRecordDecl *BaseDecl =
+      cast<CXXRecordDecl>(Base->getType()->getAs<RecordType>()->getDecl());
+
+    if(!BaseDecl->isEmpty())
+    {
+      // Get the layout.
+      const CGRecordLayout &Layout = getTypes().getCGRecordLayout(RD);
+      unsigned baseId = Layout.getNonVirtualBaseLLVMFieldNo(BaseDecl);
+      Offset += Layout.getTotalOffsetToBase(baseId);
+    }
+    RD = BaseDecl;
+  }
+  return Offset;
+}
+
 llvm::Value *
 CodeGenFunction::GenerateDowncast(llvm::Value* Value,
                                   const CXXRecordDecl *Derived,
@@ -390,14 +387,12 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
   
   if (!getTarget().isByteAddressable())
   {
-    unsigned BaseIdOffset = ComputeBaseIdOffset(getTypes(), Derived, PathBegin, PathEnd);
-    llvm::Constant* baseOffset = llvm::ConstantInt::get(PtrDiffTy, BaseIdOffset);
-    Value=Builder.CreateBitCast(Value, DerivedPtrTy);
-    llvm::SmallVector<llvm::Value*, 1> tmp;
-    tmp.push_back(baseOffset);
-    llvm::MDNode* md=llvm::MDNode::get(getLLVMContext(), tmp);
-    //The builder returns values, but we know it's an instruction
-    cast<llvm::Instruction>(Value)->setMetadata("duetto.downcast", md);
+    llvm::SmallVector<const CXXBaseSpecifier*, 4> path;
+    for (CastExpr::path_const_iterator I = PathBegin; I != PathEnd; ++I)
+      path.push_back(*I);
+
+    unsigned BaseIdOffset=ComputeBaseIdOffset(Derived, path);
+    Value = GenerateDowncast(Value, Derived, BaseIdOffset);
   }
   else
   {
