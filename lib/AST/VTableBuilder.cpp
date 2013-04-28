@@ -1153,7 +1153,7 @@ void VTableBuilder::ComputeThisAdjustments() {
       Overriders.getOverrider(MD, MethodInfo.BaseOffset);
     
     // Check if we need an adjustment at all.
-    if (MethodInfo.BaseOffsetInLayoutClass == Overrider.Offset) {
+    if (Overrider.Method==MD) {
       // When a return thunk is needed by a derived class that overrides a
       // virtual base, gcc uses a virtual 'this' adjustment as well. 
       // While the thunk itself might be needed by vtables in subclasses or
@@ -1558,6 +1558,14 @@ VTableBuilder::AddMethods(BaseSubobject Base, CharUnits BaseOffsetInLayoutClass,
     // then we can just use the member function from the primary base.
     if (const CXXMethodDecl *OverriddenMD = 
           FindNearestOverriddenMethod(MD, PrimaryBases)) {
+      if (!Context.getTargetInfo().isByteAddressable())
+      {
+        clang::DiagnosticsEngine &Diags = Context.getDiagnostics();
+        unsigned DiagID = Diags.getCustomDiagID(
+            DiagnosticsEngine::Error, "Duetto:");
+        Diags.Report(Context.getFullLoc(MD->getLocation()), DiagID) << "Covariant returns are not supported yet";
+        continue;
+      }
       if (ComputeReturnAdjustmentBaseOffset(Context, MD, 
                                             OverriddenMD).isEmpty()) {
         // Replace the method info of the overridden method with our own
