@@ -79,7 +79,24 @@ static llvm::Value *PerformTypeAdjustment(CodeGenFunction &CGF,
                                           llvm::Value *Ptr,
                                           int64_t NonVirtualAdjustment,
                                           int64_t VirtualAdjustment,
-                                          bool IsReturnAdjustment) {
+                                          bool IsReturnAdjustment,
+                                          const CXXRecordDecl* AdjustmentTarget,
+                                          const CXXRecordDecl* AdjustmentSource) {
+  if (!CGF.getTarget().isByteAddressable() && VirtualAdjustment)
+    CGF.CGM.ErrorUnsupported(AdjustmentSource, "Duetto: Virtual bases on non-byte addressable targets are not supported yet");
+  if (!CGF.getTarget().isByteAddressable() && IsReturnAdjustment)
+  {
+    CGF.CGM.ErrorUnsupported(CGF.CurGD.getDecl(),
+                    "Duetto: Covariant returns on non-byte addressable targets are not supported yet");
+  }
+
+  // Duetto: Handle byte addressable case before
+  if (!CGF.getTarget().isByteAddressable())
+  {
+    //TODO: We need to support calling a different thunk based on the type of the incoming this pointer
+    return CGF.GenerateDowncast(Ptr, AdjustmentTarget, NonVirtualAdjustment);
+  }
+
   if (!NonVirtualAdjustment && !VirtualAdjustment)
     return Ptr;
 
@@ -204,7 +221,9 @@ static RValue PerformReturnAdjustment(CodeGenFunction &CGF,
   ReturnValue = PerformTypeAdjustment(CGF, ReturnValue, 
                                       Thunk.Return.NonVirtual, 
                                       Thunk.Return.VBaseOffsetOffset,
-                                      /*IsReturnAdjustment*/true);
+                                      /*IsReturnAdjustment*/true,
+                                      Thunk.Return.AdjustmentTarget,
+                                      Thunk.Return.AdjustmentSource);
   
   if (NullCheckValue) {
     CGF.Builder.CreateBr(AdjustEnd);
@@ -289,7 +308,9 @@ void CodeGenFunction::GenerateVarArgsThunk(
     PerformTypeAdjustment(*this, ThisPtr, 
                           Thunk.This.NonVirtual, 
                           Thunk.This.VCallOffsetOffset,
-                          /*IsReturnAdjustment*/false);
+                          /*IsReturnAdjustment*/false,
+                          Thunk.This.AdjustmentTarget,
+                          Thunk.This.AdjustmentSource);
   ThisStore->setOperand(0, AdjustedThisPtr);
 
   if (!Thunk.Return.isEmpty()) {
@@ -349,7 +370,9 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
     PerformTypeAdjustment(*this, LoadCXXThis(), 
                           Thunk.This.NonVirtual, 
                           Thunk.This.VCallOffsetOffset,
-                          /*IsReturnAdjustment*/false);
+                          /*IsReturnAdjustment*/false,
+                          Thunk.This.AdjustmentTarget,
+                          Thunk.This.AdjustmentSource);
   
   CallArgList CallArgs;
   
