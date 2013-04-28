@@ -437,8 +437,13 @@ void CodeGenFunction::generateThunk(llvm::Function *Fn,
 void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
                                bool ForVTable) {
   const CXXMethodDecl* OriginalMethod = Thunk.This.Method;
+  bool byteAddressable = CGM.getTarget().isByteAddressable();
   const CGFunctionInfo &FnInfo = CGM.getTypes().arrangeGlobalDeclaration(
-                CGM.getTarget().isByteAddressable()?GD:GD.getWithDecl(OriginalMethod));
+                byteAddressable?GD:GD.getWithDecl(OriginalMethod));
+
+  // Override the non virtual offset in bytes with the topological offset on NBA targets
+  if(!byteAddressable)
+    Thunk.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentSource);
 
   // FIXME: re-use FnInfo in this computation.
   llvm::Constant *C = CGM.GetAddrOfThunk(GD, Thunk);
@@ -637,8 +642,15 @@ void CodeGenVTables::addVTableComponent(
     // Thunks.
     } else if (nextVTableThunkIndex < layout.vtable_thunks().size() &&
                layout.vtable_thunks()[nextVTableThunkIndex].first == idx) {
-      auto &thunkInfo = layout.vtable_thunks()[nextVTableThunkIndex].second;
+      ThunkInfo thunkInfo = layout.vtable_thunks()[nextVTableThunkIndex].second;
 
+      if (!CGM.getTarget().isByteAddressable())
+      {
+        // Override the non virtual offset in bytes with the topological offset
+        // TODO: Really move topological offset logic in AST
+        thunkInfo.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, thunkInfo.This.AdjustmentTarget, thunkInfo.This.AdjustmentSource);
+      }
+ 
       maybeEmitThunkForVTable(GD, thunkInfo);
       nextVTableThunkIndex++;
       fnPtr = CGM.GetAddrOfThunk(GD, thunkInfo);
