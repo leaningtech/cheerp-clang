@@ -54,7 +54,7 @@ class CodeGenVTables {
   SecondaryVirtualPointerIndicesMapTy SecondaryVirtualPointerIndices;
 
   /// EmitThunk - Emit a single thunk.
-  void EmitThunk(GlobalDecl GD, const ThunkInfo &Thunk, 
+  void EmitThunk(GlobalDecl GD, ThunkInfo Thunk, 
                  bool UseAvailableExternallyLinkage);
 
   /// MaybeEmitThunkAvailableExternally - Try to emit the given thunk with

@@ -393,7 +393,7 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
   setThunkVisibility(CGM, MD, Thunk, Fn);
 }
 
-void CodeGenVTables::EmitThunk(GlobalDecl GD, const ThunkInfo &Thunk, 
+void CodeGenVTables::EmitThunk(GlobalDecl GD, ThunkInfo Thunk, 
                                bool UseAvailableExternallyLinkage)
 {
   if (CGM.getTarget().getCXXABI().isMicrosoft()) {
