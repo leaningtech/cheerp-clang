@@ -30,7 +30,6 @@ using namespace CodeGen;
 static void
 ComputeNonVirtualBaseClassGepPath(CodeGenTypes& Types,
                                   SmallVector<llvm::Value*, 4>& GEPIndexes,
-                                  llvm::Type *PtrDiffTy,
                                   const CXXRecordDecl *DerivedClass,
                                   CastExpr::path_const_iterator Start,
                                   CastExpr::path_const_iterator End) {
@@ -49,7 +48,7 @@ ComputeNonVirtualBaseClassGepPath(CodeGenTypes& Types,
       const CGRecordLayout &Layout = Types.getCGRecordLayout(RD);
       uint32_t index=Layout.getNonVirtualBaseLLVMFieldNo(BaseDecl);
 
-      GEPIndexes.push_back(llvm::ConstantInt::get(PtrDiffTy, index));
+      GEPIndexes.push_back(llvm::ConstantInt::get(Types.CGM.Int32Ty, index));
     }
     RD = BaseDecl;
   }
@@ -268,7 +267,7 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
     SmallVector<llvm::Value*, 4> GEPConstantIndexes;
 
     GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
-    ComputeNonVirtualBaseClassGepPath(getTypes(), GEPConstantIndexes, Int32Ty,
+    ComputeNonVirtualBaseClassGepPath(getTypes(), GEPConstantIndexes,
                                     Derived, PathBegin, PathEnd);
     Value = Builder.CreateGEP(Value, GEPConstantIndexes);
     //Duetto: Check if the type is the expected one. If not create a cast with a metadata for duetto
