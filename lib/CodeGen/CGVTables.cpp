@@ -34,6 +34,7 @@ CodeGenVTables::CodeGenVTables(CodeGenModule &CGM)
 
 llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD, 
                                               const ThunkInfo &Thunk) {
+  const CXXMethodDecl* OriginalMethod = Thunk.This.Method;
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
 
   // Compute the mangled name.
@@ -46,7 +47,8 @@ llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD,
     getCXXABI().getMangleContext().mangleThunk(MD, Thunk, Out);
   Out.flush();
 
-  llvm::Type *Ty = getTypes().GetFunctionTypeForVTable(GD);
+  llvm::Type *Ty = getTypes().GetFunctionTypeForVTable(
+                getTarget().isByteAddressable()?GD:GD.getWithDecl(OriginalMethod));
   return GetOrCreateLLVMFunction(Name, Ty, GD, /*ForVTable=*/true,
                                  /*DontDefer=*/true, /*IsThunk=*/true);
 }
@@ -204,7 +206,8 @@ void CodeGenFunction::GenerateVarArgsThunk(
 }
 
 void CodeGenFunction::StartThunk(llvm::Function *Fn, GlobalDecl GD,
-                                 const CGFunctionInfo &FnInfo) {
+                                 const CGFunctionInfo &FnInfo,
+                                 const CXXMethodDecl* OriginalMethod) {
   assert(!CurGD.getDecl() && "CurGD was already set!");
   CurGD = GD;
   CurFuncIsThunk = true;
@@ -221,7 +224,7 @@ void CodeGenFunction::StartThunk(llvm::Function *Fn, GlobalDecl GD,
   FunctionArgList FunctionArgs;
 
   // Create the implicit 'this' parameter declaration.
-  CGM.getCXXABI().buildThisParam(*this, FunctionArgs);
+  CGM.getCXXABI().buildThisParam(*this, FunctionArgs, OriginalMethod);
 
   // Add the rest of the parameters.
   FunctionArgs.append(MD->param_begin(), MD->param_end());
@@ -382,7 +385,9 @@ void CodeGenFunction::EmitMustTailThunk(const CXXMethodDecl *MD,
 void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
                                     const CGFunctionInfo &FnInfo,
                                     GlobalDecl GD, const ThunkInfo &Thunk) {
-  StartThunk(Fn, GD, FnInfo);
+  const CXXMethodDecl* OriginalMethod = getTarget().isByteAddressable() ? cast<CXXMethodDecl>(GD.getDecl()) :
+                                                                          Thunk.This.Method;
+  StartThunk(Fn, GD, FnInfo, OriginalMethod);
 
   // Get our callee.
   llvm::Type *Ty =
@@ -402,7 +407,9 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
 
 void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
                                bool ForVTable) {
-  const CGFunctionInfo &FnInfo = CGM.getTypes().arrangeGlobalDeclaration(GD);
+  const CXXMethodDecl* OriginalMethod = Thunk.This.Method;
+  const CGFunctionInfo &FnInfo = CGM.getTypes().arrangeGlobalDeclaration(
+                CGM.getTarget().isByteAddressable()?GD:GD.getWithDecl(OriginalMethod));
 
   // FIXME: re-use FnInfo in this computation.
   llvm::Constant *C = CGM.GetAddrOfThunk(GD, Thunk);
@@ -419,7 +426,7 @@ void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
   // There's already a declaration with the same name, check if it has the same
   // type or if we need to replace it.
   if (Entry->getType()->getElementType() !=
-      CGM.getTypes().GetFunctionTypeForVTable(GD)) {
+      CGM.getTypes().GetFunctionTypeForVTable(CGM.getTarget().isByteAddressable()?GD:GD.getWithDecl(OriginalMethod))) {
     llvm::GlobalValue *OldThunkFn = Entry;
 
     // If the types mismatch then we have to rewrite the definition.

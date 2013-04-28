@@ -1266,7 +1266,7 @@ public:
   /// legal to call this function even if there is no current insertion point.
   void FinishFunction(SourceLocation EndLoc=SourceLocation());
 
-  void StartThunk(llvm::Function *Fn, GlobalDecl GD, const CGFunctionInfo &FnInfo);
+  void StartThunk(llvm::Function *Fn, GlobalDecl GD, const CGFunctionInfo &FnInfo, const CXXMethodDecl* OriginalMethod);
 
   void EmitCallAndReturnForThunk(llvm::Value *Callee, const ThunkInfo *Thunk);
 

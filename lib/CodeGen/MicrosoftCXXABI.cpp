@@ -1545,7 +1545,7 @@ llvm::Function *MicrosoftCXXABI::EmitVirtualMemPtrThunk(
   // Build FunctionArgs, but only include the implicit 'this' parameter
   // declaration.
   FunctionArgList FunctionArgs;
-  buildThisParam(CGF, FunctionArgs);
+  buildThisParam(CGF, FunctionArgs, MD);
 
   // Start defining the function.
   CGF.StartFunction(GlobalDecl(), FnInfo.getReturnType(), ThunkFn, FnInfo,

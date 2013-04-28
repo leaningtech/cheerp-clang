@@ -830,7 +830,7 @@ void CodeGenFunction::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
       ResTy = MD->getThisType(getContext());
     else if (CGM.getCXXABI().hasMostDerivedReturn(GD))
       ResTy = CGM.getContext().VoidPtrTy;
-    CGM.getCXXABI().buildThisParam(*this, Args);
+    CGM.getCXXABI().buildThisParam(*this, Args, MD);
   }
   
   Args.append(FD->param_begin(), FD->param_end());
