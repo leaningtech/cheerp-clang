@@ -321,8 +321,8 @@ llvm::Value *CodeGenFunction::GetAddressOfBaseClass(
 }
 
 unsigned
-CodeGenFunction::ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
-                                     llvm::SmallVector<const CXXBaseSpecifier*, 4>& path) {
+CodeGenModule::ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
+                                   llvm::SmallVector<const CXXBaseSpecifier*, 4>& path) {
   unsigned Offset=0;
   const CXXRecordDecl *RD = DerivedClass;
 
@@ -404,7 +404,7 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
     for (CastExpr::path_const_iterator I = PathBegin; I != PathEnd; ++I)
       path.push_back(*I);
 
-    unsigned BaseIdOffset=ComputeBaseIdOffset(Derived, path);
+    unsigned BaseIdOffset=CGM.ComputeBaseIdOffset(Derived, path);
     Value = GenerateDowncast(Value, Derived, BaseIdOffset);
   }
   else

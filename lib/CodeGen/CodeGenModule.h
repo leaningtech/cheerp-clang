@@ -734,6 +734,9 @@ public:
                                CastExpr::path_const_iterator PathBegin,
                                CastExpr::path_const_iterator PathEnd);
 
+  unsigned ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
+                               llvm::SmallVector<const CXXBaseSpecifier*, 4>& path);
+
   /// A pair of helper functions for a __block variable.
   class ByrefHelpers : public llvm::FoldingSetNode {
   public:
