@@ -419,6 +419,9 @@ void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
   // FIXME: re-use FnInfo in this computation.
   llvm::Constant *C = CGM.GetAddrOfThunk(GD, Thunk);
   llvm::GlobalValue *Entry;
+  
+  if(!byteAddressable)
+    CGM.Error(GD.getDecl()->getLocation(), "Duetto does not support virtual methods yet");
 
   // Strip off a bitcast if we got one back.
   if (llvm::ConstantExpr *CE = dyn_cast<llvm::ConstantExpr>(C)) {
