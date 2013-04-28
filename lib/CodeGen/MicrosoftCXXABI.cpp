@@ -1036,7 +1036,7 @@ llvm::Function *MicrosoftCXXABI::EmitVirtualMemPtrThunk(
 
   // Start codegen.
   CodeGenFunction CGF(CGM);
-  CGF.StartThunk(ThunkFn, MD, FnInfo);
+  CGF.StartThunk(ThunkFn, MD, FnInfo, MD);
 
   // Load the vfptr and then callee from the vftable.  The callee should have
   // adjusted 'this' so that the vfptr is at offset zero.

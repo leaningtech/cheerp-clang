@@ -743,7 +743,7 @@ void CodeGenFunction::GenerateCode(GlobalDecl GD, llvm::Function *Fn,
   if (MD && MD->isInstance()) {
     if (CGM.getCXXABI().HasThisReturn(GD))
       ResTy = MD->getThisType(getContext());
-    CGM.getCXXABI().buildThisParam(*this, Args);
+    CGM.getCXXABI().buildThisParam(*this, Args, MD);
   }
 
   for (unsigned i = 0, e = FD->getNumParams(); i != e; ++i)
