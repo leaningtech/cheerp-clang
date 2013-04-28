@@ -50,7 +50,7 @@ class CodeGenVTables {
   SecondaryVirtualPointerIndicesMapTy SecondaryVirtualPointerIndices;
 
   /// emitThunk - Emit a single thunk.
-  void emitThunk(GlobalDecl GD, const ThunkInfo &Thunk, bool ForVTable);
+  void emitThunk(GlobalDecl GD, ThunkInfo Thunk, bool ForVTable);
 
   /// maybeEmitThunkForVTable - Emit the given thunk for the vtable if needed by
   /// the ABI.

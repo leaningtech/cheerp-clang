@@ -383,7 +383,7 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
   setThunkVisibility(CGM, MD, Thunk, Fn);
 }
 
-void CodeGenVTables::emitThunk(GlobalDecl GD, const ThunkInfo &Thunk,
+void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
                                bool ForVTable) {
   const CGFunctionInfo &FnInfo = CGM.getTypes().arrangeGlobalDeclaration(GD);
 
