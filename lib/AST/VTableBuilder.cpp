@@ -33,6 +33,9 @@ struct BaseOffset {
   /// DerivedClass - The derived class.
   const CXXRecordDecl *DerivedClass;
   
+  /// BaseClass - The base class
+  const CXXRecordDecl *BaseClass;
+
   /// VirtualBase - If the path from the derived class to the base class
   /// involves virtual base classes, this holds the declaration of the last
   /// virtual base in this path (i.e. closest to the base class).
@@ -44,14 +47,20 @@ struct BaseOffset {
   /// class.
   CharUnits NonVirtualOffset;
   
-  BaseOffset() : DerivedClass(0), VirtualBase(0), 
+  BaseOffset() : DerivedClass(0), BaseClass(0), VirtualBase(0), 
     NonVirtualOffset(CharUnits::Zero()) { }
-  BaseOffset(const CXXRecordDecl *DerivedClass,
-             const CXXRecordDecl *VirtualBase, CharUnits NonVirtualOffset)
-    : DerivedClass(DerivedClass), VirtualBase(VirtualBase), 
+  BaseOffset(bool byteAddressable,
+             const CXXRecordDecl *DerivedClass,
+             const CXXRecordDecl *BaseClass,
+             const CXXRecordDecl *VirtualBase = NULL, CharUnits NonVirtualOffset = CharUnits::Zero())
+    // For the byte addressable case we set BaseClass to Derived class so that
+    // is empty will actually ignore them
+    : DerivedClass(DerivedClass), BaseClass(byteAddressable?DerivedClass:BaseClass),
+      VirtualBase(VirtualBase), 
     NonVirtualOffset(NonVirtualOffset) { }
 
-  bool isEmpty() const { return NonVirtualOffset.isZero() && !VirtualBase; }
+  bool isEmpty() const { return NonVirtualOffset.isZero() && !VirtualBase &&
+                                BaseClass==DerivedClass; }
 };
 
 /// FinalOverriders - Contains the final overrider member functions for all
@@ -229,6 +238,8 @@ static BaseOffset ComputeBaseOffset(ASTContext &Context,
     }
   }
   
+  const CXXRecordDecl* BaseClass = NULL;
+
   // Now compute the non-virtual offset.
   for (unsigned I = NonVirtualStart, E = Path.size(); I != E; ++I) {
     const CXXBasePathElement &Element = Path[I];
@@ -237,14 +248,18 @@ static BaseOffset ComputeBaseOffset(ASTContext &Context,
     const ASTRecordLayout &Layout = Context.getASTRecordLayout(Element.Class);
 
     const CXXRecordDecl *Base = Element.Base->getType()->getAsCXXRecordDecl();
+    BaseClass = Base;
 
     NonVirtualOffset += Layout.getBaseClassOffset(Base);
   }
+  if(!BaseClass)
+    BaseClass = VirtualBase;
   
   // FIXME: This should probably use CharUnits or something. Maybe we should
   // even change the base offsets in ASTRecordLayout to be specified in 
   // CharUnits.
-  return BaseOffset(DerivedRD, VirtualBase, NonVirtualOffset);
+  return BaseOffset(Context.getTargetInfo().isByteAddressable(),
+                 DerivedRD, BaseClass, VirtualBase, NonVirtualOffset);
   
 }
 
@@ -279,7 +294,7 @@ ComputeReturnAdjustmentBaseOffset(ASTContext &Context,
   
   if (CanDerivedReturnType == CanBaseReturnType) {
     // No adjustment needed.
-    return BaseOffset();
+    return BaseOffset(false, NULL, NULL);
   }
   
   if (isa<ReferenceType>(CanDerivedReturnType)) {
@@ -302,7 +317,7 @@ ComputeReturnAdjustmentBaseOffset(ASTContext &Context,
   if (CanDerivedReturnType.getUnqualifiedType() == 
       CanBaseReturnType.getUnqualifiedType()) {
     // No adjustment needed.
-    return BaseOffset();
+    return BaseOffset(false, NULL, NULL);
   }
   
   const CXXRecordDecl *DerivedRD = 
@@ -1199,7 +1214,8 @@ void VTableBuilder::ComputeThisAdjustments() {
 }
 
 ReturnAdjustment VTableBuilder::ComputeReturnAdjustment(BaseOffset Offset) {
-  ReturnAdjustment Adjustment;
+  ReturnAdjustment Adjustment(Context.getTargetInfo().isByteAddressable(),
+                           Offset.BaseClass, Offset.DerivedClass);
   
   if (!Offset.isEmpty()) {
     if (Offset.VirtualBase) {
@@ -1218,6 +1234,8 @@ ReturnAdjustment VTableBuilder::ComputeReturnAdjustment(BaseOffset Offset) {
     Adjustment.NonVirtual = Offset.NonVirtualOffset.getQuantity();
   }
   
+  Adjustment.AdjustmentSource = Offset.DerivedClass;
+  Adjustment.AdjustmentTarget = Offset.BaseClass;
   return Adjustment;
 }
 
@@ -1275,7 +1293,7 @@ VTableBuilder::ComputeThisAdjustment(const CXXMethodDecl *MD,
                                      FinalOverriders::OverriderInfo Overrider) {
   // Ignore adjustments for pure virtual member functions.
   if (Overrider.Method->isPure())
-    return ThisAdjustment();
+    return ThisAdjustment(Context.getTargetInfo().isByteAddressable(), NULL, NULL);
   
   BaseSubobject OverriddenBaseSubobject(MD->getParent(), 
                                         BaseOffsetInLayoutClass);
@@ -1286,11 +1304,13 @@ VTableBuilder::ComputeThisAdjustment(const CXXMethodDecl *MD,
   // Compute the adjustment offset.
   BaseOffset Offset = ComputeThisAdjustmentBaseOffset(OverriddenBaseSubobject,
                                                       OverriderBaseSubobject);
-  if (Offset.isEmpty())
-    return ThisAdjustment();
+  ThisAdjustment Adjustment(Context.getTargetInfo().isByteAddressable(), OverriderBaseSubobject.getBase(),
+                          OverriddenBaseSubobject.getBase());
+  Adjustment.Method = MD;
 
-  ThisAdjustment Adjustment;
-  
+  if (Offset.isEmpty())
+    return Adjustment;
+
   if (Offset.VirtualBase) {
     // Get the vcall offset map for this virtual base.
     VCallOffsetMap &VCallOffsets = VCallOffsetsForVBases[Offset.VirtualBase];
@@ -2808,7 +2828,7 @@ void VFTableBuilder::AddMethods(BaseSubobject Base, unsigned BaseDepth,
 
     FinalOverriders::OverriderInfo Overrider =
         Overriders.getOverrider(MD, Base.getBaseOffset());
-    ThisAdjustment ThisAdjustmentOffset;
+    ThisAdjustment ThisAdjustmentOffset(Context.getTargetInfo().isByteAddressable(), MostDerivedClass, RD);
 
     // Check if this virtual member function overrides
     // a method in one of the visited bases.
@@ -2893,7 +2913,9 @@ void VFTableBuilder::AddMethods(BaseSubobject Base, unsigned BaseDepth,
     // Check if this overrider needs a return adjustment.
     // We don't want to do this for pure virtual member functions.
     BaseOffset ReturnAdjustmentOffset;
-    ReturnAdjustment ReturnAdjustment;
+    ReturnAdjustment ReturnAdjustment(Context.getTargetInfo().isByteAddressable(),
+                                   ReturnAdjustmentOffset.DerivedClass,
+                                   ReturnAdjustmentOffset.BaseClass);
     if (!OverriderMD->isPure()) {
       ReturnAdjustmentOffset =
           ComputeReturnAdjustmentBaseOffset(Context, OverriderMD, MD);

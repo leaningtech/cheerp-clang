@@ -34,6 +34,9 @@ enum CXXDtorType {
     Dtor_Base      ///< Base object dtor
 };
 
+class CXXRecordDecl;
+class CXXMethodDecl;
+
 /// \brief A return adjustment.
 struct ReturnAdjustment {
   /// \brief The non-virtual adjustment from the derived object to its
@@ -44,14 +47,23 @@ struct ReturnAdjustment {
   /// of the virtual base class offset.
   int64_t VBaseOffsetOffset;
   
-  ReturnAdjustment() : NonVirtual(0), VBaseOffsetOffset(0) { }
+  const CXXRecordDecl* AdjustmentTarget;
+  const CXXRecordDecl* AdjustmentSource;
+
+  ReturnAdjustment(bool byteAddressable, const CXXRecordDecl* t, const CXXRecordDecl* s) :
+        NonVirtual(0), VBaseOffsetOffset(0), AdjustmentTarget(byteAddressable?NULL:t),
+        AdjustmentSource(byteAddressable?NULL:s) { }
   
-  bool isEmpty() const { return !NonVirtual && !VBaseOffsetOffset; }
+  bool isEmpty() const { return !NonVirtual && !VBaseOffsetOffset &&
+            AdjustmentSource==AdjustmentTarget; }
 
   friend bool operator==(const ReturnAdjustment &LHS, 
                          const ReturnAdjustment &RHS) {
     return LHS.NonVirtual == RHS.NonVirtual && 
-      LHS.VBaseOffsetOffset == RHS.VBaseOffsetOffset;
+      LHS.VBaseOffsetOffset == RHS.VBaseOffsetOffset &&
+      //Those are all NULL in the byte addressable case
+      LHS.AdjustmentSource == RHS.AdjustmentSource && 
+      LHS.AdjustmentTarget == RHS.AdjustmentTarget;
   }
 
   friend bool operator<(const ReturnAdjustment &LHS,
@@ -74,14 +86,24 @@ struct ThisAdjustment {
   /// of the virtual call offset.
   int64_t VCallOffsetOffset;
   
-  ThisAdjustment() : NonVirtual(0), VCallOffsetOffset(0) { }
+  const CXXRecordDecl* AdjustmentTarget;
+  const CXXRecordDecl* AdjustmentSource;
+  const CXXMethodDecl* Method;
 
-  bool isEmpty() const { return !NonVirtual && !VCallOffsetOffset; }
+  ThisAdjustment(bool byteAddressable, const CXXRecordDecl* t, const CXXRecordDecl* s) :
+        NonVirtual(0), VCallOffsetOffset(0), AdjustmentTarget(byteAddressable?NULL:t),
+        AdjustmentSource(byteAddressable?NULL:s), Method(0){ }
+
+  bool isEmpty() const { return !NonVirtual && !VCallOffsetOffset &&
+            AdjustmentSource==AdjustmentTarget; }
 
   friend bool operator==(const ThisAdjustment &LHS, 
                          const ThisAdjustment &RHS) {
     return LHS.NonVirtual == RHS.NonVirtual && 
-      LHS.VCallOffsetOffset == RHS.VCallOffsetOffset;
+      LHS.VCallOffsetOffset == RHS.VCallOffsetOffset &&
+      //Those are all NULL in the byte addressable case
+      LHS.AdjustmentSource == RHS.AdjustmentSource &&
+      LHS.AdjustmentTarget == RHS.AdjustmentTarget;
   }
   
   friend bool operator<(const ThisAdjustment &LHS,
@@ -103,7 +125,7 @@ struct ThunkInfo {
   /// \brief The return adjustment.
   ReturnAdjustment Return;
 
-  ThunkInfo() { }
+  ThunkInfo() : This(false,0,0), Return(false, 0, 0) { }
 
   ThunkInfo(const ThisAdjustment &This, const ReturnAdjustment &Return)
     : This(This), Return(Return) { }
