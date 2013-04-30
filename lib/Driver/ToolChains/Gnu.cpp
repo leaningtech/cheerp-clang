@@ -1954,6 +1954,7 @@ bool Generic_GCC::GCCInstallationDetector::getBiarchSibling(Multilib &M) const {
       BiarchTripleAliases.append(begin(X86Triples), end(X86Triples));
     }
     break;
+  case llvm::Triple::duetto:
   case llvm::Triple::x86:
     LibDirs.append(begin(X86LibDirs), end(X86LibDirs));
     // MCU toolchain is 32 bit only and its triple alias is TargetTriple
@@ -2045,6 +2046,9 @@ bool Generic_GCC::GCCInstallationDetector::getBiarchSibling(Multilib &M) const {
   case llvm::Triple::systemz:
     LibDirs.append(begin(SystemZLibDirs), end(SystemZLibDirs));
     TripleAliases.append(begin(SystemZTriples), end(SystemZTriples));
+    break;
+  case llvm::Triple::cheerp:
+    MultiarchIncludeDirs = CheerpMultiarchIncludeDirs;
     break;
   default:
     // By default, just rely on the standard lib directories and the original
