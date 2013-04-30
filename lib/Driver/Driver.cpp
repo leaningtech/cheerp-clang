@@ -1998,6 +1998,12 @@ static llvm::Triple computeTargetTriple(StringRef DefaultTargetTriple,
       Target.setArch(AT);
   }
 
+  if (Target.getArch() == llvm::Triple::duetto)
+  {
+    //HACK: We need to fake the OS as Linux to find C++ headers
+    Target.setOS(llvm::Triple::Linux);
+  }
+
   return Target;
 }
 

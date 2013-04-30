@@ -6436,6 +6436,55 @@ const Builtin::Info XCoreTargetInfo::BuiltinInfo[] = {
 };
 } // end anonymous namespace.
 
+namespace {
+// Duetto base class
+class DuettoTargetInfo : public TargetInfo {
+public:
+  DuettoTargetInfo(const llvm::Triple &triple) : TargetInfo(triple) {
+    DescriptionString = "e-p:32:8-i16:8-i32:8-"
+                        "i64:8-f32:8-f64:8-"
+                        "a:0:8-f80:8-n8:8:8-S8";
+    BigEndian = false;
+  }
+
+  virtual void getTargetBuiltins(const Builtin::Info *&Records,
+                                 unsigned &NumRecords) const {
+    // FIXME: Implement.
+    Records = 0;
+    NumRecords = 0;
+  }
+
+  virtual void getTargetDefines(const LangOptions &Opts,
+                                MacroBuilder &Builder) const {
+    // Target identification.
+    Builder.defineMacro("__DUETTO__");
+  }
+
+  virtual BuiltinVaListKind getBuiltinVaListKind() const {
+    return TargetInfo::CharPtrBuiltinVaList;
+  }
+
+  virtual void getGCCRegNames(const char * const *&Names,
+                              unsigned &NumNames) const
+  {
+    Names = 0;
+    NumNames = 0;
+  }
+  virtual void getGCCRegAliases(const GCCRegAlias *&Aliases,
+                                unsigned &NumAliases) const {
+    Aliases = 0;
+    NumAliases = 0;
+  }
+
+  virtual bool validateAsmConstraint(const char *&Name,
+                                     TargetInfo::ConstraintInfo &Info) const {
+    return false;
+  }
+  virtual const char *getClobbers() const {
+    return "";
+  }
+};
+} // end anonymous namespace.
 
 //===----------------------------------------------------------------------===//
 // Driver code
@@ -6447,6 +6496,9 @@ static TargetInfo *AllocateTarget(const llvm::Triple &Triple) {
   switch (Triple.getArch()) {
   default:
     return nullptr;
+
+  case llvm::Triple::duetto:
+    return new LinuxTargetInfo<DuettoTargetInfo>(Triple);
 
   case llvm::Triple::xcore:
     return new XCoreTargetInfo(Triple);
