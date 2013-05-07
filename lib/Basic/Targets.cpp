@@ -5149,6 +5149,7 @@ public:
     FloatAlign = 8;
     DoubleAlign = 8;
     LongDoubleAlign = 8;
+    SizeType = UnsignedInt;
   }
 
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
