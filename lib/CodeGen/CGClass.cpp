@@ -337,6 +337,9 @@ CodeGenModule::ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
       // Get the layout.
       const CGRecordLayout &Layout = getTypes().getCGRecordLayout(RD);
       unsigned baseId = Layout.getNonVirtualBaseLLVMFieldNo(BaseDecl);
+      // Decrease by one if our own vtable is in front
+      if(DerivedClass->isDynamicClass())
+        baseId--;
       Offset += Layout.getTotalOffsetToBase(baseId);
     }
     RD = BaseDecl;
@@ -2083,6 +2086,7 @@ void CodeGenFunction::PushDestructorCleanup(QualType T, llvm::Value *Addr) {
 
 void
 CodeGenFunction::InitializeVTablePointer(BaseSubobject Base, 
+                                         llvm::Value* BaseGEP,
                                          const CXXRecordDecl *NearestVBase,
                                          CharUnits OffsetFromNearestVBase,
                                          const CXXRecordDecl *VTableClass) {
@@ -2115,19 +2119,12 @@ CodeGenFunction::InitializeVTablePointer(BaseSubobject Base,
   }
   
   // Apply the offsets.
-  llvm::Value *VTableField = LoadCXXThis();
+  llvm::Value *VTableField = BaseGEP;
   
   if (!getTarget().isByteAddressable())
-  {
-    if(VTableClass != Base.getBase())
-    {
-      VTableField = GetAddressOfDirectBaseInCompleteClass(VTableField,
-                                                          VTableClass, Base.getBase(),
-                                                          false);
-    }
-  }
+    VTableField = Builder.CreateConstInBoundsGEP2_32(BaseGEP, 0, 0);
   else if (!NonVirtualOffset.isZero() || VirtualOffset)
-    VTableField = ApplyNonVirtualAndVirtualOffset(*this, VTableField, 
+    VTableField = ApplyNonVirtualAndVirtualOffset(*this, BaseGEP, 
                                                   NonVirtualOffset,
                                                   VirtualOffset);
 
@@ -2145,6 +2142,7 @@ CodeGenFunction::InitializeVTablePointer(BaseSubobject Base,
 
 void
 CodeGenFunction::InitializeVTablePointers(BaseSubobject Base, 
+                                          llvm::Value* BaseGEP,
                                           const CXXRecordDecl *NearestVBase,
                                           CharUnits OffsetFromNearestVBase,
                                           bool BaseIsNonVirtualPrimaryBase,
@@ -2154,7 +2152,7 @@ CodeGenFunction::InitializeVTablePointers(BaseSubobject Base,
   // been set.
   if (!BaseIsNonVirtualPrimaryBase) {
     // Initialize the vtable pointer for this base.
-    InitializeVTablePointer(Base, NearestVBase, OffsetFromNearestVBase,
+    InitializeVTablePointer(Base, BaseGEP, NearestVBase, OffsetFromNearestVBase,
                             VTableClass);
   }
   
@@ -2172,6 +2170,7 @@ CodeGenFunction::InitializeVTablePointers(BaseSubobject Base,
     CharUnits BaseOffset;
     CharUnits BaseOffsetFromNearestVBase;
     bool BaseDeclIsNonVirtualPrimaryBase;
+    llvm::Value* SubBase = 0;
 
     if (I.isVirtual()) {
       // Check if we've visited this virtual base before.
@@ -2191,9 +2190,12 @@ CodeGenFunction::InitializeVTablePointers(BaseSubobject Base,
       BaseOffsetFromNearestVBase = 
         OffsetFromNearestVBase + Layout.getBaseClassOffset(BaseDecl);
       BaseDeclIsNonVirtualPrimaryBase = Layout.getPrimaryBase() == BaseDecl;
+      if (!getTarget().isByteAddressable())
+        SubBase = GetAddressOfDirectBaseInCompleteClass(BaseGEP, RD, BaseDecl, false);
     }
     
     InitializeVTablePointers(BaseSubobject(BaseDecl, BaseOffset), 
+                             getTarget().isByteAddressable()?LoadCXXThis():SubBase,
                              I.isVirtual() ? BaseDecl : NearestVBase,
                              BaseOffsetFromNearestVBase,
                              BaseDeclIsNonVirtualPrimaryBase, 
@@ -2209,7 +2211,8 @@ void CodeGenFunction::InitializeVTablePointers(const CXXRecordDecl *RD) {
   // Initialize the vtable pointers for this class and all of its bases.
   VisitedVirtualBasesSetTy VBases;
   InitializeVTablePointers(BaseSubobject(RD, CharUnits::Zero()), 
-                           /*NearestVBase=*/nullptr,
+                           LoadCXXThis(),
+                           /*NearestVBase=*/nullptr, 
                            /*OffsetFromNearestVBase=*/CharUnits::Zero(),
                            /*BaseIsNonVirtualPrimaryBase=*/false, RD, VBases);
 

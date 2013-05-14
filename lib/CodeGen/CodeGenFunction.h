@@ -1291,12 +1291,14 @@ public:
   /// subobject.
   ///
   void InitializeVTablePointer(BaseSubobject Base,
+                               llvm::Value* BaseGEP,
                                const CXXRecordDecl *NearestVBase,
                                CharUnits OffsetFromNearestVBase,
                                const CXXRecordDecl *VTableClass);
 
   typedef llvm::SmallPtrSet<const CXXRecordDecl *, 4> VisitedVirtualBasesSetTy;
   void InitializeVTablePointers(BaseSubobject Base,
+                                llvm::Value* BaseGEP,
                                 const CXXRecordDecl *NearestVBase,
                                 CharUnits OffsetFromNearestVBase,
                                 bool BaseIsNonVirtualPrimaryBase,
