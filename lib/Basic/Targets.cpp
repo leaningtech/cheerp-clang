@@ -5141,6 +5141,7 @@ public:
     BigEndian = false;
     ByteAddressable = false;
     PointerAlign = 8;
+    ShortAlign = 8;
     IntAlign = 8;
     LongAlign = 8;
     LongLongAlign = 8;
