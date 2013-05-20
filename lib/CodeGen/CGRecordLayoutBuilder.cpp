@@ -665,6 +665,9 @@ CGRecordLayoutBuilder::LayoutNonVirtualBases(const CXXRecordDecl *RD,
                                              const ASTRecordLayout &Layout) {
   const CXXRecordDecl *PrimaryBase = Layout.getPrimaryBase();
 
+  firstBaseElement = -1;
+  totalNumberOfBases = 1;
+
   // If we have a primary base, lay it out first.
   if (PrimaryBase) {
     if (!Layout.isPrimaryBaseVirtual()) {
@@ -968,6 +971,18 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
   Builder.Layout(D);
 
   Ty->setBody(Builder.FieldTypes, Builder.Packed);
+
+  // Create metadata with bases range
+  if (Builder.firstBaseElement != -1)
+  {
+    llvm::SmallVector<llvm::Value*, 2> basesRange;
+    basesRange.push_back(llvm::ConstantInt::get(CGM.Int32Ty, Builder.firstBaseElement));
+    basesRange.push_back(llvm::ConstantInt::get(CGM.Int32Ty, Builder.totalNumberOfBases));
+    llvm::MDNode* meta = llvm::MDNode::get(getLLVMContext(), basesRange);
+    llvm::Twine basesMetaName(Ty->getName(),"_bases");
+    llvm::NamedMDNode* basesMeta = TheModule.getOrInsertNamedMetadata(basesMetaName.str());
+    basesMeta->addOperand(meta);
+  }
 
   // If we're in C++, compute the base subobject type.
   llvm::StructType *BaseTy = 0;
