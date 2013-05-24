@@ -1560,6 +1560,10 @@ public:
                                      CastExpr::path_const_iterator PathEnd,
                                      bool NullCheckValue);
 
+  llvm::Value * GenerateUpcast(llvm::Value* Value,
+                               const CXXRecordDecl *Derived,
+                               CastExpr::path_const_iterator PathBegin,
+                               CastExpr::path_const_iterator PathEnd);
   llvm::Value * GenerateDowncast(llvm::Value* Value,
                                  const CXXRecordDecl *Derived,
                                  unsigned BaseIdOffset);
