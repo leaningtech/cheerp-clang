@@ -523,13 +523,21 @@ llvm::Constant *ConstStructBuilder::Finalize(QualType Ty) {
 
   // Pick the type to use.  If the type is layout identical to the ConvertType
   // type then use it, otherwise use whatever the builder produced for us.
+  llvm::Type *ValTy = CGM.getTypes().ConvertType(Ty);
+  if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
+    // It makes sense to make the struct packed if the target one is
+    if (ValSTy->isPacked() && !Packed)
+      ConvertStructToPacked();
+  }
+
   llvm::StructType *STy =
       llvm::ConstantStruct::getTypeForElements(CGM.getLLVMContext(),
                                                Elements, Packed);
-  llvm::Type *ValTy = CGM.getTypes().ConvertType(Ty);
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
     if (ValSTy->isLayoutIdentical(STy))
       STy = ValSTy;
+    else if(!CGM.getTarget().isByteAddressable())
+      CGM.Error(RD->getLocation(), "Explicit braces on subobjects are needed");
   }
 
   llvm::Constant *Result = llvm::ConstantStruct::get(STy, Elements);

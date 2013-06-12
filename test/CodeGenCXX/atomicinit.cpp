@@ -4,10 +4,10 @@
 typedef _Atomic(int) AtomicInt;
 AtomicInt PR22043 = AtomicInt();
 
-// CHECK-DAG: @_ZN7PR180978constant1aE = global { i16, i8 } { i16 1, i8 6 }, align 4
-// CHECK-DAG: @_ZN7PR180978constant1bE = global { i16, i8 } { i16 2, i8 6 }, align 4
-// CHECK-DAG: @_ZN7PR180978constant1cE = global { i16, i8 } { i16 3, i8 6 }, align 4
-// CHECK-DAG: @_ZN7PR180978constant1yE = global { { i16, i8 }, i32 } { { i16, i8 } { i16 4, i8 6 }, i32 5 }, align 4
+// CHECK-DAG: @_ZN7PR180978constant1aE = global <{ i16, i8 }> <{ i16 1, i8 6 }>, align 4
+// CHECK-DAG: @_ZN7PR180978constant1bE = global <{ i16, i8 }> <{ i16 2, i8 6 }>, align 4
+// CHECK-DAG: @_ZN7PR180978constant1cE = global <{ i16, i8 }> <{ i16 3, i8 6 }>, align 4
+// CHECK-DAG: @_ZN7PR180978constant1yE = global { <{ i16, i8 }>, i32 } { <{ i16, i8 }> <{ i16 4, i8 6 }>, i32 5 }, align 4
 
 struct A {
   _Atomic(int) i;
