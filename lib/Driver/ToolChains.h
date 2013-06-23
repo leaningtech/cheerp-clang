@@ -639,6 +639,24 @@ protected:
   virtual Tool *buildAssembler() const;
 };
 
+class LLVM_LIBRARY_VISIBILITY Duetto : public ToolChain {
+public:
+  Duetto(const Driver &D, const llvm::Triple& Triple,
+         const llvm::opt::ArgList &Args);
+
+  virtual bool IsUnwindTablesDefault() const;
+  virtual bool isPICDefault() const;
+  virtual bool isPIEDefault() const;
+  virtual bool isPICDefaultForced() const;
+
+  virtual void
+  AddClangSystemIncludeArgs(const llvm::opt::ArgList &DriverArgs,
+                            llvm::opt::ArgStringList &CC1Args) const;
+  virtual void
+  AddClangCXXStdlibIncludeArgs(const llvm::opt::ArgList &DriverArgs,
+                               llvm::opt::ArgStringList &CC1Args) const;
+};
+
 } // end namespace toolchains
 } // end namespace driver
 } // end namespace clang

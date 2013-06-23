@@ -4,6 +4,7 @@ add_clang_library(clangDriver
   Compilation.cpp
   Driver.cpp
   DriverOptions.cpp
+  DuettoToolChain.cpp
   Job.cpp
   Phases.cpp
   Tool.cpp

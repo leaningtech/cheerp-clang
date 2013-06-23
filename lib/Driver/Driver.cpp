@@ -1751,10 +1751,7 @@ static llvm::Triple computeTargetTriple(StringRef DefaultTargetTriple,
   }
 
   if (Target.getArch() == llvm::Triple::duetto)
-  {
-    //HACK: We need to fake the OS as Linux to find C++ headers
-    Target.setOS(llvm::Triple::Linux);
-  }
+    Target.setOS(llvm::Triple::WebBrowser);
 
   return Target;
 }
@@ -1810,6 +1807,9 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
       break;
     case llvm::Triple::Win32:
       TC = new toolchains::Windows(*this, Target, Args);
+      break;
+    case llvm::Triple::WebBrowser:
+      TC = new toolchains::Duetto(*this, Target, Args);
       break;
     case llvm::Triple::MinGW32:
       // FIXME: We need a MinGW toolchain. Fallthrough for now.
