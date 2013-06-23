@@ -451,10 +451,7 @@ static llvm::Triple computeTargetTriple(const Driver &D,
   }
 
   if (Target.getArch() == llvm::Triple::cheerp)
-  {
-    //HACK: We need to fake the OS as Linux to find C++ headers
-    Target.setOS(llvm::Triple::Linux);
-  }
+    Target.setOS(llvm::Triple::WebBrowser);
 
   return Target;
 }
@@ -3880,6 +3877,9 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
       break;
     case llvm::Triple::Contiki:
       TC = llvm::make_unique<toolchains::Contiki>(*this, Target, Args);
+      break;
+    case llvm::Triple::WebBrowser:
+      TC = new toolchains::Cheerp(*this, Target, Args);
       break;
     default:
       // Of these targets, Hexagon is the only one that might have

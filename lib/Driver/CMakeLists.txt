@@ -15,6 +15,7 @@ add_clang_library(clangDriver
   Distro.cpp
   Driver.cpp
   DriverOptions.cpp
+  DuettoToolChain.cpp
   Job.cpp
   Multilib.cpp
   Phases.cpp
