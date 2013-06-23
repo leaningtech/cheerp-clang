@@ -1999,10 +1999,7 @@ static llvm::Triple computeTargetTriple(StringRef DefaultTargetTriple,
   }
 
   if (Target.getArch() == llvm::Triple::duetto)
-  {
-    //HACK: We need to fake the OS as Linux to find C++ headers
-    Target.setOS(llvm::Triple::Linux);
-  }
+    Target.setOS(llvm::Triple::WebBrowser);
 
   return Target;
 }
@@ -2073,6 +2070,9 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
         TC = new toolchains::MSVCToolChain(*this, Target, Args);
         break;
       }
+      break;
+    case llvm::Triple::WebBrowser:
+      TC = new toolchains::Duetto(*this, Target, Args);
       break;
     default:
       // TCE is an OSless target
