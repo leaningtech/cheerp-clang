@@ -5697,7 +5697,7 @@ static TargetInfo *AllocateTarget(const llvm::Triple &Triple) {
     return NULL;
 
   case llvm::Triple::duetto:
-    return new LinuxTargetInfo<DuettoTargetInfo>(Triple);
+    return new DuettoTargetInfo(Triple);
 
   case llvm::Triple::xcore:
     return new XCoreTargetInfo(Triple);
