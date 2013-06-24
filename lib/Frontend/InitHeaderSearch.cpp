@@ -462,6 +462,7 @@ void InitHeaderSearch::AddDefaultIncludePaths(const LangOptions &Lang,
     break; // Everything else continues to use this routine's logic.
 
   case llvm::Triple::Linux:
+  case llvm::Triple::WebBrowser:
     return;
 
   case llvm::Triple::Win32:
