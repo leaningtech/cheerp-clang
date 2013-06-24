@@ -5204,7 +5204,7 @@ static TargetInfo *AllocateTarget(const llvm::Triple &Triple) {
     return NULL;
 
   case llvm::Triple::duetto:
-    return new LinuxTargetInfo<DuettoTargetInfo>(Triple);
+    return new DuettoTargetInfo(Triple);
 
   case llvm::Triple::hexagon:
     return new HexagonTargetInfo(Triple);
