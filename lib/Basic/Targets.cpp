@@ -5164,6 +5164,9 @@ public:
                                 MacroBuilder &Builder) const {
     // Target identification.
     Builder.defineMacro("__DUETTO__");
+
+    if (Opts.CPlusPlus)
+      Builder.defineMacro("_GNU_SOURCE");
   }
 
   virtual BuiltinVaListKind getBuiltinVaListKind() const {
