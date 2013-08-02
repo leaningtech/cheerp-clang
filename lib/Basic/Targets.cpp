@@ -5135,11 +5135,20 @@ namespace {
 class DuettoTargetInfo : public TargetInfo {
 public:
   DuettoTargetInfo(const llvm::Triple &triple) : TargetInfo(triple) {
-    DescriptionString = "b-e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-"
-                        "i64:32:64-f32:32:32-f64:32:64-v64:64:64-v128:128:128-"
-                        "a0:0:64-f80:32:32-n8:16:32-S128";
+    DescriptionString = "b-e-p:32:8:8-i1:8:8-i8:8:8-i16:8:8-i32:8:8-"
+                        "i64:8:8-f32:8:8-f64:8:8-v64:8:8-v128:8:8-"
+                        "a0:0:8-f80:8:8-n8:8:8-S8";
     BigEndian = false;
     ByteAddressable = false;
+    PointerAlign = 8;
+    IntAlign = 8;
+    LongAlign = 8;
+    LongLongAlign = 8;
+    SuitableAlign = 8;
+    HalfAlign = 8;
+    FloatAlign = 8;
+    DoubleAlign = 8;
+    LongDoubleAlign = 8;
   }
 
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
