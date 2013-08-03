@@ -973,7 +973,7 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
   Ty->setBody(Builder.FieldTypes, Builder.Packed);
 
   // Create metadata with bases range
-  if (Builder.firstBaseElement != -1)
+  if (Builder.firstBaseElement != 0xffffffff)
   {
     llvm::SmallVector<llvm::Value*, 2> basesRange;
     basesRange.push_back(llvm::ConstantInt::get(CGM.Int32Ty, Builder.firstBaseElement));

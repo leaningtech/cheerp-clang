@@ -69,7 +69,7 @@ static unsigned ComputeTopologicalBaseOffset(CodeGenModule &CGM,
   const CXXBasePath& p=*it;
   assert((++it)==Paths.end());
   llvm::SmallVector<const CXXBaseSpecifier*, 4> path;
-  for(int i=0;i<p.size();i++)
+  for(unsigned i=0;i<p.size();i++)
 	path.push_back(p[i].Base);
 
   return CGM.ComputeBaseIdOffset(AdjustmentTarget, path);
