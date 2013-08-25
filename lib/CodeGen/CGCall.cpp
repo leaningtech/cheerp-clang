@@ -2682,7 +2682,7 @@ static llvm::Value *tryRemoveRetainOfSelf(CodeGenFunction &CGF,
 
   // Look for a retain call.
   llvm::CallInst *retainCall =
-    dyn_cast<llvm::CallInst>(result->stripPointerCastsSafe());
+    dyn_cast<llvm::CallInst>(result->stripPointerCasts(CGF.getTarget().isByteAddressable()));
   if (!retainCall ||
       retainCall->getCalledValue() != CGF.CGM.getObjCEntrypoints().objc_retain)
     return nullptr;
