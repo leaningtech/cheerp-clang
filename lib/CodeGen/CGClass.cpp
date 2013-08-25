@@ -1172,6 +1172,8 @@ namespace {
     bool isMemberInitMemcpyable(CXXCtorInitializer *MemberInit) const {
       if (!MemcpyableCtor)
         return false;
+      if (!CGF.getTarget().isByteAddressable())
+        return false;
       FieldDecl *Field = MemberInit->getMember();
       assert(Field && "No field for member init.");
       QualType FieldType = Field->getType();
