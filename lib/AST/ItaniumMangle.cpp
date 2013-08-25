@@ -647,6 +647,8 @@ void CXXNameMangler::mangle(const NamedDecl *D) {
     mangleName(VD);
   else if (const IndirectFieldDecl *IFD = dyn_cast<IndirectFieldDecl>(D))
     mangleName(IFD->getAnonField());
+  else if (const RecordDecl *RD = dyn_cast<RecordDecl>(D))
+    mangleName(RD);
   else
     mangleName(cast<FieldDecl>(D));
 }
@@ -4855,7 +4857,7 @@ bool CXXNameMangler::shouldHaveAbiTags(ItaniumMangleContextImpl &C,
 /// name.
 void ItaniumMangleContextImpl::mangleCXXName(const NamedDecl *D,
                                              raw_ostream &Out) {
-  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D)) &&
+  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D) || isa<RecordDecl>(D)) &&
           "Invalid mangleName() call, argument is not a variable or function!");
   assert(!isa<CXXConstructorDecl>(D) && !isa<CXXDestructorDecl>(D) &&
          "Invalid mangleName() call on 'structor decl!");
