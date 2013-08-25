@@ -29,7 +29,7 @@ A c { 1, 0, 'A', f(), { 3 } };
 
 // @b has a constant initializer
 // CHECK: @[[STR_B:.*]] = {{.*}} [8 x i8] c"bazquux\00"
-// CHECK: @b = global {{.*}} i32 4, {{.*}} @[[STR_B]], {{.*}} i8 117, i32 42, {{.*}} i8 9
+// CHECK: @b = global {{.*}} i32 4, {{.*}} @[[STR_B]] to {{.*}} i8 117, i32 42, {{.*}} i8 9
 
 B x;
 B y {};
@@ -66,4 +66,4 @@ B z { 1 };
 // CHECK: call void @_ZN1BC1Ev({{.*}} @x)
 
 // CHECK: call i32 @_ZN1B1fEv({{.*}} @y)
-// CHECK: store i32 %{{.*}}, i32* getelementptr inbounds ({{.*}} @y, i32 0, i32 0)
+// CHECK: store i32 %{{.*}}, i32* bitcast ({{.*}} @y to i32*)

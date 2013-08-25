@@ -5,10 +5,10 @@
 
 // CHECK: @align = global i8 [[ALIGN:[0-9]+]]
 // CHECK: @.str = private unnamed_addr constant [6 x i8] c"hello\00"
-// CHECK: @f1.x = internal global i8* getelementptr inbounds ([6 x i8]* @.str, i32 0, i32 0)
+// CHECK: @f1.x = internal global i8* bitcast ([6 x i8]* @.str to i8*)
 // CHECK: @f2.x = internal global [6 x i8] c"hello\00", align [[ALIGN]]
 // CHECK: @f3.x = internal global [8 x i8] c"hello\00\00\00", align [[ALIGN]]
-// CHECK: @f4.x = internal global %struct.s { i8* getelementptr inbounds ([6 x i8]* @.str, i32 0, i32 0) }
+// CHECK: @f4.x = internal global %struct.s { i8* bitcast ([6 x i8]* @.str to i8*) }
 // CHECK: @x = global [3 x i8] c"ola", align [[ALIGN]]
 
 #if defined(__s390x__)

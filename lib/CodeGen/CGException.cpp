@@ -262,7 +262,7 @@ static llvm::Constant *getOpaquePersonalityFn(CodeGenModule &CGM,
 
 /// Check whether a personality function could reasonably be swapped
 /// for a C++ personality function.
-static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn) {
+static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn, bool byteAddressable) {
   for (llvm::Constant::use_iterator
          I = Fn->use_begin(), E = Fn->use_end(); I != E; ++I) {
     llvm::User *User = *I;
@@ -270,7 +270,7 @@ static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn) {
     // Conditionally white-list bitcasts.
     if (llvm::ConstantExpr *CE = dyn_cast<llvm::ConstantExpr>(User)) {
       if (CE->getOpcode() != llvm::Instruction::BitCast) return false;
-      if (!PersonalityHasOnlyCXXUses(CE))
+      if (!PersonalityHasOnlyCXXUses(CE, byteAddressable))
         return false;
       continue;
     }
@@ -282,7 +282,7 @@ static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn) {
     for (unsigned I = 0, E = LPI->getNumClauses(); I != E; ++I) {
       // Look for something that would've been returned by the ObjC
       // runtime's GetEHType() method.
-      llvm::Value *Val = LPI->getClause(I)->stripPointerCasts();
+      llvm::Value *Val = LPI->getClause(I)->stripPointerCasts(byteAddressable);
       if (LPI->isCatch(I)) {
         // Check if the catch value has the ObjC prefix.
         if (llvm::GlobalVariable *GV = dyn_cast<llvm::GlobalVariable>(Val))
@@ -296,7 +296,7 @@ static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn) {
         for (llvm::User::op_iterator
                II = CVal->op_begin(), IE = CVal->op_end(); II != IE; ++II) {
           if (llvm::GlobalVariable *GV =
-              cast<llvm::GlobalVariable>((*II)->stripPointerCasts()))
+              cast<llvm::GlobalVariable>((*II)->stripPointerCasts(byteAddressable)))
             // ObjC EH selector entries are always global variables with
             // names starting like this.
             if (GV->getName().startswith("OBJC_EHTYPE"))
@@ -337,7 +337,7 @@ void CodeGenModule::SimplifyPersonality() {
   if (!Fn || Fn->use_empty()) return;
   
   // Can't do the optimization if it has non-C++ uses.
-  if (!PersonalityHasOnlyCXXUses(Fn)) return;
+  if (!PersonalityHasOnlyCXXUses(Fn, getTarget().isByteAddressable())) return;
 
   // Create the C++ personality function and kill off the old
   // function.

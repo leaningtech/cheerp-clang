@@ -2254,7 +2254,7 @@ static void configureBlocksRuntimeObject(CodeGenModule &CGM,
                                          llvm::Constant *C) {
   if (!CGM.getLangOpts().BlocksRuntimeOptional) return;
 
-  llvm::GlobalValue *GV = cast<llvm::GlobalValue>(C->stripPointerCasts());
+  llvm::GlobalValue *GV = cast<llvm::GlobalValue>(C->stripPointerCasts(CGM.getTarget().isByteAddressable()));
   if (GV->isDeclaration() &&
       GV->getLinkage() == llvm::GlobalValue::ExternalLinkage)
     GV->setLinkage(llvm::GlobalValue::ExternalWeakLinkage);

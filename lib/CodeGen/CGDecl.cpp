@@ -296,7 +296,7 @@ void CodeGenFunction::EmitStaticVarDecl(const VarDecl &D,
 
   llvm::GlobalVariable *var;
   if (addr) {
-    var = cast<llvm::GlobalVariable>(addr->stripPointerCasts());
+    var = cast<llvm::GlobalVariable>(addr->stripPointerCasts(getTarget().isByteAddressable()));
   } else {
     addr = var = CreateStaticVarDecl(D, ".", Linkage);
   }
