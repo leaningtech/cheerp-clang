@@ -1899,6 +1899,10 @@ void RecordLayoutBuilder::LayoutBitField(const FieldDecl *D) {
   if (ExternalLayout)
     FieldOffset = updateExternalFieldOffset(D, FieldOffset);
 
+  //Duetto: We must fit inside the unfilled space, otherwise we need to allocate a new slot
+  bool byteAddressable = Context.getTargetInfo().isByteAddressable();
+  if (!byteAddressable && FieldSize > UnfilledBitsInLastUnit)
+    FieldOffset += UnfilledBitsInLastUnit;
   // Place this field at the current location.
   FieldOffsets.push_back(FieldOffset);
 
@@ -1929,7 +1933,9 @@ void RecordLayoutBuilder::LayoutBitField(const FieldDecl *D) {
       LastBitfieldTypeSize = TypeSize;
     } else {
       uint64_t NewSizeInBits = FieldOffset + FieldSize;
-      uint64_t BitfieldAlignment = Context.getTargetInfo().getCharAlign();
+      //Duetto: This should be more generic. On JS the atomic allocation is a 32 bit int
+      uint64_t BitfieldAlignment = byteAddressable ? Context.getTargetInfo().getCharAlign():
+                                      Context.getTargetInfo().getIntWidth();
       setDataSize(llvm::RoundUpToAlignment(NewSizeInBits, BitfieldAlignment));
       UnfilledBitsInLastUnit = getDataSizeInBits() - NewSizeInBits;
       LastBitfieldTypeSize = 0;

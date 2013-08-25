@@ -279,6 +279,8 @@ bool CGRecordLayoutBuilder::LayoutBitfields(const ASTRecordLayout &Layout,
   uint64_t NextFieldOffsetInBits = Types.getContext().toBits(NextFieldOffset);
 
   unsigned CharAlign = Types.getTarget().getCharAlign();
+  unsigned BitFieldAlign = Types.getTarget().isByteAddressable()?CharAlign:
+                                 Types.getTarget().getIntWidth();
   assert(FirstFieldOffset % CharAlign == 0 &&
          "First field offset is misaligned");
   CharUnits FirstFieldOffsetInBytes
@@ -313,7 +315,11 @@ bool CGRecordLayoutBuilder::LayoutBitfields(const ASTRecordLayout &Layout,
        (FJ != FE && (*FJ)->isBitField() &&
         NextContiguousFieldOffset == Layout.getFieldOffset(LastFieldNo) &&
         (*FJ)->getBitWidthValue(Types.getContext()) != 0); FI = FJ++) {
-    NextContiguousFieldOffset += (*FJ)->getBitWidthValue(Types.getContext());
+    uint64_t bitWidth = (*FJ)->getBitWidthValue(Types.getContext());
+    //Duetto: 32 should not be hardcoded
+    if (!Types.getTarget().isByteAddressable() && (NextContiguousFieldOffset - FirstFieldOffset + bitWidth) > 32)
+      break;
+    NextContiguousFieldOffset += bitWidth;
     ++LastFieldNo;
 
     // We must use packed structs for packed fields, and also unnamed bit
@@ -332,7 +338,7 @@ bool CGRecordLayoutBuilder::LayoutBitfields(const ASTRecordLayout &Layout,
   uint64_t LastFieldSize = LastFD->getBitWidthValue(Types.getContext());
   uint64_t TotalBits = (LastFieldOffset + LastFieldSize) - FirstFieldOffset;
   CharUnits StorageBytes = Types.getContext().toCharUnitsFromBits(
-    llvm::RoundUpToAlignment(TotalBits, CharAlign));
+    llvm::RoundUpToAlignment(TotalBits, BitFieldAlign));
   uint64_t StorageBits = Types.getContext().toBits(StorageBytes);
 
   // Grow the storage to encompass any known padding in the layout when doing
@@ -365,7 +371,13 @@ bool CGRecordLayoutBuilder::LayoutBitfields(const ASTRecordLayout &Layout,
   }
 
   unsigned FieldIndex = FieldTypes.size();
-  AppendBytes(StorageBytes);
+  if(Types.getTarget().isByteAddressable())
+    AppendBytes(StorageBytes);
+  else
+  {
+    assert(StorageBytes.getQuantity() == 4);
+    AppendField(NextFieldOffset, Types.CGM.Int32Ty);
+  }
 
   // Now walk the bitfields associating them with this field of storage and
   // building up the bitfield specific info.
