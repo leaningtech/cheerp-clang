@@ -2140,20 +2140,29 @@ CodeGenFunction::InitializeVTablePointer(BaseSubobject Base,
   llvm::Value *VTableField = BaseGEP;
   
   if (!getTarget().isByteAddressable())
+  {
     VTableField = Builder.CreateConstInBoundsGEP2_32(BaseGEP, 0, 0);
-  else if (!NonVirtualOffset.isZero() || VirtualOffset)
-    VTableField = ApplyNonVirtualAndVirtualOffset(*this, BaseGEP, 
-                                                  NonVirtualOffset,
-                                                  VirtualOffset);
+    llvm::Type *VTableFieldElemTy = VTableField->getType()->getPointerElementType();
+    //To be more type safe convert the table to the right type
+    VTableAddressPoint = Builder.CreateBitCast(VTableAddressPoint, VTableFieldElemTy);
+  }
+  else
+  {
+     if (!NonVirtualOffset.isZero() || VirtualOffset) {
+      VTableField = ApplyNonVirtualAndVirtualOffset(*this, VTableField, 
+                                                    NonVirtualOffset,
+                                                    VirtualOffset);
+    }
+    llvm::Type *VTablePtrTy =
+        llvm::FunctionType::get(CGM.Int32Ty, /*isVarArg=*/true)
+            ->getPointerTo()
+            ->getPointerTo();
+    VTableField = Builder.CreateBitCast(VTableField, VTablePtrTy->getPointerTo());
+    VTableAddressPoint = Builder.CreateBitCast(VTableAddressPoint, VTablePtrTy);
+  }
 
   // Finally, store the address point. Use the same LLVM types as the field to
   // support optimization.
-  llvm::Type *VTablePtrTy =
-      llvm::FunctionType::get(CGM.Int32Ty, /*isVarArg=*/true)
-          ->getPointerTo()
-          ->getPointerTo();
-  VTableField = Builder.CreateBitCast(VTableField, VTablePtrTy->getPointerTo());
-  VTableAddressPoint = Builder.CreateBitCast(VTableAddressPoint, VTablePtrTy);
   llvm::StoreInst *Store = Builder.CreateStore(VTableAddressPoint, VTableField);
   CGM.DecorateInstruction(Store, CGM.getTBAAInfoForVTablePtr());
 }
