@@ -468,6 +468,8 @@ void CXXNameMangler::mangle(const NamedDecl *D, StringRef Prefix) {
     mangleFunctionEncoding(FD);
   else if (const VarDecl *VD = dyn_cast<VarDecl>(D))
     mangleName(VD);
+  else if (const RecordDecl *RD = dyn_cast<RecordDecl>(D))
+    mangleName(RD);
   else
     mangleName(cast<FieldDecl>(D));
 }
@@ -3614,7 +3616,7 @@ void CXXNameMangler::addSubstitution(uintptr_t Ptr) {
 /// name.
 void ItaniumMangleContext::mangleName(const NamedDecl *D,
                                       raw_ostream &Out) {
-  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D)) &&
+  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D) || isa<RecordDecl>(D)) &&
           "Invalid mangleName() call, argument is not a variable or function!");
   assert(!isa<CXXConstructorDecl>(D) && !isa<CXXDestructorDecl>(D) &&
          "Invalid mangleName() call on 'structor decl!");
