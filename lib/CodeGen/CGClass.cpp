@@ -2171,22 +2171,37 @@ void CodeGenFunction::InitializeVTablePointers(const CXXRecordDecl *RD) {
 
 llvm::Value *CodeGenFunction::GetVTablePtr(llvm::Value *This,
                                            llvm::Type *Ty) {
-  //HACK: Not really clean, it will iterate until structs are found on the first element
-  SmallVector<llvm::Value*, 4> GEPIndexes;
-  llvm::Type* t=This->getType();
-  assert(t->isPointerTy());
-  GEPIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
-  t=cast<llvm::PointerType>(t)->getElementType();
-  while(t->isStructTy())
+  llvm::Value *VTablePtrSrc;
+  if (!getTarget().isByteAddressable())
   {
+    //HACK: Not really clean, it will iterate until structs are found on the first element
+    SmallVector<llvm::Value*, 4> GEPIndexes;
+    llvm::Type* t=This->getType();
+    assert(t->isPointerTy());
     GEPIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
-    llvm::StructType* st=cast<llvm::StructType>(t);
-    t=st->getElementType(0);
+    t=cast<llvm::PointerType>(t)->getElementType();
+    while(t->isStructTy())
+    {
+      GEPIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+      llvm::StructType* st=cast<llvm::StructType>(t);
+      t=st->getElementType(0);
+    }
+
+    VTablePtrSrc = Builder.CreateGEP(This, GEPIndexes);
   }
-  llvm::Value *VTablePtrSrc = Builder.CreateGEP(This, GEPIndexes);
+  else
+  {
+    //Quickly handle the byte addressable case
+    //NOTE: This can be eliminated wehen padding is fixed and RecordLayoutBuilder
+    //stops creating opaque arrays of chars in place of base classes
+    VTablePtrSrc = Builder.CreateBitCast(This, Ty->getPointerTo());
+  }
   llvm::Instruction *VTable = Builder.CreateLoad(VTablePtrSrc, "vtable");
   CGM.DecorateInstruction(VTable, CGM.getTBAAInfoForVTablePtr());
-  return Builder.CreateBitCast(VTable, Ty);
+
+  if (!getTarget().isByteAddressable())
+    return Builder.CreateBitCast(VTable, Ty);
+  return VTable;
 }
 
 static const CXXRecordDecl *getMostDerivedClassDecl(const Expr *Base) {
