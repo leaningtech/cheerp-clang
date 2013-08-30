@@ -17,7 +17,7 @@ int fn() {
   return s.test();
 }
 
-// CHECK: @_ZTV1S = linkonce_odr unnamed_addr constant [3 x i8*] [i8* null, i8* bitcast ({ i8*, i8*, i8* }* @_ZTI1S to i8*), i8* bitcast (i32 (%struct.S*)* @_ZN1S4testEv to i8*)]
+// CHECK: @_ZTV1S = linkonce_odr unnamed_addr constant [3 x i8*] [i8* null, i8* bitcast ({ i8**, i8*, i8* }* @_ZTI1S to i8*), i8* bitcast (i32 (%struct.S*)* @_ZN1S4testEv to i8*)]
 
 // CHECK-LABEL: define i32 @_Z2fnv()
 // CHECK:   call x86_thiscallcc void @_ZN1SC1Ev(%struct.S* %s)
