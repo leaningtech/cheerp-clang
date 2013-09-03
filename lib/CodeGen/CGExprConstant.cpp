@@ -626,11 +626,16 @@ public:
   }
 
   llvm::Constant *VisitCastExpr(CastExpr* E) {
+    // Quickly handle NULL casts
+    llvm::Type *destType = ConvertType(E->getType());
+    if (E->getCastKind() == CK_NullToPointer)
+    {
+      assert(destType->isPointerTy());
+      return llvm::ConstantPointerNull::get(cast<llvm::PointerType>(destType));
+    }
     Expr *subExpr = E->getSubExpr();
     llvm::Constant *C = CGM.EmitConstantExpr(subExpr, subExpr->getType(), CGF);
     if (!C) return 0;
-
-    llvm::Type *destType = ConvertType(E->getType());
 
     switch (E->getCastKind()) {
     case CK_ToUnion: {
@@ -688,9 +693,90 @@ public:
     case CK_CopyAndAutoreleaseBlockObject:
       return 0;
 
+    case CK_ArrayToPointerDecay: {
+      llvm::Constant* Base = Visit(subExpr);
+      llvm::SmallVector<llvm::Constant*, 2> Idxs;
+      llvm::Constant* Zero = llvm::ConstantInt::get(CGM.Int32Ty, 0);
+      Idxs.push_back(Zero);
+      Idxs.push_back(Zero);
+      return llvm::ConstantExpr::getGetElementPtr(Base, Idxs);
+    }
+
+    case CK_FunctionToPointerDecay: {
+      llvm::Constant* Base = Visit(subExpr);
+      //CodegenModule::GetAddrOfGlobal already returns a pointer to function
+      return llvm::ConstantExpr::getBitCast(Base, destType);
+    }
+
+    case CK_IntegralCast: {
+      llvm::Constant* Src = Visit(subExpr);
+      if (!Src)
+        return 0;
+      const Type* SrcType = subExpr->getType().getTypePtr();
+      const Type* DstType = E->getType().getTypePtr();
+
+      if (SrcType == DstType)
+        return Src;
+
+      llvm::Type *SrcTy = Src->getType();
+      // Handle conversions to bool first, they are special: comparisons against 0.
+      if (DstType->isBooleanType())
+        return 0;
+
+      llvm::Type *DstTy = ConvertType(E->getType());
+
+      // Ignore conversions like int -> uint.
+      if (SrcTy == DstTy)
+        return Src;
+
+      bool InputSigned = SrcType->isSignedIntegerOrEnumerationType();
+      return llvm::ConstantExpr::getIntegerCast(Src, DstTy, InputSigned);
+    }
+
+    case CK_FloatingCast: {
+      llvm::Constant* Src = Visit(subExpr);
+      if (!Src)
+        return 0;
+      const Type* SrcType = subExpr->getType().getTypePtr();
+      const Type* DstType = E->getType().getTypePtr();
+
+      if (SrcType == DstType)
+        return Src;
+
+      llvm::Type *DstTy = ConvertType(E->getType());
+
+      return llvm::ConstantExpr::getFPCast(Src, DstTy);
+    }
+
+    case CK_IntegralToFloating: {
+      llvm::Constant* Base = Visit(subExpr);
+      const Type* SrcType = subExpr->getType().getTypePtr();
+      llvm::Type *DstTy = ConvertType(E->getType());
+
+      if (SrcType->isUnsignedIntegerType())
+        return llvm::ConstantExpr::getUIToFP(Base, DstTy);
+      else
+        return llvm::ConstantExpr::getSIToFP(Base, DstTy);
+    }
+
+    case CK_BitCast: {
+      const QualType& SrcPtrType = subExpr->getType();
+      const QualType& DstPtrType = E->getType();
+
+      if (!SrcPtrType->isPointerType() ||
+          !DstPtrType->isPointerType())
+      {
+        return 0;
+      }
+
+      // TODO: Allow only casts between non numerical types
+      return Visit(subExpr);
+    }
+
+    // Manually handled before
+    case CK_NullToPointer:
     // These don't need to be handled here because Evaluate knows how to
     // evaluate them in the cases where they can be folded.
-    case CK_BitCast:
     case CK_ToVoid:
     case CK_Dynamic:
     case CK_LValueBitCast:
@@ -699,8 +785,6 @@ public:
     case CK_CPointerToObjCPointerCast:
     case CK_BlockPointerToObjCPointerCast:
     case CK_AnyPointerToBlockPointerCast:
-    case CK_ArrayToPointerDecay:
-    case CK_FunctionToPointerDecay:
     case CK_BaseToDerived:
     case CK_DerivedToBase:
     case CK_UncheckedDerivedToBase:
@@ -718,14 +802,10 @@ public:
     case CK_IntegralComplexToFloatingComplex:
     case CK_PointerToIntegral:
     case CK_PointerToBoolean:
-    case CK_NullToPointer:
-    case CK_IntegralCast:
     case CK_IntegralToPointer:
     case CK_IntegralToBoolean:
-    case CK_IntegralToFloating:
     case CK_FloatingToIntegral:
     case CK_FloatingToBoolean:
-    case CK_FloatingCast:
     case CK_ZeroToOCLEvent:
       return 0;
     }
@@ -853,7 +933,7 @@ public:
   }
 
   llvm::Constant *VisitStringLiteral(StringLiteral *E) {
-    return CGM.GetConstantArrayFromStringLiteral(E);
+    return CGM.GetAddrOfConstantStringFromLiteral(E);
   }
 
   llvm::Constant *VisitObjCEncodeExpr(ObjCEncodeExpr *E) {
@@ -873,6 +953,111 @@ public:
   llvm::Constant *VisitUnaryExtension(const UnaryOperator *E) {
     return Visit(E->getSubExpr());
   }
+
+  llvm::Constant *VisitUnaryAddrOf(const UnaryOperator *E) {
+    return Visit(E->getSubExpr());
+  }
+
+  llvm::Constant *VisitUnaryMinus(const UnaryOperator *E) {
+    llvm::Constant* Base = Visit(E->getSubExpr());
+    if (!Base)
+      return 0;
+    if (llvm::ConstantInt::classof(Base))
+      return llvm::ConstantExpr::getNeg(Base);
+    else if (llvm::ConstantFP::classof(Base))
+      return llvm::ConstantExpr::getFNeg(Base);
+    else
+      return 0;
+  }
+
+  llvm::Constant *VisitArraySubscriptExpr(ArraySubscriptExpr *E) {
+    llvm::Constant* Base = Visit(E->getBase());
+    if (!Base)
+      return 0;
+    llvm::Constant* Offset = Visit(E->getIdx());
+    if (!Offset)
+      return 0;
+    return llvm::ConstantExpr::getGetElementPtr(Base, Offset);
+  }
+
+  llvm::Constant *VisitCharacterLiteral(const CharacterLiteral *E) {
+    return llvm::ConstantInt::get(ConvertType(E->getType()), E->getValue());
+  }
+
+  llvm::Constant *VisitIntegerLiteral(const IntegerLiteral *E) {
+    return llvm::Constant::getIntegerValue(CGM.Int32Ty, E->getValue());
+  }
+
+  llvm::Constant *VisitFloatingLiteral(const FloatingLiteral *E) {
+    return llvm::ConstantFP::get(CGM.getLLVMContext(), E->getValue());
+  }
+
+  llvm::Constant *VisitDeclRefExpr(DeclRefExpr *E) {
+    //TODO: We should discriminate if we are getting a pointer or not
+    if (VarDecl* decl = dyn_cast<VarDecl>(E->getDecl()))
+      return CGM.GetAddrOfGlobalVar(decl);
+    else if (FunctionDecl* decl = dyn_cast<FunctionDecl>(E->getDecl()))
+      return CGM.GetAddrOfGlobal(GlobalDecl(decl));
+    else if (EnumConstantDecl* decl = dyn_cast<EnumConstantDecl>(E->getDecl()))
+      return llvm::Constant::getIntegerValue(CGM.Int32Ty, decl->getInitVal());
+    else
+      return 0;
+  }
+
+  llvm::Constant* emitPointerArithmetic(llvm::Constant* Base, llvm::Constant* Offset)
+  {
+    // Normalization
+    if (Offset->getType()->isPointerTy())
+      std::swap(Base, Offset);
+
+    return llvm::ConstantExpr::getGetElementPtr(Base, Offset);
+  }
+
+  llvm::Constant* EmitAddSub(llvm::Constant* LHS, llvm::Constant* RHS, bool isSub)
+  {
+    // Handle pointers first
+    // TODO: Handle Sub
+    if ((LHS->getType()->isPointerTy() ||
+        RHS->getType()->isPointerTy()) && !isSub)
+    {
+      return emitPointerArithmetic(LHS, RHS);
+    }
+
+    if (LHS->getType()->isFloatingPointTy())
+    {
+      if(isSub)
+        return llvm::ConstantExpr::getFSub(LHS, RHS);
+      else
+        return llvm::ConstantExpr::getFAdd(LHS, RHS);
+    }
+
+    if(isSub)
+      return llvm::ConstantExpr::getSub(LHS, RHS);
+    else
+      return llvm::ConstantExpr::getAdd(LHS, RHS);
+  }
+
+  llvm::Constant* VisitBinaryOperator(const BinaryOperator *E) {
+    llvm::Constant* LHS = Visit(E->getLHS());
+    if (!LHS)
+      return 0;
+
+    llvm::Constant* RHS = Visit(E->getRHS());
+    if (!RHS)
+      return 0;
+
+    if (E->getOpcode() == BO_Add ||
+        E->getOpcode() == BO_Sub)
+    {
+      return EmitAddSub(LHS, RHS, E->getOpcode() == BO_Sub);
+    }
+
+    if (E->getOpcode() == BO_Or)
+      return llvm::ConstantExpr::getOr(LHS, RHS);
+
+    return 0;
+  }
+
 
   // Utility methods
   llvm::Type *ConvertType(QualType T) {
@@ -1018,7 +1203,10 @@ llvm::Constant *CodeGenModule::EmitConstantInit(const VarDecl &D,
   }
   
   if (const APValue *Value = D.evaluateValue())
-    return EmitConstantValueForMemory(*Value, D.getType(), CGF);
+  {
+    if (getTarget().isByteAddressable())
+      return EmitConstantValueForMemory(*Value, D.getType(), CGF);
+  }
 
   // FIXME: Implement C++11 [basic.start.init]p2: if the initializer of a
   // reference is a constant expression, and the reference binds to a temporary,
@@ -1053,7 +1241,7 @@ llvm::Constant *CodeGenModule::EmitConstantExpr(const Expr *E,
     Success = E->EvaluateAsRValue(Result, Context);
 
   llvm::Constant *C = 0;
-  if (Success && !Result.HasSideEffects)
+  if (Success && !Result.HasSideEffects && getTarget().isByteAddressable())
     C = EmitConstantValue(Result.Val, DestType, CGF);
   else
     C = ConstExprEmitter(*this, CGF).Visit(const_cast<Expr*>(E));
