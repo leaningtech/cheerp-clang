@@ -509,7 +509,7 @@ public:
 
   /// isConstantInitializer - Returns true if this expression can be emitted to
   /// IR as a constant, and thus can be used as a constant initializer in C.
-  bool isConstantInitializer(ASTContext &Ctx, bool ForRef) const;
+  bool isConstantInitializer(ASTContext &Ctx, bool ForRef, bool ForPtr = false) const;
 
   /// EvalStatus is a struct with detailed info about an evaluation in progress.
   struct EvalStatus {

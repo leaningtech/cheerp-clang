@@ -2586,7 +2586,7 @@ bool Expr::hasAnyTypeDependentArguments(ArrayRef<Expr *> Exprs) {
   return false;
 }
 
-bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
+bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef, bool IsForPtr) const {
   // This function is attempting whether an expression is an initializer
   // which can be evaluated at compile-time. It very closely parallels
   // ConstExprEmitter in CGExprConstant.cpp; if they don't match, it
@@ -2595,6 +2595,8 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
   //
   // If we ever capture reference-binding directly in the AST, we can
   // kill the second parameter.
+  //
+  // IsForPtr is needed because pointers to non constant stuff can still be constants
 
   if (IsForRef) {
     EvalResult Result;
@@ -2617,7 +2619,7 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
 
       // Trivial copy constructor
       assert(CE->getNumArgs() == 1 && "trivial ctor with > 1 argument");
-      return CE->getArg(0)->isConstantInitializer(Ctx, false);
+      return CE->getArg(0)->isConstantInitializer(Ctx, false, IsForPtr);
     }
 
     break;
@@ -2627,7 +2629,7 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
     // "struct x {int x;} x = (struct x) {};".
     // FIXME: This accepts other cases it shouldn't!
     const Expr *Exp = cast<CompoundLiteralExpr>(this)->getInitializer();
-    return Exp->isConstantInitializer(Ctx, false);
+    return Exp->isConstantInitializer(Ctx, false, IsForPtr);
   }
   case InitListExprClass: {
     // FIXME: This doesn't deal with fields with reference types correctly.
@@ -2637,7 +2639,7 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
     if (ILE->getType()->isArrayType()) {
       unsigned numInits = ILE->getNumInits();
       for (unsigned i = 0; i < numInits; i++) {
-        if (!ILE->getInit(i)->isConstantInitializer(Ctx, false))
+        if (!ILE->getInit(i)->isConstantInitializer(Ctx, false, IsForPtr))
           return false;
       }
       return true;
@@ -2665,7 +2667,7 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
               return false;
           } else {
             bool RefType = Field->getType()->isReferenceType();
-            if (!Elt->isConstantInitializer(Ctx, RefType))
+            if (!Elt->isConstantInitializer(Ctx, RefType, IsForPtr))
               return false;
           }
         }
@@ -2679,20 +2681,39 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
     return true;
   case ParenExprClass:
     return cast<ParenExpr>(this)->getSubExpr()
-      ->isConstantInitializer(Ctx, IsForRef);
+      ->isConstantInitializer(Ctx, IsForRef, IsForPtr);
   case GenericSelectionExprClass:
     return cast<GenericSelectionExpr>(this)->getResultExpr()
-      ->isConstantInitializer(Ctx, IsForRef);
+      ->isConstantInitializer(Ctx, IsForRef, IsForPtr);
   case ChooseExprClass:
     if (cast<ChooseExpr>(this)->isConditionDependent())
       return false;
     return cast<ChooseExpr>(this)->getChosenSubExpr()
-      ->isConstantInitializer(Ctx, IsForRef);
+      ->isConstantInitializer(Ctx, IsForRef, IsForPtr);
   case UnaryOperatorClass: {
     const UnaryOperator* Exp = cast<UnaryOperator>(this);
     if (Exp->getOpcode() == UO_Extension)
-      return Exp->getSubExpr()->isConstantInitializer(Ctx, false);
+      return Exp->getSubExpr()->isConstantInitializer(Ctx, false, IsForPtr);
+    else if (Exp->getOpcode() == UO_AddrOf)
+      return Exp->getSubExpr()->isConstantInitializer(Ctx, false, /*IsForPtr*/ true);
     break;
+  }
+  case ArraySubscriptExprClass: {
+    const ArraySubscriptExpr* Exp = cast<ArraySubscriptExpr>(this);
+    return Exp->getLHS()->isConstantInitializer(Ctx, false, IsForPtr) &&
+           Exp->getRHS()->isConstantInitializer(Ctx, false, IsForPtr);
+  }
+  case DeclRefExprClass: {
+    const DeclRefExpr* Exp = cast<DeclRefExpr>(this);
+    if (const VarDecl* decl = dyn_cast<VarDecl>(Exp->getDecl()))
+    {
+      // The address of a global variable is a constant
+      return /*IsForPtr &&*/ decl->hasGlobalStorage();
+    }
+    else if (isa<EnumConstantDecl>(Exp->getDecl()))
+      return true;
+    else
+      return false;
   }
   case CXXFunctionalCastExprClass:
   case CXXStaticCastExprClass:
@@ -2710,24 +2731,25 @@ bool Expr::isConstantInitializer(ASTContext &Ctx, bool IsForRef) const {
         CE->getCastKind() == CK_ToUnion ||
         CE->getCastKind() == CK_ConstructorConversion ||
         CE->getCastKind() == CK_NonAtomicToAtomic ||
-        CE->getCastKind() == CK_AtomicToNonAtomic)
-      return CE->getSubExpr()->isConstantInitializer(Ctx, false);
+        CE->getCastKind() == CK_AtomicToNonAtomic ||
+        CE->getCastKind() == CK_ArrayToPointerDecay)
+      return CE->getSubExpr()->isConstantInitializer(Ctx, false, IsForPtr);
 
     break;
   }
   case MaterializeTemporaryExprClass:
     return cast<MaterializeTemporaryExpr>(this)->GetTemporaryExpr()
-                                            ->isConstantInitializer(Ctx, false);
+                                            ->isConstantInitializer(Ctx, false, IsForPtr);
 
   case SubstNonTypeTemplateParmExprClass:
     return cast<SubstNonTypeTemplateParmExpr>(this)->getReplacement()
-                                            ->isConstantInitializer(Ctx, false);
+                                            ->isConstantInitializer(Ctx, false, IsForPtr);
   case CXXDefaultArgExprClass:
     return cast<CXXDefaultArgExpr>(this)->getExpr()
-                                            ->isConstantInitializer(Ctx, false);
+                                            ->isConstantInitializer(Ctx, false, IsForPtr);
   case CXXDefaultInitExprClass:
     return cast<CXXDefaultInitExpr>(this)->getExpr()
-                                            ->isConstantInitializer(Ctx, false);
+                                            ->isConstantInitializer(Ctx, false, IsForPtr);
   }
   return isEvaluatable(Ctx);
 }
