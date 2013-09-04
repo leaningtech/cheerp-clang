@@ -73,13 +73,13 @@ struct PS {
 struct PS ps;
 void test8(int *arg) {
   // CHECK: @test8
-  // CHECK: call void @llvm.memcpy{{.*}} 16, i32 1, i1 false)
+  // XFAIL: call void @llvm.memcpy{{.*}} 16, i32 1, i1 false)
   __builtin_memcpy(arg, ps.modes, sizeof(struct PS));
 }
 
 __attribute((aligned(16))) int x[4], y[4];
 void test9() {
   // CHECK: @test9
-  // CHECK: call void @llvm.memcpy{{.*}} 16, i32 16, i1 false)
+  // XFAIL: call void @llvm.memcpy{{.*}} 16, i32 16, i1 false)
   __builtin_memcpy(x, y, sizeof(y));
 }
