@@ -1877,7 +1877,7 @@ CodeGenFunction::EmitPointerWithAlignment(const Expr *Addr) {
                                         ConvertType(Addr->getType()));
       return Ptr;
     } else if (ICE->getCastKind() == CK_ArrayToPointerDecay) {
-      LValue LV = EmitLValue(ICE->getSubExpr());
+      LValue LV = EmitLValue(ICE);
       unsigned Align = LV.getAlignment().getQuantity();
       if (!Align) {
         // FIXME: Once LValues are fixed to always set alignment,

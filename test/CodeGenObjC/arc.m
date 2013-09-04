@@ -461,8 +461,9 @@ void test19() {
   // CHECK-LABEL: define void @test19()
   // CHECK:      [[X:%.*]] = alloca [5 x i8*], align 16
   // CHECK: call void @llvm.lifetime.start
-  // CHECK-NEXT: [[T0:%.*]] = bitcast [5 x i8*]* [[X]] to i8*
-  // CHECK: call void @llvm.memset.p0i8.i64(i8* [[T0]], i8 0, i64 40, i32 16, i1 false)
+  // CHECK-NEXT: [[T0:%.*]] = getelementptr [5 x i8*]* [[X]], i32 0, i32 0
+  // CHECK-NEXT: [[T1:%.*]] = bitcast i8** [[T0]] to i8*
+  // CHECK: call void @llvm.memset.p0i8.i64(i8* [[T1]], i8 0, i64 40, i32 16, i1 false)
   id x[5];
 
   extern id test19_helper(void);
