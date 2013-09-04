@@ -1260,6 +1260,9 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
     llvm::ConstantInt::get(IntPtrTy,
                            getContext().getTypeSizeInChars(type).getQuantity());
 
+  if (D.getType()->isArrayType())
+    Loc = Builder.CreateConstGEP2_32(Loc->getType()->getPointerElementType(), Loc, 0, 0);
+
   llvm::Type *BP = Int8PtrTy;
   if (Loc.getType() != BP)
     Loc = Builder.CreateBitCast(Loc, BP);
@@ -1294,6 +1297,8 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
     GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
 
     Address SrcPtr = Address(GV, Loc.getAlignment());
+    if (constant->getType()->isArrayTy())
+      SrcPtr = Builder.CreateConstGEP2_32(GV->getType()->getPointerElementType(), SrcPtr, 0, 0);
     if (SrcPtr.getType() != BP)
       SrcPtr = Builder.CreateBitCast(SrcPtr, BP);
 
