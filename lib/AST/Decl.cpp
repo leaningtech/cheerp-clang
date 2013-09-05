@@ -3289,7 +3289,14 @@ bool FieldDecl::isAnonymousStructOrUnion() const {
 unsigned FieldDecl::getBitWidthValue(const ASTContext &Ctx) const {
   assert(isBitField() && "not a bitfield");
   Expr *BitWidth = static_cast<Expr *>(InitStorage.getPointer());
-  return BitWidth->EvaluateKnownConstInt(Ctx).getZExtValue();
+  unsigned FieldSize = BitWidth->EvaluateKnownConstInt(Ctx).getZExtValue();
+  unsigned TypeSize = Ctx.getTypeInfo(getType()).Width;
+  if (!Ctx.getTargetInfo().isByteAddressable() && FieldSize > TypeSize)
+  {
+    //On NBA targets padding is useless, kill it
+    FieldSize = TypeSize;
+  }
+  return FieldSize;
 }
 
 unsigned FieldDecl::getFieldIndex() const {
