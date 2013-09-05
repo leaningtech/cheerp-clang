@@ -695,6 +695,15 @@ public:
 
     case CK_ArrayToPointerDecay: {
       llvm::Constant* Base = Visit(subExpr);
+      if (!Base)
+        return 0;
+      // If the sub expression is an array instead of a pointer to array
+      // generate a global variable to store it
+      if (Base->getType()->isArrayTy())
+      {
+        Base =  new llvm::GlobalVariable(CGM.getModule(), Base->getType(), true /*isConstant*/,
+                        llvm::GlobalVariable::PrivateLinkage, Base, ".decay");
+      }
       llvm::SmallVector<llvm::Constant*, 2> Idxs;
       llvm::Constant* Zero = llvm::ConstantInt::get(CGM.Int32Ty, 0);
       Idxs.push_back(Zero);
@@ -933,7 +942,7 @@ public:
   }
 
   llvm::Constant *VisitStringLiteral(StringLiteral *E) {
-    return CGM.GetAddrOfConstantStringFromLiteral(E);
+    return CGM.GetConstantArrayFromStringLiteral(E);
   }
 
   llvm::Constant *VisitObjCEncodeExpr(ObjCEncodeExpr *E) {
