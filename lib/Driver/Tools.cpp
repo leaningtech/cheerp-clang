@@ -1470,6 +1470,12 @@ static void addExceptionArgs(const ArgList &Args, types::ID InputType,
     DidHaveExplicitExceptionFlag = true;
   }
 
+  if (Triple.getArch() == llvm::Triple::duetto)
+  {
+    // Completly disable exceptions on Duetto
+    ExceptionsEnabled = false;
+  }
+
   bool ShouldUseExceptionTables = false;
 
   // Exception tables and cleanups can be enabled with -fexceptions even if the
@@ -3110,7 +3116,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // -frtti is default.
   if (!Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti) ||
-      KernelOrKext) {
+      KernelOrKext || getToolChain().getArch() == llvm::Triple::duetto) {
     CmdArgs.push_back("-fno-rtti");
 
     // -fno-rtti cannot usefully be combined with -fsanitize=vptr.
