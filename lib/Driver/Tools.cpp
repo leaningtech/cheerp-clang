@@ -1965,7 +1965,7 @@ static void addExceptionArgs(const ArgList &Args, types::ID InputType,
   }
 
   if (types::isCXX(InputType)) {
-    bool CXXExceptionsEnabled = Triple.getArch() != llvm::Triple::xcore;
+    bool CXXExceptionsEnabled = Triple.getArch() != llvm::Triple::xcore && Triple.getArch() != llvm::Triple::cheerp;
     if (Arg *A = Args.getLastArg(options::OPT_fcxx_exceptions,
                                  options::OPT_fno_cxx_exceptions,
                                  options::OPT_fexceptions,
@@ -3936,7 +3936,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // -frtti is default.
   if (!Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti) ||
-      KernelOrKext) {
+      KernelOrKext || getToolChain().getArch() == llvm::Triple::duetto) {
     CmdArgs.push_back("-fno-rtti");
 
     // -fno-rtti cannot usefully be combined with -fsanitize=vptr.
