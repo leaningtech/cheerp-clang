@@ -1576,6 +1576,12 @@ static ExceptionSettings exceptionSettings(const ArgList &Args,
   if (ES.ExceptionsEnabled && DidHaveExplicitExceptionFlag)
     ES.ShouldUseExceptionTables = true;
 
+  if (Triple.getArch() == llvm::Triple::duetto)
+  {
+    // Completly disable exceptions on Duetto
+    ES.ExceptionsEnabled = false;
+  }
+
   return ES;
 }
 
@@ -3415,7 +3421,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // -frtti is default.
   if (!Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti) ||
-      KernelOrKext) {
+      KernelOrKext || getToolChain().getArch() == llvm::Triple::duetto) {
     CmdArgs.push_back("-fno-rtti");
 
     // -fno-rtti cannot usefully be combined with -fsanitize=vptr.
