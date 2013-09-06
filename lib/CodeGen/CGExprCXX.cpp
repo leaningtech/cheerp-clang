@@ -1007,9 +1007,19 @@ static void EmitNewInitializer(CodeGenFunction &CGF, const CXXNewExpr *E,
 static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                 const FunctionDecl *Callee,
                                 const FunctionProtoType *CalleeType,
-                                const CallArgList &Args) {
+                                const CallArgList &Args,
+                                llvm::Type* allocatedType = NULL) {
   llvm::Instruction *CallOrInvoke;
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
+
+  if(Callee->hasAttr<MallocAttr>() && !CGF.getTarget().isByteAddressable() &&
+     allocatedType && allocatedType->isStructTy())
+  {
+    // Forge a call to a special type safe allocator
+    CalleeAddr = CGF.CGM.CreateRuntimeFunction(cast<llvm::FunctionType>(CalleeAddr->getType()->getPointerElementType()),
+                                               Twine("__duettoNew_", allocatedType->getStructName()).str());
+  }
+
   RValue RV =
       CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(Args, CalleeType),
                    CalleeAddr, ReturnValueSlot(), Args,
@@ -1258,7 +1268,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
     // TODO: kill any unnecessary computations done for the size
     // argument.
   } else {
-    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs);
+    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, ConvertType(allocType));
   }
 
   // Emit a null check on the allocation result if the allocation
