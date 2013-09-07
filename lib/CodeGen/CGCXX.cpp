@@ -34,6 +34,10 @@ bool CodeGenModule::TryEmitBaseDestructorAsAlias(const CXXDestructorDecl *D) {
   if (!getCodeGenOpts().CXXCtorDtorAliases)
     return true;
 
+  // This is not possible on NBA targets, we need to access the subobject
+  if (!getTarget().isByteAddressable())
+    return true;
+
   // If the destructor doesn't have a trivial body, we have to emit it
   // separately.
   if (!D->hasTrivialBody())
