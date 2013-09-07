@@ -36,7 +36,8 @@ bool CodeGenModule::TryEmitBaseDestructorAsAlias(const CXXDestructorDecl *D) {
 
   // Producing an alias to a base class ctor/dtor can degrade debug quality
   // as the debugger cannot tell them apart.
-  if (getCodeGenOpts().OptimizationLevel == 0)
+  // This is not possible on NBA targets, we need to access the subobject
+  if (getCodeGenOpts().OptimizationLevel == 0 || !getTarget().isByteAddressable())
     return true;
 
   // If the destructor doesn't have a trivial body, we have to emit it
