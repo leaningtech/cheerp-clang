@@ -9231,4 +9231,9 @@ def warn_shadow_field :
   InGroup<ShadowField>, DefaultIgnore;
 def note_shadow_field : Note<"declared here">;
 
+let CategoryName = "Duetto Issue" in {
+def warn_duetto_unsafe_cast : Warning<
+  "Using values casted to unrelated types is undefined behaviour unless the destination type is the actual type of the value">;
+} // end of duetto issue category
+
 } // end of sema component.
