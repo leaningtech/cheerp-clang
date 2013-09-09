@@ -7487,4 +7487,9 @@ def warn_profile_data_unprofiled : Warning<
 
 } // end of instrumentation issue category
 
+let CategoryName = "Duetto Issue" in {
+def warn_duetto_unsafe_cast : Warning<
+  "Using values casted to unrelated types is undefined behaviour unless the destination type is the actual type of the value">;
+} // end of duetto issue category
+
 } // end of sema component.

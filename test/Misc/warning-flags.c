@@ -18,7 +18,7 @@ This test serves two purposes:
 
 The list of warnings below should NEVER grow.  It should gradually shrink to 0.
 
-CHECK: Warnings without flags (96):
+CHECK: Warnings without flags (97):
 CHECK-NEXT:   ext_excess_initializers
 CHECK-NEXT:   ext_excess_initializers_in_char_array_initializer
 CHECK-NEXT:   ext_expected_semi_decl_list
@@ -67,6 +67,7 @@ CHECK-NEXT:   warn_drv_assuming_mfloat_abi_is
 CHECK-NEXT:   warn_drv_clang_unsupported
 CHECK-NEXT:   warn_drv_objc_gc_unsupported
 CHECK-NEXT:   warn_drv_pch_not_first_include
+CHECK-NEXT:   warn_duetto_unsafe_cast
 CHECK-NEXT:   warn_dup_category_def
 CHECK-NEXT:   warn_duplicate_protocol_def
 CHECK-NEXT:   warn_enum_value_overflow
