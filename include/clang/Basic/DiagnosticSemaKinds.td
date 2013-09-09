@@ -9766,4 +9766,10 @@ def err_bit_cast_non_trivially_copyable : Error<
   "__builtin_bit_cast %select{source|destination}0 type must be trivially copyable">;
 def err_bit_cast_type_size_mismatch : Error<
   "__builtin_bit_cast source size does not equal destination size (%0 vs %1)">;
+
+let CategoryName = "Duetto Issue" in {
+def warn_duetto_unsafe_cast : Warning<
+  "Using values casted to unrelated types is undefined behaviour unless the destination type is the actual type of the value">;
+} // end of duetto issue category
+
 } // end of sema component.
