@@ -6557,4 +6557,9 @@ def warn_not_a_doxygen_trailing_member_comment : Warning<
   "not a Doxygen trailing comment">, InGroup<Documentation>, DefaultIgnore;
 } // end of documentation issue category
 
+let CategoryName = "Duetto Issue" in {
+def warn_duetto_unsafe_cast : Warning<
+  "Using values casted to unrelated types is undefined behaviour unless the destination type is the actual type of the value">;
+} // end of duetto issue category
+
 } // end of sema component.
