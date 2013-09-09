@@ -1356,7 +1356,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       llvm_unreachable("wrong cast for pointers in different address spaces"
                        "(must be an address space cast)!");
     }
-    if (!CGF.getTarget().isByteAddressable())
+    if (!CGF.getTarget().isByteAddressable() && !isa<llvm::ConstantPointerNull>(Src))
     {
       // Add an intrincic to tag the cast as one requested by the user
       // And also emit a warning
