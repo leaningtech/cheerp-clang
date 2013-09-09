@@ -34,6 +34,7 @@
 #include "llvm/IR/GlobalVariable.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/Module.h"
+#include "clang/Sema/SemaDiagnostic.h"
 #include <cstdarg>
 
 using namespace clang;
@@ -2037,6 +2038,16 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       }
     }
 
+    if (!CGF.getTarget().isByteAddressable())
+    {
+      // Add an intrincic to tag the cast as one requested by the user
+      // And also emit a warning
+      CGF.CGM.getDiags().Report(CE->getLocStart(), diag::warn_duetto_unsafe_cast);
+
+      llvm::Value* tmp1=Builder.CreateBitCast(Src, CGF.Int8PtrTy);
+      llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(), llvm::Intrinsic::duetto_cast_user);
+      Src = Builder.CreateCall(intrinsic, tmp1);
+    }
     return Builder.CreateBitCast(Src, DstTy);
   }
   case CK_AddressSpaceConversion: {
