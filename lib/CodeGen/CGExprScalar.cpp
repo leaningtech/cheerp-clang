@@ -1304,7 +1304,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       llvm::Type *MidTy = CGF.CGM.getDataLayout().getIntPtrType(SrcTy);
       return Builder.CreateIntToPtr(Builder.CreatePtrToInt(Src, MidTy), DstTy);
     }
-    if (!CGF.getTarget().isByteAddressable())
+    if (!CGF.getTarget().isByteAddressable() && !isa<llvm::ConstantPointerNull>(Src))
     {
       // Add an intrincic to tag the cast as one requested by the user
       // And also emit a warning
