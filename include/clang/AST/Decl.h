@@ -1562,7 +1562,7 @@ protected:
       EndRangeLoc(NameInfo.getEndLoc()),
       TemplateOrSpecialization(),
       DNLoc(NameInfo.getInfo()),
-      skelFunction(NULL),stubFunction(NULL) {}
+      skelFunction(NULL),stubFunction(NULL),stubBody(NULL) {}
 
   typedef Redeclarable<FunctionDecl> redeclarable_base;
   FunctionDecl *getNextRedeclaration() override { return RedeclLink.getNext(); }
@@ -2147,6 +2147,7 @@ public:
   FunctionDecl* skelFunction;
   //Duetto, pointer to the stub function for this server function
   FunctionDecl* stubFunction;
+  Stmt* stubBody;
 };
 
 
