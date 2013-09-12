@@ -1329,6 +1329,9 @@ def Z_reserved_lib_stdcxx : Flag<["-"], "Z-reserved-lib-stdc++">,
 def Z_reserved_lib_cckext : Flag<["-"], "Z-reserved-lib-cckext">,
     Flags<[LinkerInput, NoArgumentUnused, Unsupported]>, Group<reserved_lib_Group>;
 
+def duetto_side_EQ : Joined<["-"], "duetto-side=">, Flags<[CC1Option]>,
+  Group<CompileOnly_Group>, HelpText<"Specify which side to build [client/server]">;
+  
 include "CLCompatOptions.td"
 
 include "CC1Options.td"

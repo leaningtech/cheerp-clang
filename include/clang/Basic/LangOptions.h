@@ -66,6 +66,11 @@ public:
     SOB_Trapping    // -ftrapv
   };
 
+  enum DuettoSideTy {
+    DUETTO_Client = 0, // -duetto-side=client
+    DUETTO_Server,     // -duetto-side=server
+    DUETTO_Invalid
+  };
 public:
   clang::ObjCRuntime ObjCRuntime;
 

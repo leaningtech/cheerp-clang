@@ -2763,6 +2763,10 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     Args.AddLastArg(CmdArgs, options::OPT_trigraphs);
   }
 
+  // Forward duetto-side argument
+  if (Arg *DuettoSide = Args.getLastArg(options::OPT_duetto_side_EQ))
+    DuettoSide->render(Args, CmdArgs);
+
   // Map the bizarre '-Wwrite-strings' flag to a more sensible
   // '-fconst-strings'; this better indicates its actual behavior.
   if (Args.hasFlag(options::OPT_Wwrite_strings, options::OPT_Wno_write_strings,
