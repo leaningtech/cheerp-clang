@@ -629,10 +629,13 @@ void CodeGenFunction::StartFunction(GlobalDecl GD,
 void CodeGenFunction::EmitFunctionBody(FunctionArgList &Args) {
   const FunctionDecl *FD = cast<FunctionDecl>(CurGD.getDecl());
   assert(FD->getBody());
-  if (const CompoundStmt *S = dyn_cast<CompoundStmt>(FD->getBody()))
+  Stmt* body = FD->getBody();
+  if (FD->hasAttr<ServerAttr>() && CGM.getLangOpts().getDuettoSide() == LangOptions::DUETTO_Client)
+    body = FD->stubBody;
+  if (const CompoundStmt *S = dyn_cast<CompoundStmt>(body))
     EmitCompoundStmtWithoutScope(*S);
   else
-    EmitStmt(FD->getBody());
+    EmitStmt(body);
 }
 
 /// Tries to mark the given function nounwind based on the
