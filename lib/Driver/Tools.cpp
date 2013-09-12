@@ -3453,6 +3453,10 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                     options::OPT_fno_trigraphs);
   }
 
+  // Forward duetto-side argument
+  if (Arg *DuettoSide = Args.getLastArg(options::OPT_duetto_side_EQ))
+    DuettoSide->render(Args, CmdArgs);
+
   // GCC's behavior for -Wwrite-strings is a bit strange:
   //  * In C, this "warning flag" changes the types of string literals from
   //    'char[N]' to 'const char[N]', and thus triggers an unrelated warning

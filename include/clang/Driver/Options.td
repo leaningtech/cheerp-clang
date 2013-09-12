@@ -1858,6 +1858,8 @@ defm stack_arrays : BooleanFFlag<"stack-arrays">, Group<gfortran_Group>;
 defm underscoring : BooleanFFlag<"underscoring">, Group<gfortran_Group>;
 defm whole_file : BooleanFFlag<"whole-file">, Group<gfortran_Group>;
 
+def duetto_side_EQ : Joined<["-"], "duetto-side=">, Flags<[CC1Option]>,
+  Group<CompileOnly_Group>, HelpText<"Specify which side to build [client/server]">;
 
 include "CC1Options.td"
 

@@ -1346,6 +1346,22 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     }
   }
 
+  // Parse duetto options
+  if (const Arg *DuettoSide = Args.getLastArg(OPT_duetto_side_EQ))
+  {
+    LangOptions::DuettoSideTy s = llvm::StringSwitch<LangOptions::DuettoSideTy>(DuettoSide->getValue())
+    .Case("client", LangOptions::DUETTO_Client)
+    .Case("server", LangOptions::DUETTO_Server)
+    .Default(LangOptions::DUETTO_Invalid);
+
+    Opts.setDuettoSide(s);
+    if (s == LangOptions::DUETTO_Invalid)
+    {
+      Diags.Report(diag::err_drv_invalid_value)
+      << DuettoSide->getAsString(Args) << DuettoSide->getValue();
+    }
+  }
+
   // -cl-std only applies for OpenCL language standards.
   // Override the -std option in this case.
   if (const Arg *A = Args.getLastArg(OPT_cl_std_EQ)) {

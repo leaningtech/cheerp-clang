@@ -66,6 +66,11 @@ public:
 
   enum AddrSpaceMapMangling { ASMM_Target, ASMM_On, ASMM_Off };
 
+  enum DuettoSideTy {
+    DUETTO_Client = 0, // -duetto-side=client
+    DUETTO_Server,     // -duetto-side=server
+    DUETTO_Invalid
+  };
 public:
   /// \brief Set of enabled sanitizers.
   SanitizerSet Sanitize;
