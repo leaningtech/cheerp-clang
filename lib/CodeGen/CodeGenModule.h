@@ -416,6 +416,8 @@ class CodeGenModule : public CodeGenTypeCache {
 
   const SanitizerOptions &SanOpts;
 
+  // The vector of methods to be included in the function map for duetto server side
+  llvm::SmallVector<llvm::Constant*, 4> duettoFunctionMap;
   /// @}
 public:
   CodeGenModule(ASTContext &C, const CodeGenOptions &CodeGenOpts,
