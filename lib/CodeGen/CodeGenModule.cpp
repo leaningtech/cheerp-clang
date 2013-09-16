@@ -2367,6 +2367,12 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
                                                  llvm::GlobalValue *GV) {
   const auto *D = cast<FunctionDecl>(GD.getDecl());
 
+  if (D->hasAttr<ClientAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
+  {
+    // If the on the wrong side, do not compile
+    return;
+  }
+
   // Compute the function info and LLVM type.
   const CGFunctionInfo &FI = getTypes().arrangeGlobalDeclaration(GD);
   llvm::FunctionType *Ty = getTypes().GetFunctionType(FI);
