@@ -4674,14 +4674,14 @@ static void ProcessNonInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
   }
 }
 
-static FunctionTemplateDecl* getTemplateFromName(Sema& S, const char* tName)
+static FunctionTemplateDecl* getTemplateFromName(Sema& S, const char* tName, const AttributeList& attr)
 {
   const IdentifierInfo& info=S.Context.Idents.get(tName);
   DeclContext::lookup_result l=S.CurContext->lookup(DeclarationName(&info));
   if(l.size() != 1)
   {
-    llvm::errs() << "Missing special definition for " << tName << "\n";
-    ::abort();
+    S.Diag(attr.getLoc(), diag::err_duetto_missing_special_definition) << tName;
+    return NULL;
   }
   return dyn_cast<FunctionTemplateDecl>(l[0]);
 }
@@ -4690,7 +4690,9 @@ static void EmitClientStub(Sema& S, FunctionDecl* F, const AttributeList &attr,
                            const SmallVector<TemplateArgument, 4>& FArgsPack, CanQualType canonicalResultType)
 {
   //Stub for the client
-  FunctionTemplateDecl* stubTemplateDecl=getTemplateFromName(S,"clientStub");
+  FunctionTemplateDecl* stubTemplateDecl=getTemplateFromName(S,"clientStub",attr);
+  if(!stubTemplateDecl)
+    return;
   SmallVector<DeducedTemplateArgument,4> Deduced;
   Deduced.push_back(DeducedTemplateArgument(TemplateArgument(canonicalResultType)));
   //Add the types of the function argument
@@ -4751,7 +4753,9 @@ void EmitServerSkel(Sema& S, FunctionDecl* F, const AttributeList &attr,
                     CanQualType canonicalFuncPtrType, CanQualType canonicalResultType)
 {
   //Skel for the server
-  FunctionTemplateDecl* skelTemplateDecl=getTemplateFromName(S,"serverSkel");
+  FunctionTemplateDecl* skelTemplateDecl=getTemplateFromName(S,"serverSkel",attr);
+  if(!skelTemplateDecl)
+    return;
   SmallVector<DeducedTemplateArgument,4> Deduced;
   Deduced.push_back(DeducedTemplateArgument(TemplateArgument(canonicalFuncPtrType)));
   Deduced.push_back(DeducedTemplateArgument(TemplateArgument(F, false)));
