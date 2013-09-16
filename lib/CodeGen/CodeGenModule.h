@@ -481,6 +481,8 @@ private:
 
   std::unique_ptr<SanitizerMetadata> SanitizerMD;
 
+  // The vector of methods to be included in the function map for duetto server side
+  llvm::SmallVector<llvm::Constant*, 4> duettoFunctionMap;
   /// @}
 
   llvm::DenseMap<const Decl *, bool> DeferredEmptyCoverageMappingDecls;

@@ -336,6 +336,18 @@ void InstrProfStats::reportDiagnostics(DiagnosticsEngine &Diags,
 }
 
 void CodeGenModule::Release() {
+  //Output the function map for duetto
+  if (!duettoFunctionMap.empty())
+  {
+    llvm::StructType* st=cast<llvm::StructType>(duettoFunctionMap[0]->getType());
+    llvm::Constant* nulls[] = { llvm::ConstantPointerNull::get(cast<llvm::PointerType>(st->getElementType(0))),
+                                llvm::ConstantPointerNull::get(cast<llvm::PointerType>(st->getElementType(1)))};
+    duettoFunctionMap.push_back(llvm::ConstantStruct::getAnon(nulls));
+    llvm::ArrayType* arrayType=llvm::ArrayType::get(st, duettoFunctionMap.size());
+    llvm::Constant* mapConst = llvm::ConstantArray::get(arrayType, duettoFunctionMap);
+    new llvm::GlobalVariable(getModule(), arrayType, true,
+        llvm::GlobalVariable::AppendingLinkage, mapConst, "duettoFuncMap");
+  }
   EmitDeferred();
   applyReplacements();
   checkAliases();
@@ -2471,6 +2483,27 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
     AddGlobalDtor(Fn, DA->getPriority());
   if (D->hasAttr<AnnotateAttr>())
     AddGlobalAnnotations(D, Fn);
+
+  if (D->hasAttr<ServerAttr>())
+  {
+    llvm::Constant* skelAddr = GetAddrOfFunction(GlobalDecl(D->skelFunction));
+    llvm::SmallVector<llvm::Type*, 2> structTypes;
+    structTypes.push_back(Int8PtrTy);
+    structTypes.push_back(skelAddr->getType());
+
+    llvm::Constant* nameConst = llvm::ConstantDataArray::getString(getLLVMContext(), Fn->getName());
+    llvm::Constant *Zero = llvm::Constant::getNullValue(Int32Ty);
+    llvm::Constant *Zeros[] = { Zero, Zero };
+
+    llvm::GlobalVariable *nameGV = new llvm::GlobalVariable(getModule(), nameConst->getType(), true,
+                                       llvm::GlobalVariable::PrivateLinkage, nameConst, ".str");
+    llvm::Constant* ptrNameConst = llvm::ConstantExpr::getGetElementPtr(nameGV, Zeros);
+    llvm::SmallVector<llvm::Constant*, 2> structFields;
+    structFields.push_back(ptrNameConst);
+    structFields.push_back(skelAddr);
+
+    duettoFunctionMap.push_back(llvm::ConstantStruct::getAnon(structFields));
+  }
 }
 
 void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {
