@@ -901,9 +901,11 @@ namespace {
         FirstField(0), LastField(0), FirstFieldOffset(0), LastFieldOffset(0),
         LastAddedFieldIndex(0) { }
 
-    static bool isMemcpyableField(FieldDecl *F) {
+    bool isMemcpyableField(FieldDecl *F) const {
       Qualifiers Qual = F->getType().getQualifiers();
       if (Qual.hasVolatile() || Qual.hasObjCLifetime())
+        return false;
+      if (!CGF.getTarget().isByteAddressable())
         return false;
       return true;
     }
@@ -1045,8 +1047,6 @@ namespace {
     // that can be rolled into a memcpy.
     bool isMemberInitMemcpyable(CXXCtorInitializer *MemberInit) const {
       if (!MemcpyableCtor)
-        return false;
-      if (!CGF.getTarget().isByteAddressable())
         return false;
       FieldDecl *Field = MemberInit->getMember();
       assert(Field != 0 && "No field for member init.");
