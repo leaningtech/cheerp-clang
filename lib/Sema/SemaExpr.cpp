@@ -1736,6 +1736,12 @@ Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
   // dependent name.
   DeclContext *DC = (SS.isEmpty() && !CallsUndergoingInstantiation.empty())
     ? CurContext : nullptr;
+  FunctionDecl* curFD = getCurFunctionDecl();
+  if (curFD && curFD->hasAttr<ClientAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
+  {
+    // If the on the wrong side, ignore errors
+    return true;
+  }
   while (DC) {
     if (isa<CXXRecordDecl>(DC)) {
       LookupQualifiedName(R, DC);
