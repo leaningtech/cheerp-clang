@@ -4728,9 +4728,16 @@ static void EmitClientStub(Sema& S, FunctionDecl* F, const AttributeList &attr,
   Expr* fnDecl = DeclRefExpr::Create(S.Context, NestedNameSpecifierLoc(), attr.getLoc(), stubFn,
                                      false, attr.getLoc(), stubFn->getType(), VK_RValue);
   llvm::SmallVector<Expr*, 4> arguments;
-  QualType StrType = S.Context.getConstantArrayType(S.Context.CharTy, llvm::APInt(32, F->getName().size()+1),
+  //We need the mangled name for the function, create a temporary mangle context
+  OwningPtr<MangleContext> MCTX(createItaniumMangleContext(S.Context, S.getDiagnostics()));
+  SmallString<256> MangledMethodName;
+  llvm::raw_svector_ostream OS(MangledMethodName);
+  MCTX->mangleName(F, OS);
+  OS.flush();
+
+  QualType StrType = S.Context.getConstantArrayType(S.Context.CharTy, llvm::APInt(32, MangledMethodName.size()+1),
                                                     ArrayType::Normal, 0);
-  Expr* NameLiteral = StringLiteral::Create(S.Context, F->getName(), StringLiteral::Ascii, false,
+  Expr* NameLiteral = StringLiteral::Create(S.Context, MangledMethodName, StringLiteral::Ascii, false,
                                             StrType, attr.getLoc());
   arguments.push_back(ImplicitCastExpr::Create(S.Context, stubFn->getParamDecl(0)->getType(),
                       CK_ArrayToPointerDecay, NameLiteral, NULL, VK_RValue));
