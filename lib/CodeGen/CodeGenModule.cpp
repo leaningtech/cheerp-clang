@@ -2189,7 +2189,7 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
   if (PGOInit)
     AddGlobalCtor(PGOInit, 0);
 
-  if (D->hasAttr<ServerAttr>())
+  if (D->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() == LangOptions::DUETTO_Server)
   {
     llvm::Constant* skelAddr = GetAddrOfFunction(GlobalDecl(D->skelFunction));
     llvm::SmallVector<llvm::Type*, 2> structTypes;
