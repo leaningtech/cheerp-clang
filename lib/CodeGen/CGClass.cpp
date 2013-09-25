@@ -346,7 +346,8 @@ CodeGenFunction::GenerateUpcast(llvm::Value* Value,
   GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
   ComputeNonVirtualBaseClassGepPath(CGM, GEPConstantIndexes,
                                     Derived, PathBegin, PathEnd);
-  Value=Builder.CreateGEP(Value, GEPConstantIndexes);
+  if(GEPConstantIndexes.size()>1)
+    Value=Builder.CreateGEP(Value, GEPConstantIndexes);
 
   // Get the base pointer type.
   llvm::Type *BasePtrTy = 
