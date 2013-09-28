@@ -36,6 +36,7 @@
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/Transforms/ObjCARC.h"
 #include "llvm/Transforms/Scalar.h"
+#include "llvm/Duetto/Utils.h"
 using namespace clang;
 using namespace llvm;
 
@@ -206,6 +207,34 @@ static void addThreadSanitizerPass(const PassManagerBuilder &Builder,
   PM.add(createThreadSanitizerPass(CGOpts.SanitizerBlacklistFile));
 }
 
+namespace {
+  class DuettoNativeRewriterPass : public FunctionPass {
+  public:
+    static char ID;
+    explicit DuettoNativeRewriterPass() :
+      FunctionPass(ID) { }
+    bool runOnFunction(Function &F);
+    const char *getPassName() const;
+  };
+} // end anonymous namespace.
+
+const char *DuettoNativeRewriterPass::getPassName() const {
+  return "DuettoNativeRewriter";
+}
+
+bool DuettoNativeRewriterPass::runOnFunction(Function& F)
+{
+  DuettoUtils::rewriteNativeObjectsConstructors(*F.getParent(), F);
+  return true;
+}
+
+char DuettoNativeRewriterPass::ID = 0;
+
+static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
+                                   PassManagerBase &PM) {
+  PM.add(new DuettoNativeRewriterPass());
+}
+
 void EmitAssemblyHelper::CreatePasses(TargetMachine *TM) {
   unsigned OptLevel = CodeGenOpts.OptimizationLevel;
   CodeGenOptions::InliningMethod Inlining = CodeGenOpts.getInlining();
@@ -264,6 +293,11 @@ void EmitAssemblyHelper::CreatePasses(TargetMachine *TM) {
     PMBuilder.addExtension(PassManagerBuilder::EP_EnabledOnOptLevel0,
                            addThreadSanitizerPass);
   }
+
+  // This should depend on duetto, non on byte addressable
+  if (!TM->getDataLayout()->isByteAddressable())
+    PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
+                           addDuettoNativeRewriterPass);
 
   // Figure out TargetLibraryInfo.
   Triple TargetTriple(TheModule->getTargetTriple());
