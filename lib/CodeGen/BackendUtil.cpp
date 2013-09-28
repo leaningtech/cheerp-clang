@@ -24,6 +24,7 @@
 #include "llvm/Bitcode/BitcodeReader.h"
 #include "llvm/Bitcode/BitcodeWriter.h"
 #include "llvm/Bitcode/BitcodeWriterPass.h"
+#include "llvm/Cheerp/NativeRewriter.h"
 #include "llvm/CodeGen/RegAllocRegistry.h"
 #include "llvm/CodeGen/SchedulerRegistry.h"
 #include "llvm/IR/DataLayout.h"
@@ -454,6 +455,11 @@ static void initTargetOptions(llvm::TargetOptions &Options,
           Entry.IgnoreSysRoot ? Entry.Path : HSOpts.Sysroot + Entry.Path);
 }
 
+static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
+                                   PassManagerBase &PM) {
+  PM.add(createDuettoNativeRewriterPass());
+}
+
 void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
                                       legacy::FunctionPassManager &FPM) {
   // Handle disabling of all LLVM passes, where we want to preserve the
@@ -466,6 +472,11 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
   // are inserted before PMBuilder ones - they'd get the default-constructed
   // TLI with an unknown target otherwise.
   Triple TargetTriple(TheModule->getTargetTriple());
+
+  if (TargetTriple.getArch() == llvm::Triple::duetto)
+    PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
+                           addDuettoNativeRewriterPass);
+
   std::unique_ptr<TargetLibraryInfoImpl> TLII(
       createTLII(TargetTriple, CodeGenOpts));
 
