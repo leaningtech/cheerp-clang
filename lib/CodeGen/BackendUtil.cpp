@@ -16,6 +16,7 @@
 #include "clang/Frontend/Utils.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/Bitcode/BitcodeWriterPass.h"
+#include "llvm/Duetto/NativeRewriter.h"
 #include "llvm/CodeGen/RegAllocRegistry.h"
 #include "llvm/CodeGen/SchedulerRegistry.h"
 #include "llvm/IR/DataLayout.h"
@@ -246,6 +247,11 @@ static void addSymbolRewriterPass(const CodeGenOptions &Opts,
   MPM->add(createRewriteSymbolsPass(DL));
 }
 
+static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
+                                   PassManagerBase &PM) {
+  PM.add(createDuettoNativeRewriterPass());
+}
+
 void EmitAssemblyHelper::CreatePasses() {
   unsigned OptLevel = CodeGenOpts.OptimizationLevel;
   CodeGenOptions::InliningMethod Inlining = CodeGenOpts.getInlining();
@@ -331,6 +337,11 @@ void EmitAssemblyHelper::CreatePasses() {
 
   // Figure out TargetLibraryInfo.
   Triple TargetTriple(TheModule->getTargetTriple());
+
+  if (TargetTriple.getArch() == llvm::Triple::duetto)
+    PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
+                           addDuettoNativeRewriterPass);
+
   PMBuilder.LibraryInfo = createTLI(TargetTriple, CodeGenOpts);
 
   switch (Inlining) {

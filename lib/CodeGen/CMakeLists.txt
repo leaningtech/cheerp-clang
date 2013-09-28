@@ -14,6 +14,7 @@ set(LLVM_LINK_COMPONENTS
   Support
   Target
   TransformUtils
+  DuettoUtils
   )
 
 # In a standard Clang+LLVM build, we need to generate intrinsics before
