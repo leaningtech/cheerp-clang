@@ -38,6 +38,7 @@
 #include "llvm/Transforms/ObjCARC.h"
 #include "llvm/Transforms/Scalar.h"
 #include <memory>
+#include "llvm/Duetto/Utils.h"
 using namespace clang;
 using namespace llvm;
 
@@ -229,6 +230,34 @@ static void addDataFlowSanitizerPass(const PassManagerBuilder &Builder,
   PM.add(createDataFlowSanitizerPass(CGOpts.SanitizerBlacklistFile));
 }
 
+namespace {
+  class DuettoNativeRewriterPass : public FunctionPass {
+  public:
+    static char ID;
+    explicit DuettoNativeRewriterPass() :
+      FunctionPass(ID) { }
+    bool runOnFunction(Function &F);
+    const char *getPassName() const;
+  };
+} // end anonymous namespace.
+
+const char *DuettoNativeRewriterPass::getPassName() const {
+  return "DuettoNativeRewriter";
+}
+
+bool DuettoNativeRewriterPass::runOnFunction(Function& F)
+{
+  DuettoUtils::rewriteNativeObjectsConstructors(*F.getParent(), F);
+  return true;
+}
+
+char DuettoNativeRewriterPass::ID = 0;
+
+static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
+                                   PassManagerBase &PM) {
+  PM.add(new DuettoNativeRewriterPass());
+}
+
 void EmitAssemblyHelper::CreatePasses() {
   unsigned OptLevel = CodeGenOpts.OptimizationLevel;
   CodeGenOptions::InliningMethod Inlining = CodeGenOpts.getInlining();
@@ -305,6 +334,12 @@ void EmitAssemblyHelper::CreatePasses() {
 
   // Figure out TargetLibraryInfo.
   Triple TargetTriple(TheModule->getTargetTriple());
+
+  if (TargetTriple.getArch() == llvm::Triple::duetto)
+    PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
+                           addDuettoNativeRewriterPass);
+
+
   PMBuilder.LibraryInfo = new TargetLibraryInfo(TargetTriple);
   if (!CodeGenOpts.SimplifyLibCalls)
     PMBuilder.LibraryInfo->disableAllFunctions();
