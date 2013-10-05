@@ -1635,7 +1635,7 @@ bool Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
   DeclContext *DC = (SS.isEmpty() && !CallsUndergoingInstantiation.empty())
     ? CurContext : 0;
   FunctionDecl* curFD = getCurFunctionDecl();
-  if (curFD->hasAttr<ClientAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
+  if (curFD && curFD->hasAttr<ClientAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
   {
     // If the on the wrong side, ignore errors
     return true;
