@@ -1230,7 +1230,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       // And also emit a warning
       CGF.CGM.getDiags().Report(CE->getLocStart(), diag::warn_duetto_unsafe_cast);
 
-      llvm::Type* types[] = { DestType, Src->getType()  };
+      llvm::Type* types[] = { DestType, Src->getType() };
 
       // Forge the name suffix for this intrinsic since we need mangling
       MangleContext& MCTX = CGF.CGM.getCXXABI().getMangleContext();
