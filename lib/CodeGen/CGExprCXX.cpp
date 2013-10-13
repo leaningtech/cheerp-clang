@@ -19,6 +19,7 @@
 #include "clang/CodeGen/CGFunctionInfo.h"
 #include "clang/Frontend/CodeGenOptions.h"
 #include "llvm/IR/CallSite.h"
+#include "clang/Sema/SemaDiagnostic.h"
 #include "llvm/IR/Intrinsics.h"
 
 using namespace clang;
@@ -1278,11 +1279,29 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
 
   allocatorArgs.add(RValue::get(allocSize), sizeType);
 
+  unsigned startArg = 0;
+  // On NBA targets we only accept placement new if the source memory is of the right type
+  if (allocator->isReservedGlobalPlacementOperator() && !getTarget().isByteAddressable())
+  {
+    const CastExpr* castExpr = dyn_cast<CastExpr>(*E->placement_arg_begin());
+    if (castExpr == NULL ||
+        castExpr->getSubExpr()->getType()->getPointeeType().getCanonicalType()!=allocType.getCanonicalType())
+    {
+      CGM.getDiags().Report(E->getLocStart(), diag::err_duetto_invalid_plament_new) << E->getSourceRange();
+    }
+    else
+    {
+      // We can skip the cast
+      EmitCallArg(allocatorArgs, castExpr->getSubExpr(), *(allocatorType->param_type_begin() + 1));
+      startArg++;
+    }
+  }
+
   // We start at 1 here because the first argument (the allocation size)
   // has already been emitted.
-  EmitCallArgs(allocatorArgs, allocatorType, E->placement_arg_begin(),
+  EmitCallArgs(allocatorArgs, allocatorType, E->placement_arg_begin() + startArg,
                E->placement_arg_end(), /* CalleeDecl */ nullptr,
-               /*ParamsToSkip*/ 1);
+               /*ParamsToSkip*/ 1 + startArg);
 
   // Emit the allocation call.  If the allocator is a global placement
   // operator, just "inline" it directly.
