@@ -1217,18 +1217,34 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
   case CK_AnyPointerToBlockPointerCast:
   case CK_BitCast: {
     Value *Src = Visit(const_cast<Expr*>(E));
-    if (!CGF.getTarget().isByteAddressable() && !isa<llvm::ConstantPointerNull>(Src))
+    llvm::Type* DestType = ConvertType(DestTy);
+    //We don't care about casts to functions types
+    if (CGF.getTarget().isByteAddressable() || isa<llvm::ConstantPointerNull>(Src) ||
+        (isa<llvm::Function>(Src) && isa<llvm::FunctionType>(DestType)))
+    {
+      return Builder.CreateBitCast(Src, DestType);
+    }
+    else
     {
       // Add an intrincic to tag the cast as one requested by the user
       // And also emit a warning
       CGF.CGM.getDiags().Report(CE->getLocStart(), diag::warn_duetto_unsafe_cast);
 
-      llvm::Value* tmp1=Builder.CreateBitCast(Src, CGF.Int8PtrTy);
-      llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(), llvm::Intrinsic::duetto_cast_user);
-      Src = Builder.CreateCall(intrinsic, tmp1);
-    }
+      llvm::Type* types[] = { DestType, Src->getType()  };
 
-    return Builder.CreateBitCast(Src, ConvertType(DestTy));
+      // Forge the name suffix for this intrinsic since we need mangling
+      MangleContext& MCTX = CGF.CGM.getCXXABI().getMangleContext();
+      SmallString<256> MangledMethodName;
+      llvm::raw_svector_ostream OS(MangledMethodName);
+      OS << '.';
+      MCTX.mangleType(DestTy, OS);
+      OS << '.';
+      MCTX.mangleType(E->getType(), OS);
+
+      llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+                                        llvm::Intrinsic::duetto_cast_user, types, OS.str());
+      return Builder.CreateCall(intrinsic, Src);
+    }
   }
   case CK_AtomicToNonAtomic:
   case CK_NonAtomicToAtomic:
