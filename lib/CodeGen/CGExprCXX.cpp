@@ -1040,22 +1040,35 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                 const FunctionDecl *Callee,
                                 const FunctionProtoType *CalleeType,
                                 const CallArgList &Args,
-                                llvm::Type* allocatedType = NULL) {
+                                QualType* allocType = NULL) {
   llvm::Instruction *CallOrInvoke;
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
+  llvm::Type* allocatedType = allocType?CGF.ConvertType(*allocType):NULL;
 
+  RValue RV;
   if(Callee->hasAttr<MallocAttr>() && !CGF.getTarget().isByteAddressable() &&
      allocatedType && allocatedType->isStructTy())
   {
-    // Forge a call to a special type safe allocator
-    CalleeAddr = CGF.CGM.CreateRuntimeFunction(cast<llvm::FunctionType>(CalleeAddr->getType()->getPointerElementType()),
-                                               Twine("__duettoNew_", allocatedType->getStructName()).str());
-  }
+    // Forge a call to a special type safe allocator intrinsic
+    QualType allocPtrType = CGF.getContext().getPointerType(*allocType);
+    llvm::Type* types[] = { CGF.ConvertType(allocPtrType) };
 
-  RValue RV =
+    llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+                                llvm::Intrinsic::duetto_allocate, types);
+    CalleeAddr = intrinsic;
+    RV =
+      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(allocPtrType, Args,
+                                                              FunctionType::ExtInfo(), RequiredArgs::All),
+                   CalleeAddr, ReturnValueSlot(), Args,
+                   Callee, &CallOrInvoke);
+  }
+  else
+  {
+    RV =
       CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(
                        Args, CalleeType, /*chainCall=*/false),
                    CalleeAddr, ReturnValueSlot(), Args, Callee, &CallOrInvoke);
+  }
 
   /// C++1y [expr.new]p10:
   ///   [In a new-expression,] an implementation is allowed to omit a call
@@ -1312,7 +1325,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
     // TODO: kill any unnecessary computations done for the size
     // argument.
   } else {
-    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, ConvertType(allocType));
+    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, &allocType);
   }
 
   // Emit a null check on the allocation result if the allocation
