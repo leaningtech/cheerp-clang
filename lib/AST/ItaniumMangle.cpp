@@ -144,6 +144,7 @@ public:
                      raw_ostream &) override;
   void mangleCXXDtor(const CXXDestructorDecl *D, CXXDtorType Type,
                      raw_ostream &) override;
+  void mangleType(QualType Ty, raw_ostream &) override;
 
   void mangleStaticGuardVariable(const VarDecl *D, raw_ostream &) override;
   void mangleDynamicInitializer(const VarDecl *D, raw_ostream &Out) override;
@@ -3625,6 +3626,11 @@ void ItaniumMangleContextImpl::mangleCXXDtor(const CXXDestructorDecl *D,
                                              raw_ostream &Out) {
   CXXNameMangler Mangler(*this, Out, D, Type);
   Mangler.mangle(D);
+}
+
+void ItaniumMangleContextImpl::mangleType(QualType Ty, raw_ostream &Out) {
+  CXXNameMangler Mangler(*this, Out);
+  Mangler.mangleType(Ty);
 }
 
 void ItaniumMangleContextImpl::mangleThunk(const CXXMethodDecl *MD,
