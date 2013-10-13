@@ -1299,23 +1299,34 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                 const FunctionDecl *CalleeDecl,
                                 const FunctionProtoType *CalleeType,
                                 const CallArgList &Args,
-                                llvm::Type* allocatedType = NULL) {
+                                QualType* allocType = NULL) {
   llvm::CallBase *CallOrInvoke;
   llvm::Constant *CalleePtr = CGF.CGM.GetAddrOfFunction(CalleeDecl);
-  CGCallee Callee = CGCallee::forDirect(CalleePtr, GlobalDecl(CalleeDecl));
 
+  RValue RV;
   if(CalleeDecl->hasAttr<MallocAttr>() && !CGF.getTarget().isByteAddressable() &&
      allocatedType && allocatedType->isStructTy())
   {
-    // Forge a call to a special type safe allocator
-    CalleePtr = CGF.CGM.CreateRuntimeFunction(cast<llvm::FunctionType>(CalleePtr->getType()->getPointerElementType()),
-                                               Twine("__duettoNew_", allocatedType->getStructName()).str());
-  }
+    // Forge a call to a special type safe allocator intrinsic
+    QualType allocPtrType = CGF.getContext().getPointerType(*allocType);
+    llvm::Type* types[] = { CGF.ConvertType(allocPtrType) };
 
-  RValue RV =
+    llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+                                llvm::Intrinsic::duetto_allocate, types);
+    CGCallee Callee = CGCallee::forDirect(intrinsic, GlobalDecl(CalleeDecl));
+    RV =
+      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(allocPtrType, Args,
+                                                              FunctionType::ExtInfo(), RequiredArgs::All),
+                   Callee, ReturnValueSlot(), Args, &CallOrInvoke);
+  }
+  else
+  {
+    CGCallee Callee = CGCallee::forDirect(CalleePtr, GlobalDecl(CalleeDecl));
+    RV =
       CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(
                        Args, CalleeType, /*ChainCall=*/false),
                    Callee, ReturnValueSlot(), Args, &CallOrInvoke);
+  }
 
   /// C++1y [expr.new]p10:
   ///   [In a new-expression,] an implementation is allowed to omit a call
@@ -1654,7 +1665,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
                  /*AC*/AbstractCallee(), /*ParamsToSkip*/ParamsToSkip);
 
     RValue RV =
-      EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, ConvertType(allocType));
+      EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, &allocType);
 
     // If this was a call to a global replaceable allocation function that does
     // not take an alignment argument, the allocator is known to produce
