@@ -19,6 +19,7 @@
 #include "clang/CodeGen/CGFunctionInfo.h"
 #include "clang/Frontend/CodeGenOptions.h"
 #include "llvm/IR/CallSite.h"
+#include "clang/Sema/SemaDiagnostic.h"
 #include "llvm/IR/Intrinsics.h"
 
 using namespace clang;
@@ -1551,6 +1552,16 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
     assert(E->getNumPlacementArgs() == 1);
     const Expr *arg = *E->placement_arguments().begin();
 
+    // On NBA targets we only accept placement new if the source memory is of the right type
+    if (!getTarget().isByteAddressable())
+    {
+      const CastExpr* castExpr = dyn_cast<CastExpr>(arg);
+      if (castExpr == NULL ||
+          castExpr->getSubExpr()->getType()->getPointeeType().getCanonicalType()!=allocType.getCanonicalType())
+      {
+        CGM.getDiags().Report(E->getLocStart(), diag::err_duetto_invalid_plament_new) << E->getSourceRange();
+      }
+    }
     LValueBaseInfo BaseInfo;
     allocation = EmitPointerWithAlignment(arg, &BaseInfo);
 
