@@ -168,6 +168,7 @@ public:
                              raw_ostream &);
   virtual void mangleCXXDtor(const CXXDestructorDecl *D, CXXDtorType Type,
                              raw_ostream &);
+  virtual void mangleType(QualType Ty, raw_ostream &);
   virtual void mangleReferenceTemporary(const clang::VarDecl *,
                                         raw_ostream &);
 };
@@ -1885,6 +1886,10 @@ void MicrosoftMangleContext::mangleCXXDtor(const CXXDestructorDecl *D,
                                            raw_ostream & Out) {
   MicrosoftCXXNameMangler mangler(*this, Out, D, Type);
   mangler.mangle(D);
+}
+void MicrosoftMangleContext::mangleType(QualType Ty, raw_ostream &Out) {
+  MicrosoftCXXNameMangler mangler(*this, Out);
+  mangler.mangleType(Ty, SourceRange());
 }
 void MicrosoftMangleContext::mangleReferenceTemporary(const clang::VarDecl *VD,
                                                       raw_ostream &) {

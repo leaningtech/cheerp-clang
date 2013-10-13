@@ -151,6 +151,7 @@ public:
                      raw_ostream &);
   void mangleCXXDtor(const CXXDestructorDecl *D, CXXDtorType Type,
                      raw_ostream &);
+  void mangleType(QualType Ty, raw_ostream &);
 
   void mangleItaniumGuardVariable(const VarDecl *D, raw_ostream &);
   void mangleItaniumThreadLocalInit(const VarDecl *D, raw_ostream &);
@@ -3641,6 +3642,11 @@ void ItaniumMangleContext::mangleCXXDtor(const CXXDestructorDecl *D,
                                          raw_ostream &Out) {
   CXXNameMangler Mangler(*this, Out, D, Type);
   Mangler.mangle(D);
+}
+
+void ItaniumMangleContext::mangleType(QualType Ty, raw_ostream &Out) {
+  CXXNameMangler Mangler(*this, Out);
+  Mangler.mangleType(Ty);
 }
 
 void ItaniumMangleContext::mangleThunk(const CXXMethodDecl *MD,

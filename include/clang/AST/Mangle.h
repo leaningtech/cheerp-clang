@@ -125,6 +125,7 @@ public:
                              raw_ostream &) = 0;
   virtual void mangleCXXDtor(const CXXDestructorDecl *D, CXXDtorType Type,
                              raw_ostream &) = 0;
+  virtual void mangleType(QualType Ty, raw_ostream &) = 0;
 
   void mangleGlobalBlock(const BlockDecl *BD,
                          const NamedDecl *ID,
