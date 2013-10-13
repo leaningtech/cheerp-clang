@@ -17,6 +17,7 @@
 #include "CGDebugInfo.h"
 #include "CGObjCRuntime.h"
 #include "clang/Frontend/CodeGenOptions.h"
+#include "clang/Sema/SemaDiagnostic.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/Support/CallSite.h"
 
@@ -1253,7 +1254,21 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
                                                placementArg->getType()) &&
            "type mismatch in call argument!");
 
-    EmitCallArg(allocatorArgs, *placementArg, argType);
+    const Expr* arg = *placementArg;
+    // On NBA targets we only accept placement new if the source memory is of the right type
+    if (i==1 && allocator->isReservedGlobalPlacementOperator() && !getTarget().isByteAddressable())
+    {
+      const CastExpr* castExpr = dyn_cast<CastExpr>(arg);
+      if (castExpr == NULL ||
+          castExpr->getSubExpr()->getType()->getPointeeType().getCanonicalType()!=allocType.getCanonicalType())
+        CGM.getDiags().Report(E->getLocStart(), diag::err_duetto_invalid_plament_new) << E->getSourceRange();
+      else
+      {
+        // We can skip the cast
+        arg = castExpr->getSubExpr();
+      }
+    }
+    EmitCallArg(allocatorArgs, arg, argType);
   }
 
   // Either we've emitted all the call args, or we have a call to a
