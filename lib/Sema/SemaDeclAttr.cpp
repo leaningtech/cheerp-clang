@@ -19,7 +19,6 @@
 #include "clang/AST/DeclObjC.h"
 #include "clang/AST/DeclTemplate.h"
 #include "clang/AST/Expr.h"
-#include "clang/AST/Mangle.h"
 #include "clang/Basic/CharInfo.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/TargetInfo.h"
@@ -27,8 +26,6 @@
 #include "clang/Sema/DelayedDiagnostic.h"
 #include "clang/Sema/Lookup.h"
 #include "clang/Sema/Scope.h"
-#include "clang/Sema/Template.h"
-#include "clang/Sema/TemplateDeduction.h"
 #include "llvm/ADT/StringExtras.h"
 using namespace clang;
 using namespace sema;
@@ -4674,117 +4671,6 @@ static void ProcessNonInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
   }
 }
 
-static FunctionTemplateDecl* getTemplateFromName(Sema& S, const char* tName, const AttributeList& attr)
-{
-  const IdentifierInfo& info=S.Context.Idents.get(tName);
-  DeclContext::lookup_result l=S.CurContext->lookup(DeclarationName(&info));
-  if(l.size() != 1)
-  {
-    S.Diag(attr.getLoc(), diag::err_duetto_missing_special_definition) << tName;
-    return NULL;
-  }
-  return dyn_cast<FunctionTemplateDecl>(l[0]);
-}
-
-static void EmitClientStub(Sema& S, FunctionDecl* F, const AttributeList &attr,
-                           const SmallVector<TemplateArgument, 4>& FArgsPack, CanQualType canonicalResultType)
-{
-  //Stub for the client
-  FunctionTemplateDecl* stubTemplateDecl=getTemplateFromName(S,"clientStub",attr);
-  if(!stubTemplateDecl)
-    return;
-  SmallVector<DeducedTemplateArgument,4> Deduced;
-  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(canonicalResultType)));
-  //Add the types of the function argument
-  if(FArgsPack.size()!=0)
-    Deduced.push_back(DeducedTemplateArgument(TemplateArgument(&FArgsPack[0],FArgsPack.size())));
-  else
-    Deduced.push_back(DeducedTemplateArgument(TemplateArgument((const TemplateArgument*)NULL,0)));
-
-  FunctionDecl* stubFn;
-  sema::TemplateDeductionInfo info2(attr.getLoc());
-#ifndef NDEBUG
-  Sema::TemplateDeductionResult ret2=
-#endif
-  S.FinishTemplateArgumentDeduction(stubTemplateDecl, Deduced, 1, stubFn, info2, NULL);
-  assert(ret2==Sema::TDK_Success);
-  S.InstantiateFunctionDefinition(attr.getLoc(), stubFn, true, true);
-  //HACK: look into the toplevel array to find out if this specific instantiation already exists
-  //This may happen when there is more than a server method with the same signature
-  const llvm::SmallVectorImpl<Decl*>& weakDecl = S.WeakTopLevelDecls();
-  for(uint32_t i=0;i<weakDecl.size();i++)
-  {
-    if(weakDecl[i]==stubFn)
-    {
-      F->stubFunction = stubFn;
-      return;
-    }
-  }
-  S.WeakTopLevelDecls().push_back(stubFn);
-  //Force the function to be used, so that it's emitted
-  stubFn->addAttr(::new (S.Context) UsedAttr(attr.getLoc(), S.Context));
-  F->stubFunction = stubFn;
-
-  Expr* fnDecl = DeclRefExpr::Create(S.Context, NestedNameSpecifierLoc(), attr.getLoc(), stubFn,
-                                     false, attr.getLoc(), stubFn->getType(), VK_RValue);
-  llvm::SmallVector<Expr*, 4> arguments;
-  //We need the mangled name for the function, create a temporary mangle context
-  OwningPtr<MangleContext> MCTX(createItaniumMangleContext(S.Context, S.getDiagnostics()));
-  SmallString<256> MangledMethodName;
-  llvm::raw_svector_ostream OS(MangledMethodName);
-  MCTX->mangleName(F, OS);
-  OS.flush();
-
-  QualType StrType = S.Context.getConstantArrayType(S.Context.CharTy, llvm::APInt(32, MangledMethodName.size()+1),
-                                                    ArrayType::Normal, 0);
-  Expr* NameLiteral = StringLiteral::Create(S.Context, MangledMethodName, StringLiteral::Ascii, false,
-                                            StrType, attr.getLoc());
-  arguments.push_back(ImplicitCastExpr::Create(S.Context, stubFn->getParamDecl(0)->getType(),
-                      CK_ArrayToPointerDecay, NameLiteral, NULL, VK_RValue));
-  for(unsigned i=0;i<F->param_size();i++)
-  {
-    Expr* arg = DeclRefExpr::Create(S.Context, NestedNameSpecifierLoc(), attr.getLoc(), F->getParamDecl(i),
-                                    false, attr.getLoc(), F->getParamDecl(i)->getType(), VK_RValue);
-    arguments.push_back(arg);
-  }
-  Expr* cast = ImplicitCastExpr::Create(S.Context, S.Context.getPointerType(stubFn->getType()),
-                                        CK_FunctionToPointerDecay, fnDecl, NULL, VK_RValue);
-  Expr* call = new (S.Context) CallExpr(S.Context, cast, arguments, stubFn->getResultType(), VK_RValue, attr.getLoc());
-  Stmt* ret = new (S.Context) ReturnStmt(attr.getLoc(), call, 0);
-
-  F->stubBody = ret;
-}
-
-void EmitServerSkel(Sema& S, FunctionDecl* F, const AttributeList &attr,
-                    const SmallVector<TemplateArgument, 4>& FArgsPack,
-                    CanQualType canonicalFuncPtrType, CanQualType canonicalResultType)
-{
-  //Skel for the server
-  FunctionTemplateDecl* skelTemplateDecl=getTemplateFromName(S,"serverSkel",attr);
-  if(!skelTemplateDecl)
-    return;
-  SmallVector<DeducedTemplateArgument,4> Deduced;
-  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(canonicalFuncPtrType)));
-  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(F, false)));
-  Deduced.push_back(DeducedTemplateArgument(TemplateArgument(canonicalResultType)));
-
-  if(F->param_size()!=0)
-    Deduced.push_back(DeducedTemplateArgument(TemplateArgument(&FArgsPack[0],FArgsPack.size())));
-  else
-    Deduced.push_back(DeducedTemplateArgument(TemplateArgument((const TemplateArgument*)NULL,0)));
-
-  sema::TemplateDeductionInfo info2(attr.getLoc());
-  FunctionDecl* skelFn;
-#ifndef NDEBUG
-  Sema::TemplateDeductionResult ret2=
-#endif
-  S.FinishTemplateArgumentDeduction(skelTemplateDecl, Deduced, 1, skelFn, info2, NULL);
-  assert(ret2==Sema::TDK_Success);
-  S.InstantiateFunctionDefinition(attr.getLoc(), skelFn, true, true);
-  S.WeakTopLevelDecls().push_back(skelFn);
-  F->skelFunction = skelFn;
-}
-
 static void handleClient(Sema &S, Decl* D, const AttributeList &attr)
 {
   D->addAttr(::new (S.Context) ClientAttr(attr.getRange(), S.Context));
@@ -4794,30 +4680,8 @@ static void handleServer(Sema &S, Decl* D, const AttributeList &attr)
 {
   D->addAttr(::new (S.Context) ServerAttr(attr.getRange(), S.Context));
   //This should be a function
-  FunctionDecl* F=dyn_cast<FunctionDecl>(D);
-  assert(F);
-
-  QualType funcType=F->getType();
-  QualType funcPtrType=S.Context.getPointerType(funcType);
-  QualType resultType=F->getResultType();
-  CanQualType canonicalFuncPtrType=S.Context.getCanonicalType(funcPtrType);
-  CanQualType canonicalResultType=S.Context.getCanonicalType(resultType);
-  //Add the types of the function argument
-  FunctionDecl::param_iterator it=F->param_begin();
-  SmallVector<TemplateArgument,4> FArgsPack;
-  for(;it!=F->param_end();++it)
-    FArgsPack.push_back(TemplateArgument((*it)->getOriginalType()));
-
-  if (S.getLangOpts().getDuettoSide() != LangOptions::DUETTO_Server)
-  {
-    EmitClientStub(S, F, attr, FArgsPack, canonicalResultType);
-    return;
-  }
-  else if (S.getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
-  {
-    EmitServerSkel(S, F, attr, FArgsPack, canonicalFuncPtrType, canonicalResultType);
-    return;
-  }
+  if (!isa<FunctionDecl>(D))
+    S.Diag(attr.getLoc(), diag::err_duetto_attribute_not_on_function);
 }
 
 static void ProcessInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
