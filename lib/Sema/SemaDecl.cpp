@@ -6916,6 +6916,10 @@ static void checkIsValidOpenCLKernelParameter(
   } while (!VisitStack.empty());
 }
 
+static FunctionTemplateDecl* getTemplateFromName(Sema& S, const char* tName, const SourceLocation& srcLoc);
+
+static void EmitClientStub(Sema& S, FunctionDecl* F,
+                           const SmallVector<TemplateArgument, 4>& FArgsPack, CanQualType canonicalResultType);
 NamedDecl*
 Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
                               TypeSourceInfo *TInfo, LookupResult &Previous,
@@ -7389,6 +7393,19 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
            diag::err_opencl_return_value_with_address_space);
       NewFD->setInvalidDecl();
     }
+  }
+
+  if (NewFD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Server)
+  {
+    QualType resultType=NewFD->getCallResultType();
+    CanQualType canonicalResultType=Context.getCanonicalType(resultType);
+    //Add the types of the function argument
+    FunctionDecl::param_iterator it=NewFD->param_begin();
+    SmallVector<TemplateArgument,4> FArgsPack;
+    for(;it!=NewFD->param_end();++it)
+      FArgsPack.push_back(TemplateArgument((*it)->getOriginalType()));
+
+    EmitClientStub(*this, NewFD, FArgsPack, canonicalResultType);
   }
 
   if (!getLangOpts().CPlusPlus) {
@@ -10619,7 +10636,7 @@ Decl *Sema::ActOnFinishFunctionBody(Decl *dcl, Stmt *Body,
         computeNRVO(Body, getCurFunction());
     }
     
-    if (FD->hasAttr<ServerAttr>() && Body)
+    if (FD->hasAttr<ServerAttr>() && Body && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
     {
       QualType funcType=FD->getType();
       QualType funcPtrType=Context.getPointerType(funcType);
@@ -10632,10 +10649,7 @@ Decl *Sema::ActOnFinishFunctionBody(Decl *dcl, Stmt *Body,
       for(;it!=FD->param_end();++it)
         FArgsPack.push_back(TemplateArgument((*it)->getOriginalType()));
 
-      if (getLangOpts().getDuettoSide() != LangOptions::DUETTO_Server)
-        EmitClientStub(*this, FD, FArgsPack, canonicalResultType);
-      else if (getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
-        EmitServerSkel(*this, FD, FArgsPack, canonicalFuncPtrType, canonicalResultType);
+      EmitServerSkel(*this, FD, FArgsPack, canonicalFuncPtrType, canonicalResultType);
     }
 
     assert((FD == getCurFunctionDecl() || getCurLambda()->CallOperator == FD) &&
