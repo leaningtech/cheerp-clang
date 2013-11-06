@@ -753,9 +753,6 @@ void CodeGenFunction::StartFunction(GlobalDecl GD,
 
 void CodeGenFunction::EmitFunctionBody(FunctionArgList &Args,
                                        const Stmt *Body) {
-  const FunctionDecl *FD = cast<FunctionDecl>(CurGD.getDecl());
-  if (FD->hasAttr<ServerAttr>() && CGM.getLangOpts().getDuettoSide() == LangOptions::DUETTO_Client)
-    Body = FD->stubBody;
   RegionCounter Cnt = getPGORegionCounter(Body);
   Cnt.beginRegion(Builder);
   if (const CompoundStmt *S = dyn_cast<CompoundStmt>(Body))
