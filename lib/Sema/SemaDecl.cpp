@@ -12372,7 +12372,7 @@ static void EmitClientStub(Sema& S, FunctionDecl* F,
   Expr* call = new (S.Context) CallExpr(S.Context, cast, arguments, stubFn->getCallResultType(), VK_RValue, srcLoc);
   Stmt* ret = new (S.Context) ReturnStmt(srcLoc, call, 0);
 
-  F->stubBody = ret;
+  F->setBody(ret);
 }
 
 static void EmitServerSkel(Sema& S, FunctionDecl* F, const SmallVector<TemplateArgument, 4>& FArgsPack,
