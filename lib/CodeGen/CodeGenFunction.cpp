@@ -630,8 +630,6 @@ void CodeGenFunction::EmitFunctionBody(FunctionArgList &Args) {
   const FunctionDecl *FD = cast<FunctionDecl>(CurGD.getDecl());
   assert(FD->getBody());
   Stmt* body = FD->getBody();
-  if (FD->hasAttr<ServerAttr>() && CGM.getLangOpts().getDuettoSide() == LangOptions::DUETTO_Client)
-    body = FD->stubBody;
   if (const CompoundStmt *S = dyn_cast<CompoundStmt>(body))
     EmitCompoundStmtWithoutScope(*S);
   else

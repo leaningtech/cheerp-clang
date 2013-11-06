@@ -6321,7 +6321,7 @@ static void EmitClientStub(Sema& S, FunctionDecl* F,
   Expr* call = new (S.Context) CallExpr(S.Context, cast, arguments, stubFn->getResultType(), VK_RValue, srcLoc);
   Stmt* ret = new (S.Context) ReturnStmt(srcLoc, call, 0);
 
-  F->stubBody = ret;
+  F->setBody(ret);
 }
 
 NamedDecl*
@@ -9135,8 +9135,9 @@ Decl *Sema::ActOnStartOfFunctionDef(Scope *FnBodyScope, Decl *D) {
   // Enter a new function scope
   PushFunctionScope();
 
-  // See if this is a redefinition.
-  if (!FD->isLateTemplateParsed())
+  // See if this is a redefinition. Bodies of server methods are discarted later
+  if (!FD->isLateTemplateParsed() && 
+      !(FD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() == LangOptions::DUETTO_Client))
     CheckForFunctionRedefinition(FD);
 
   // Builtin functions cannot be defined.
@@ -9384,7 +9385,10 @@ Decl *Sema::ActOnFinishFunctionBody(Decl *dcl, Stmt *Body,
   sema::AnalysisBasedWarnings::Policy *ActivePolicy = 0;
 
   if (FD) {
-    FD->setBody(Body);
+    // If the function is a server one and we are on client side, skip the body
+    // a client stub should have been already generated
+    if (!(FD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() == LangOptions::DUETTO_Client))
+      FD->setBody(Body);
 
     if (getLangOpts().CPlusPlus1y && !FD->isInvalidDecl() && Body &&
         !FD->isDependentContext() && FD->getResultType()->isUndeducedType()) {
