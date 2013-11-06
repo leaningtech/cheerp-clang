@@ -739,6 +739,8 @@ public:
   unsigned ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
                                llvm::SmallVector<const CXXBaseSpecifier*, 4>& path);
 
+  llvm::Function* GetUserCastIntrinsic(SourceLocation srcLoc, QualType SrcTy, QualType DestTy);
+
   /// A pair of helper functions for a __block variable.
   class ByrefHelpers : public llvm::FoldingSetNode {
   public:

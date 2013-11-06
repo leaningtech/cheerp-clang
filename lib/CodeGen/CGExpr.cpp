@@ -3022,8 +3022,19 @@ LValue CodeGenFunction::EmitCastLValue(const CastExpr *E) {
     const auto *CE = cast<ExplicitCastExpr>(E);
 
     LValue LV = EmitLValue(E->getSubExpr());
-    llvm::Value *V = Builder.CreateBitCast(LV.getAddress(),
-                                           ConvertType(CE->getTypeAsWritten()));
+    llvm::Value *V = LV.getAddress();
+    llvm::Type* DestType = ConvertType(CE->getTypeAsWritten());
+    if (CGM.getTarget().isByteAddressable())
+    {
+      V = Builder.CreateBitCast(V, DestType);
+    }
+    else
+    {
+      llvm::Function* intrinsic = CGM.GetUserCastIntrinsic(CE->getLocStart(),
+		      getContext().getPointerType(E->getSubExpr()->getType()),
+		      CE->getTypeAsWritten());
+      V = Builder.CreateCall(intrinsic, V);
+    }
     return MakeAddrLValue(V, E->getType());
   }
   case CK_ObjCObjectLValueCast: {
