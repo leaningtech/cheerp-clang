@@ -36,6 +36,7 @@
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Frontend/CodeGenOptions.h"
+#include "clang/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/Triple.h"
 #include "llvm/IR/CallingConv.h"
@@ -2145,6 +2146,25 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD) {
 
     duettoFunctionMap.push_back(llvm::ConstantStruct::getAnon(structFields));
   }
+}
+
+llvm::Function* CodeGenModule::GetUserCastIntrinsic(SourceLocation srcLoc, QualType SrcTy, QualType DestTy)
+{
+  getDiags().Report(srcLoc, diag::warn_duetto_unsafe_cast);
+
+  llvm::Type* types[] = { getTypes().ConvertType(DestTy), getTypes().ConvertType(SrcTy) };
+
+  // Forge the name suffix for this intrinsic since we need mangling
+  MangleContext& MCTX = getCXXABI().getMangleContext();
+  SmallString<256> MangledMethodName;
+  llvm::raw_svector_ostream OS(MangledMethodName);
+  OS << '.';
+  MCTX.mangleType(DestTy, OS);
+  OS << '.';
+  MCTX.mangleType(SrcTy, OS);
+
+  return llvm::Intrinsic::getDeclaration(&getModule(),
+                                     llvm::Intrinsic::duetto_cast_user, types, OS.str());
 }
 
 void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {
