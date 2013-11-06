@@ -2211,6 +2211,25 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
   }
 }
 
+llvm::Function* CodeGenModule::GetUserCastIntrinsic(SourceLocation srcLoc, QualType SrcTy, QualType DestTy)
+{
+  getDiags().Report(srcLoc, diag::warn_duetto_unsafe_cast);
+
+  llvm::Type* types[] = { getTypes().ConvertType(DestTy), getTypes().ConvertType(SrcTy) };
+
+  // Forge the name suffix for this intrinsic since we need mangling
+  ItaniumMangleContext& MCTX = (ItaniumMangleContext&)getCXXABI().getMangleContext();
+  SmallString<256> MangledMethodName;
+  llvm::raw_svector_ostream OS(MangledMethodName);
+  OS << '.';
+  MCTX.mangleType(DestTy, OS);
+  OS << '.';
+  MCTX.mangleType(SrcTy, OS);
+
+  return llvm::Intrinsic::getDeclaration(&getModule(),
+                                     llvm::Intrinsic::duetto_cast_user, types, OS.str());
+}
+
 void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {
   const ValueDecl *D = cast<ValueDecl>(GD.getDecl());
   const AliasAttr *AA = D->getAttr<AliasAttr>();
