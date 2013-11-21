@@ -34,6 +34,7 @@ const char *Action::getClassName(ActionClass AC) {
   case LipoJobClass: return "lipo";
   case DsymutilJobClass: return "dsymutil";
   case VerifyJobClass: return "verify";
+  case DuettoCompileJobClass: return "duetto-compiler";
   }
 
   llvm_unreachable("invalid class");
@@ -119,4 +120,10 @@ void VerifyJobAction::anchor() {}
 
 VerifyJobAction::VerifyJobAction(ActionList &Inputs, types::ID Type)
   : JobAction(VerifyJobClass, Inputs, Type) {
+}
+
+void DuettoCompileJobAction::anchor() {}
+
+DuettoCompileJobAction::DuettoCompileJobAction(ActionList &Inputs, types::ID Type)
+  : JobAction(DuettoCompileJobClass, Inputs, Type) {
 }

@@ -51,9 +51,10 @@ public:
     LipoJobClass,
     DsymutilJobClass,
     VerifyJobClass,
+    DuettoCompileJobClass,
 
     JobClassFirst=PreprocessJobClass,
-    JobClassLast=VerifyJobClass
+    JobClassLast=DuettoCompileJobClass
   };
 
   static const char *getClassName(ActionClass AC);
@@ -236,6 +237,15 @@ public:
   VerifyJobAction(ActionList &Inputs, types::ID Type);
   static bool classof(const Action *A) {
     return A->getKind() == VerifyJobClass;
+  }
+};
+
+class DuettoCompileJobAction : public JobAction {
+  virtual void anchor();
+public:
+  DuettoCompileJobAction(ActionList &Inputs, types::ID Type);
+  static bool classof(const Action *A) {
+    return A->getKind() == DuettoCompileJobClass;
   }
 };
 
