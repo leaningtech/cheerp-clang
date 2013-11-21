@@ -53,9 +53,10 @@ public:
     DsymutilJobClass,
     VerifyDebugInfoJobClass,
     VerifyPCHJobClass,
+    DuettoCompileJobClass,
 
     JobClassFirst=PreprocessJobClass,
-    JobClassLast=VerifyPCHJobClass
+    JobClassLast=DuettoCompileJobClass
   };
 
   static const char *getClassName(ActionClass AC);
@@ -273,6 +274,15 @@ public:
   VerifyPCHJobAction(std::unique_ptr<Action> Input, types::ID Type);
   static bool classof(const Action *A) {
     return A->getKind() == VerifyPCHJobClass;
+  }
+};
+
+class DuettoCompileJobAction : public JobAction {
+  virtual void anchor();
+public:
+  DuettoCompileJobAction(ActionList &Inputs, types::ID Type);
+  static bool classof(const Action *A) {
+    return A->getKind() == DuettoCompileJobClass;
   }
 };
 
