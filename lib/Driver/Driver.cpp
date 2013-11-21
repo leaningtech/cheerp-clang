@@ -1226,7 +1226,7 @@ void Driver::BuildActions(const ToolChain &TC, DerivedArgList &Args,
         continue;
 
       // Otherwise construct the appropriate action.
-      Current.reset(ConstructPhaseAction(Args, Phase, Current.release()));
+      Current.reset(ConstructPhaseAction(Args, Phase, Current.release(), TC));
       if (Current->getType() == types::TY_Nothing)
         break;
     }
@@ -1252,7 +1252,7 @@ void Driver::BuildActions(const ToolChain &TC, DerivedArgList &Args,
 }
 
 Action *Driver::ConstructPhaseAction(const ArgList &Args, phases::ID Phase,
-                                     Action *Input) const {
+                                     Action *Input, const ToolChain& TC) const {
   llvm::PrettyStackTraceString CrashInfo("Constructing phase actions");
   // Build the appropriate action.
   switch (Phase) {
