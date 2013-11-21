@@ -1297,7 +1297,7 @@ Action *Driver::ConstructPhaseAction(const ArgList &Args, phases::ID Phase,
       return new CompileJobAction(Input, types::TY_ModuleFile);
     } else if (Args.hasArg(options::OPT_verify_pch)) {
       return new VerifyPCHJobAction(Input, types::TY_Nothing);
-    } else if (IsUsingLTO(Args)) {
+    } else if (IsUsingLTO(Args) || TC.getArch() == llvm::Triple::duetto) {
       types::ID Output =
         Args.hasArg(options::OPT_S) ? types::TY_LTO_IR : types::TY_LTO_BC;
       return new CompileJobAction(Input, Output);
