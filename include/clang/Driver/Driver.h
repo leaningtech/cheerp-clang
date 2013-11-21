@@ -343,7 +343,7 @@ public:
   /// \p Phase on the \p Input, taking in to account arguments
   /// like -fsyntax-only or --analyze.
   Action *ConstructPhaseAction(const llvm::opt::ArgList &Args, phases::ID Phase,
-                               Action *Input) const;
+                               Action *Input, const ToolChain& TC) const;
 
   /// BuildJobsForAction - Construct the jobs to perform for the
   /// action \p A.
