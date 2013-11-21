@@ -1264,7 +1264,7 @@ void Driver::BuildActions(const ToolChain &TC, DerivedArgList &Args,
         continue;
 
       // Otherwise construct the appropriate action.
-      Current = ConstructPhaseAction(Args, Phase, std::move(Current));
+      Current = ConstructPhaseAction(Args, Phase, std::move(Current), TC);
       if (Current->getType() == types::TY_Nothing)
         break;
     }
@@ -1291,7 +1291,7 @@ void Driver::BuildActions(const ToolChain &TC, DerivedArgList &Args,
 
 std::unique_ptr<Action>
 Driver::ConstructPhaseAction(const ArgList &Args, phases::ID Phase,
-                             std::unique_ptr<Action> Input) const {
+                             std::unique_ptr<Action> Input, const ToolChain& TC) const {
   llvm::PrettyStackTraceString CrashInfo("Constructing phase actions");
   // Build the appropriate action.
   switch (Phase) {
