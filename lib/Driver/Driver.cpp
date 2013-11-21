@@ -1276,7 +1276,18 @@ void Driver::BuildActions(const ToolChain &TC, DerivedArgList &Args,
 
   // Add a link action if necessary.
   if (!LinkerInputs.empty())
-    Actions.push_back(new LinkJobAction(LinkerInputs, types::TY_Image));
+  {
+    // Duetto: We need an additional step for to generated JS
+    if (TC.getArch() == llvm::Triple::duetto)
+    {
+      Action* linkJob = new LinkJobAction(LinkerInputs, types::TY_LLVM_BC);
+      ActionList duettoCompilerList;
+      duettoCompilerList.push_back(linkJob);
+      Actions.push_back(new DuettoCompileJobAction(duettoCompilerList, types::TY_Image));
+    }
+    else
+      Actions.push_back(new LinkJobAction(LinkerInputs, types::TY_Image));
+  }
 
   // If we are linking, claim any options which are obviously only used for
   // compilation.
