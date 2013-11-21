@@ -766,6 +766,8 @@ public:
 };
 
 class LLVM_LIBRARY_VISIBILITY Duetto : public ToolChain {
+private:
+  mutable std::unique_ptr<tools::duetto::DuettoCompiler> DuettoCompiler;
 public:
   Duetto(const Driver &D, const llvm::Triple& Triple,
          const llvm::opt::ArgList &Args);
@@ -781,6 +783,9 @@ public:
   virtual void
   AddClangCXXStdlibIncludeArgs(const llvm::opt::ArgList &DriverArgs,
                                llvm::opt::ArgStringList &CC1Args) const;
+
+  virtual Tool *buildLinker() const;
+  virtual Tool *getTool(Action::ActionClass AC) const;
 };
 
 } // end namespace toolchains
