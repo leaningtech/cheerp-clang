@@ -673,6 +673,35 @@ public:
 };
 }
 
+/// Duetto tools: llvm-link and duetto-compiler
+namespace duetto {
+  class LLVM_LIBRARY_VISIBILITY Link : public Tool {
+  public:
+    Link(const ToolChain &TC) : Tool("duetto::Link", "linker", TC) {}
+
+    virtual bool hasIntegratedCPP() const { return false; }
+    virtual bool isLinkJob() const { return true; }
+
+    virtual void ConstructJob(Compilation &C, const JobAction &JA,
+                              const InputInfo &Output,
+                              const InputInfoList &Inputs,
+                              const llvm::opt::ArgList &TCArgs,
+                              const char *LinkingOutput) const;
+  };
+
+  class LLVM_LIBRARY_VISIBILITY DuettoCompiler : public Tool {
+  public:
+    DuettoCompiler(const ToolChain &TC) : Tool("duetto::DuettoCompiler", "linker", TC) {}
+
+    virtual bool hasIntegratedCPP() const { return false; }
+
+    virtual void ConstructJob(Compilation &C, const JobAction &JA,
+                              const InputInfo &Output,
+                              const InputInfoList &Inputs,
+                              const llvm::opt::ArgList &TCArgs,
+                              const char *LinkingOutput) const;
+  };
+} // end namespace duetto
 } // end namespace toolchains
 } // end namespace driver
 } // end namespace clang
