@@ -68,9 +68,10 @@ public:
     VerifyPCHJobClass,
     OffloadBundlingJobClass,
     OffloadUnbundlingJobClass,
+    CheerpCompileJobClass,
 
     JobClassFirst = PreprocessJobClass,
-    JobClassLast = OffloadUnbundlingJobClass
+    JobClassLast = CheerpCompileJobClass
   };
 
   // The offloading kind determines if this action is binded to a particular
@@ -500,6 +501,7 @@ public:
   }
 };
 
+<<<<<<< HEAD
 class OffloadUnbundlingJobAction final : public JobAction {
   void anchor() override;
 
@@ -543,6 +545,15 @@ public:
 
   static bool classof(const Action *A) {
     return A->getKind() == OffloadUnbundlingJobClass;
+  }
+};
+
+class CheerpCompileJobAction : public JobAction {
+  virtual void anchor();
+public:
+  CheerpCompileJobAction(ActionList &Inputs, types::ID Type);
+  static bool classof(const Action *A) {
+    return A->getKind() == CheerpCompileJobClass;
   }
 };
 
