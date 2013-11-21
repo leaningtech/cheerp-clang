@@ -40,6 +40,7 @@ const char *Action::getClassName(ActionClass AC) {
     return "clang-offload-bundler";
   case OffloadUnbundlingJobClass:
     return "clang-offload-unbundler";
+  case CheerpCompileJobClass: return "cheerp-compiler";
   }
 
   llvm_unreachable("invalid class");
@@ -401,3 +402,9 @@ void OffloadUnbundlingJobAction::anchor() {}
 
 OffloadUnbundlingJobAction::OffloadUnbundlingJobAction(Action *Input)
     : JobAction(OffloadUnbundlingJobClass, Input, Input->getType()) {}
+
+void CheerpCompileJobAction::anchor() {}
+
+CheerpCompileJobAction::CheerpCompileJobAction(ActionList &Inputs, types::ID Type)
+  : JobAction(CheerpCompileJobClass, Inputs, Type) {
+}
