@@ -1023,7 +1023,7 @@ std::string CompilerInvocation::GetResourcesPath(const char *Argv0,
   return P.str();
 }
 
-static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args) {
+static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args, LangOptions::DuettoSideTy duettoSide) {
   using namespace options;
   Opts.Sysroot = Args.getLastArgValue(OPT_isysroot, "/");
   Opts.Verbose = Args.hasArg(OPT_v);
@@ -1130,6 +1130,9 @@ static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args) {
       Group = frontend::ExternCSystem;
     Opts.AddPath((*I)->getValue(), Group, false, true);
   }
+  // Add duetto specific include directory for server side stuff
+  if (duettoSide == LangOptions::DUETTO_Server)
+    Opts.AddPath(LLVM_PREFIX "/include/native", frontend::System, false, true);
 
   // Add the path prefixes which are implicitly treated as being system headers.
   for (arg_iterator I = Args.filtered_begin(OPT_system_header_prefix,
@@ -1877,12 +1880,12 @@ bool CompilerInvocation::CreateFromArgs(CompilerInvocation &Res,
   ParseTargetArgs(Res.getTargetOpts(), *Args);
   Success = ParseCodeGenArgs(Res.getCodeGenOpts(), *Args, DashX, Diags,
                              Res.getTargetOpts()) && Success;
-  ParseHeaderSearchArgs(Res.getHeaderSearchOpts(), *Args);
   if (DashX != IK_AST && DashX != IK_LLVM_IR) {
     ParseLangArgs(*Res.getLangOpts(), *Args, DashX, Diags);
     if (Res.getFrontendOpts().ProgramAction == frontend::RewriteObjC)
       Res.getLangOpts()->ObjCExceptions = 1;
   }
+  ParseHeaderSearchArgs(Res.getHeaderSearchOpts(), *Args, Res.getLangOpts()->getDuettoSide());
   // FIXME: ParsePreprocessorArgs uses the FileManager to read the contents of
   // PCH file and find the original header name. Remove the need to do that in
   // ParsePreprocessorArgs and remove the FileManager 
