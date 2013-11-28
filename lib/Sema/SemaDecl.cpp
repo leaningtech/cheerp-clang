@@ -10491,22 +10491,6 @@ static void EmitClientStub(Sema& S, FunctionDecl* F,
   S.FinishTemplateArgumentDeduction(stubTemplateDecl, Deduced, 1, stubFn, info2, NULL);
   assert(ret2==Sema::TDK_Success);
   S.InstantiateFunctionDefinition(srcLoc, stubFn, true, true);
-  //HACK: look into the toplevel array to find out if this specific instantiation already exists
-  //This may happen when there is more than a server method with the same signature
-  const llvm::SmallVectorImpl<Decl*>& weakDecl = S.WeakTopLevelDecls();
-  for(uint32_t i=0;i<weakDecl.size();i++)
-  {
-    if(weakDecl[i]==stubFn)
-    {
-      F->stubFunction = stubFn;
-      return;
-    }
-  }
-  S.WeakTopLevelDecls().push_back(stubFn);
-  //Force the function to be used, so that it's emitted
-  stubFn->addAttr(::new (S.Context) UsedAttr(srcLoc, S.Context, 0));
-  F->stubFunction = stubFn;
-
   Expr* fnDecl = DeclRefExpr::Create(S.Context, NestedNameSpecifierLoc(), srcLoc, stubFn,
                                      false, srcLoc, stubFn->getType(), VK_RValue);
   llvm::SmallVector<Expr*, 4> arguments;
