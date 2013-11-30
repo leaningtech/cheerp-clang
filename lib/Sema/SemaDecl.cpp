@@ -10545,6 +10545,7 @@ static void EmitServerSkel(Sema& S, FunctionDecl* F, const SmallVector<TemplateA
   Sema::TemplateDeductionResult ret2=
 #endif
   S.FinishTemplateArgumentDeduction(skelTemplateDecl, Deduced, 1, skelFn, info2, NULL);
+  //TODO: error message
   assert(ret2==Sema::TDK_Success);
   S.InstantiateFunctionDefinition(srcLoc, skelFn, true, true);
   S.WeakTopLevelDecls().push_back(skelFn);
