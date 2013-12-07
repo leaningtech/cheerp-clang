@@ -232,6 +232,8 @@ char DuettoNativeRewriterPass::ID = 0;
 
 static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
                                    PassManagerBase &PM) {
+  //Run InstCombine first, to remove load/stores for the this argument
+  PM.add(createInstructionCombiningPass());
   PM.add(new DuettoNativeRewriterPass());
 }
 
