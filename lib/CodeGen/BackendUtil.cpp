@@ -457,6 +457,8 @@ static void initTargetOptions(llvm::TargetOptions &Options,
 
 static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
                                    PassManagerBase &PM) {
+  //Run InstCombine first, to remove load/stores for the this argument
+  PM.add(createInstructionCombiningPass());
   PM.add(createDuettoNativeRewriterPass());
 }
 
