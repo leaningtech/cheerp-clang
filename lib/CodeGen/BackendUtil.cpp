@@ -249,6 +249,8 @@ static void addSymbolRewriterPass(const CodeGenOptions &Opts,
 
 static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
                                    PassManagerBase &PM) {
+  //Run InstCombine first, to remove load/stores for the this argument
+  PM.add(createInstructionCombiningPass());
   PM.add(createDuettoNativeRewriterPass());
 }
 
