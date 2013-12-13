@@ -787,8 +787,9 @@ void CodeGenFunction::EmitInitializerForField(FieldDecl *Field,
         EmitAutoVarDecl(*ArrayIndexes[I]);
     }
     
-    EmitAggMemberInitializer(*this, LHS, Init, ArrayIndexVar, FieldType,
-                             ArrayIndexes, 0);
+    if (!Field->hasAttr<NoInitAttr>())
+      EmitAggMemberInitializer(*this, LHS, Init, ArrayIndexVar, FieldType,
+                               ArrayIndexes, 0);
   }
   }
 

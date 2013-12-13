@@ -514,6 +514,10 @@ def Server : InheritableAttr {
   let Spellings = [CXX11<"", "server">];
 }
 
+def NoInit : InheritableAttr {
+  let Spellings = [CXX11<"", "noinit">];
+}
+
 def NSBridged : InheritableAttr {
   let Spellings = [GNU<"ns_bridged">];
   let Subjects = [Record];
