@@ -9309,18 +9309,21 @@ void Sema::ActOnUninitializedDecl(Decl *RealDecl,
     // C++0x [dcl.init]p11:
     //   If no initializer is specified for an object, the object is
     //   default-initialized; [...].
-    InitializedEntity Entity = InitializedEntity::InitializeVariable(Var);
-    InitializationKind Kind
-      = InitializationKind::CreateDefault(Var->getLocation());
+    if (!Var->hasAttr<NoInitAttr>())
+    {
+      InitializedEntity Entity = InitializedEntity::InitializeVariable(Var);
+      InitializationKind Kind
+        = InitializationKind::CreateDefault(Var->getLocation());
 
-    InitializationSequence InitSeq(*this, Entity, Kind, None);
-    ExprResult Init = InitSeq.Perform(*this, Entity, Kind, None);
-    if (Init.isInvalid())
-      Var->setInvalidDecl();
-    else if (Init.get()) {
-      Var->setInit(MaybeCreateExprWithCleanups(Init.get()));
-      // This is important for template substitution.
-      Var->setInitStyle(VarDecl::CallInit);
+      InitializationSequence InitSeq(*this, Entity, Kind, None);
+      ExprResult Init = InitSeq.Perform(*this, Entity, Kind, None);
+      if (Init.isInvalid())
+        Var->setInvalidDecl();
+      else if (Init.get()) {
+        Var->setInit(MaybeCreateExprWithCleanups(Init.get()));
+        // This is important for template substitution.
+        Var->setInitStyle(VarDecl::CallInit);
+      }
     }
 
     CheckCompleteVariableDeclaration(Var);
