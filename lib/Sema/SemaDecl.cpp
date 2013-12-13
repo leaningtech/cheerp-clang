@@ -6297,7 +6297,8 @@ static void EmitClientStub(Sema& S, FunctionDecl* F,
     ParmVarDecl* param = F->getParamDecl(i);
     param->setUsed(true);
     Expr* arg = DeclRefExpr::Create(S.Context, NestedNameSpecifierLoc(), srcLoc, param,
-                                    false, srcLoc, param->getType(), VK_RValue);
+                                    false, srcLoc, param->getType().getNonReferenceType(),
+                                    (param->getType()->getAs<ReferenceType>())?VK_LValue:VK_RValue);
     arguments.push_back(arg);
   }
   Expr* cast = ImplicitCastExpr::Create(S.Context, S.Context.getPointerType(stubFn->getType()),
