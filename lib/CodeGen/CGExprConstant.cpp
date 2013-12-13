@@ -668,6 +668,8 @@ public:
     }
 
     case CK_LValueToRValue:
+      if (DeclRefExpr* decl = dyn_cast<DeclRefExpr>(subExpr))
+        return EmitDeclRef(decl, true);
     case CK_AtomicToNonAtomic:
     case CK_NonAtomicToAtomic:
     case CK_NoOp:
@@ -1006,16 +1008,26 @@ public:
     return E->getValue() ? llvm::ConstantInt::getTrue(boolType) : llvm::ConstantInt::getFalse(boolType);
   }
 
-  llvm::Constant *VisitDeclRefExpr(DeclRefExpr *E) {
-    //TODO: We should discriminate if we are getting a pointer or not
+  llvm::Constant *EmitDeclRef(DeclRefExpr *E, bool getValue) {
     if (VarDecl* decl = dyn_cast<VarDecl>(E->getDecl()))
-      return CGM.GetAddrOfGlobalVar(decl);
-    else if (FunctionDecl* decl = dyn_cast<FunctionDecl>(E->getDecl()))
-      return CGM.GetAddrOfGlobal(GlobalDecl(decl));
+    {
+      if(getValue)
+      {
+        assert(decl->hasInit());
+        return Visit(decl->getInit());
+      }
+      else
+        return CGM.GetAddrOfGlobalVar(decl);
+    }
     else if (EnumConstantDecl* decl = dyn_cast<EnumConstantDecl>(E->getDecl()))
       return llvm::Constant::getIntegerValue(CGM.Int32Ty, decl->getInitVal());
-    else
-      return 0;
+    else if (FunctionDecl* decl = dyn_cast<FunctionDecl>(E->getDecl()))
+        return CGM.GetAddrOfGlobal(GlobalDecl(decl));
+    return 0;
+  }
+
+  llvm::Constant *VisitDeclRefExpr(DeclRefExpr *E) {
+    return EmitDeclRef(E, false);
   }
 
   llvm::Constant* emitPointerArithmetic(llvm::Constant* Base, llvm::Constant* Offset)
