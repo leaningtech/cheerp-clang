@@ -10492,7 +10492,8 @@ static void EmitClientStub(Sema& S, FunctionDecl* F,
   assert(ret2==Sema::TDK_Success);
   S.InstantiateFunctionDefinition(srcLoc, stubFn, true, true);
   Expr* fnDecl = DeclRefExpr::Create(S.Context, NestedNameSpecifierLoc(), srcLoc, stubFn,
-                                     false, srcLoc, stubFn->getType(), VK_RValue);
+                                     false, srcLoc, stubFn->getType().getNonReferenceType(),
+                                     (stubFn->getType()->getAs<ReferenceType>())?VK_LValue:VK_RValue);
   llvm::SmallVector<Expr*, 4> arguments;
   //We need the mangled name for the function, create a temporary mangle context
   std::unique_ptr<MangleContext> MCTX(S.getASTContext().createMangleContext());
