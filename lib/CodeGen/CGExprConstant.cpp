@@ -1001,6 +1001,11 @@ public:
     return llvm::ConstantFP::get(CGM.getLLVMContext(), E->getValue());
   }
 
+  llvm::Constant *VisitCXXBoolLiteralExpr(const CXXBoolLiteralExpr *E) {
+    llvm::Type* boolType = ConvertType(E->getType());
+    return E->getValue() ? llvm::ConstantInt::getTrue(boolType) : llvm::ConstantInt::getFalse(boolType);
+  }
+
   llvm::Constant *VisitDeclRefExpr(DeclRefExpr *E) {
     //TODO: We should discriminate if we are getting a pointer or not
     if (VarDecl* decl = dyn_cast<VarDecl>(E->getDecl()))
@@ -1063,6 +1068,8 @@ public:
 
     if (E->getOpcode() == BO_Or)
       return llvm::ConstantExpr::getOr(LHS, RHS);
+    else if (E->getOpcode() == BO_Shl)
+      return llvm::ConstantExpr::getShl(LHS, RHS);
 
     return 0;
   }
