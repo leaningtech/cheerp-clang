@@ -3497,7 +3497,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D,
   llvm::Constant *Init = nullptr;
   CXXRecordDecl *RD = ASTTy->getBaseElementTypeUnsafe()->getAsCXXRecordDecl();
   bool NeedsGlobalCtor = false;
-  bool NeedsGlobalDtor = RD && !RD->hasTrivialDestructor();
+  bool NeedsGlobalDtor = !D->hasAttr<NoInitAttr>() && RD && !RD->hasTrivialDestructor();
 
   const VarDecl *InitDecl;
   const Expr *InitExpr = D->getAnyInitializer(InitDecl);
@@ -3554,7 +3554,8 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D,
 
       if (getLangOpts().CPlusPlus) {
         Init = EmitNullConstant(T);
-        NeedsGlobalCtor = true;
+	if (!D->hasAttr<NoInitAttr>())
+          NeedsGlobalCtor = true;
       } else {
         ErrorUnsupported(D, "static initializer");
         Init = llvm::UndefValue::get(getTypes().ConvertType(T));
