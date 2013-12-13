@@ -5933,6 +5933,11 @@ static void handleServer(Sema &S, Decl *D, const AttributeList &Attr)
     S.Diag(Attr.getLoc(), diag::err_duetto_attribute_not_on_function);
 }
 
+static void handleNoInit(Sema &S, Decl* D, const AttributeList &Attr)
+{
+  D->addAttr(::new (S.Context) NoInitAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
+}
+
 //===----------------------------------------------------------------------===//
 // Top Level Sema Entry Points
 //===----------------------------------------------------------------------===//
@@ -6572,6 +6577,9 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
     break;
   case AttributeList::AT_XRayLogArgs:
     handleXRayLogArgsAttr(S, D, Attr);
+    break;
+  case AttributeList::AT_NoInit:
+    handleNoInit(S, D, Attr);
     break;
   }
 }

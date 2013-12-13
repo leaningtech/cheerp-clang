@@ -1450,6 +1450,11 @@ def Server : InheritableAttr {
   let Documentation = [Undocumented];
 }
 
+def NoInit : InheritableAttr {
+  let Spellings = [CXX11<"", "noinit", 12>];
+  let Documentation = [Undocumented];
+}
+
 def ObjCBridge : InheritableAttr {
   let Spellings = [GNU<"objc_bridge">];
   let Subjects = SubjectList<[Record, TypedefName], ErrorDiag,
