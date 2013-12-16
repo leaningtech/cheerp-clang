@@ -909,9 +909,33 @@ public:
     return 0;
   }
 
+  llvm::Constant* GenerateConstantCXXInitializer(CXXConstructorDecl* D)
+  {
+    if(!D->hasTrivialBody())
+      return 0;
+    CXXConstructorDecl::init_iterator it=D->init_begin();
+    CXXConstructorDecl::init_iterator itE=D->init_end();
+    const CGRecordLayout& rl = CGM.getTypes().getCGRecordLayout(D->getParent());
+    //Allocate a vector to hold all the initializer
+    llvm::SmallVector<llvm::Constant*, 4> initializers;
+    llvm::StructType* llvmType = rl.getLLVMType();
+    initializers.resize(llvmType->getNumElements(), NULL);
+    for(;it!=itE;++it)
+    {
+      if((*it)->isBaseInitializer())
+        return 0;
+      llvm::Constant* init=Visit((*it)->getInit());
+      if(!init)
+        return 0;
+      unsigned idx=rl.getLLVMFieldNo((*it)->getMember());
+      initializers[idx] = init;
+    }
+    return llvm::ConstantStruct::get(llvmType, initializers);
+  }
+
   llvm::Constant *VisitCXXConstructExpr(CXXConstructExpr *E) {
     if (!E->getConstructor()->isTrivial())
-      return 0;
+      return GenerateConstantCXXInitializer(E->getConstructor());
 
     QualType Ty = E->getType();
 
