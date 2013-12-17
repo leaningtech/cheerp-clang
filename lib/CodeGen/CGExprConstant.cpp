@@ -930,6 +930,12 @@ public:
       unsigned idx=rl.getLLVMFieldNo((*it)->getMember());
       initializers[idx] = init;
     }
+    //Fill NULL values with Null values as required
+    for(unsigned i=0;i<initializers.size();i++)
+    {
+      if(initializers[i]==NULL)
+        initializers[i] = llvm::Constant::getNullValue(llvmType->getElementType(i));
+    }
     return llvm::ConstantStruct::get(llvmType, initializers);
   }
 
@@ -1037,11 +1043,16 @@ public:
     {
       if(getValue)
       {
-        assert(decl->hasInit());
-        return Visit(decl->getInit());
+        if(decl->hasInit())
+          return Visit(decl->getInit());
+        //If no initialization is known, return 0 below
       }
       else
-        return CGM.GetAddrOfGlobalVar(decl);
+      {
+        if(decl->hasGlobalStorage())
+          return CGM.GetAddrOfGlobalVar(decl);
+        //If not global, return 0 below
+      }
     }
     else if (EnumConstantDecl* decl = dyn_cast<EnumConstantDecl>(E->getDecl()))
       return llvm::Constant::getIntegerValue(CGM.Int32Ty, decl->getInitVal());
