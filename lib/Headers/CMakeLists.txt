@@ -5,6 +5,7 @@ set(files
   avx2intrin.h
   bmiintrin.h
   bmi2intrin.h
+  duettointrin.h
   emmintrin.h
   f16cintrin.h
   float.h
