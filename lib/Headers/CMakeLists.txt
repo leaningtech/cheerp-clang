@@ -33,6 +33,7 @@ set(files
   clzerointrin.h
   cpuid.h
   clflushoptintrin.h
+  duettointrin.h
   emmintrin.h
   f16cintrin.h
   float.h
