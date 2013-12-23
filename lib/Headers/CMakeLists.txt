@@ -13,6 +13,7 @@ set(files
   bmi2intrin.h
   bmiintrin.h
   cpuid.h
+  duettointrin.h
   emmintrin.h
   f16cintrin.h
   float.h

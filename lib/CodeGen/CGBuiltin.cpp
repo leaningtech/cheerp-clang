@@ -1754,6 +1754,8 @@ Value *CodeGenFunction::EmitTargetBuiltinExpr(unsigned BuiltinID,
   case llvm::Triple::aarch64:
   case llvm::Triple::aarch64_be:
     return EmitAArch64BuiltinExpr(BuiltinID, E);
+  case llvm::Triple::duetto:
+    return EmitDuettoBuiltinExpr(BuiltinID, E);
   case llvm::Triple::x86:
   case llvm::Triple::x86_64:
     return EmitX86BuiltinExpr(BuiltinID, E);
@@ -5756,6 +5758,25 @@ Value *CodeGenFunction::EmitAArch64BuiltinExpr(unsigned BuiltinID,
     return EmitNeonCall(CGM.getIntrinsic(Int, Ty), Ops, "vuqadd");
   }
   }
+}
+
+Value *CodeGenFunction::EmitDuettoBuiltinExpr(unsigned BuiltinID,
+                                              const CallExpr *E) {
+  //Emit the operands
+  SmallVector<Value*, 4> Ops;
+  for (unsigned i = 0, e = E->getNumArgs(); i != e; i++) {
+    Ops.push_back(EmitScalarExpr(E->getArg(i)));
+  }
+
+  if (BuiltinID == Duetto::BI__builtin_duetto_pointer_base) {
+    Function *F = CGM.getIntrinsic(Intrinsic::duetto_pointer_base);
+    return Builder.CreateCall(F, Ops);
+  }
+  else if (BuiltinID == Duetto::BI__builtin_duetto_pointer_offset) {
+    Function *F = CGM.getIntrinsic(Intrinsic::duetto_pointer_offset);
+    return Builder.CreateCall(F, Ops);
+  }
+  return 0;
 }
 
 llvm::Value *CodeGenFunction::
