@@ -5133,6 +5133,8 @@ namespace {
 namespace {
 // Duetto base class
 class DuettoTargetInfo : public TargetInfo {
+private:
+    static const Builtin::Info BuiltinInfo[];
 public:
   DuettoTargetInfo(const llvm::Triple &triple) : TargetInfo(triple) {
     DescriptionString = "b-e-p:32:8:8-i1:8:8-i8:8:8-i16:8:8-i32:8:8-"
@@ -5157,9 +5159,8 @@ public:
 
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                  unsigned &NumRecords) const {
-    // FIXME: Implement.
-    Records = 0;
-    NumRecords = 0;
+    Records = BuiltinInfo;
+    NumRecords = clang::Duetto::LastTSBuiltin - Builtin::FirstTSBuiltin;
   }
 
   virtual void getTargetDefines(const LangOptions &Opts,
@@ -5196,6 +5197,13 @@ public:
   virtual const char *getClobbers() const {
     return "";
   }
+};
+
+const Builtin::Info DuettoTargetInfo::BuiltinInfo[] = {
+#define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
+#define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
+                                              ALL_LANGUAGES },
+#include "clang/Basic/BuiltinsDuetto.def"
 };
 } // end anonymous namespace.
 
