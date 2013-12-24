@@ -913,6 +913,13 @@ public:
   {
     if(!D->hasTrivialBody())
       return 0;
+    //Base and dynamic classes are currently unsupported
+    if(D->getParent()->getNumBases() ||
+       D->getParent()->getNumVBases() ||
+       D->getParent()->isDynamicClass())
+    {
+      return 0;
+    }
     CXXConstructorDecl::init_iterator it=D->init_begin();
     CXXConstructorDecl::init_iterator itE=D->init_end();
     const CGRecordLayout& rl = CGM.getTypes().getCGRecordLayout(D->getParent());
