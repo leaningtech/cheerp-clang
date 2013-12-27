@@ -1668,7 +1668,7 @@ void CompilerInvocation::setLangDefaults(LangOptions &Opts, InputKind IK,
     case InputKind::CXX:
     case InputKind::ObjCXX:
       // The PS4 uses C++11 as the default C++ standard.
-      if (T.isPS4())
+      if (T.isPS4() || T.getArch() == llvm::Triple::cheerp)
         LangStd = LangStandard::lang_gnucxx11;
       else
         LangStd = LangStandard::lang_gnucxx98;

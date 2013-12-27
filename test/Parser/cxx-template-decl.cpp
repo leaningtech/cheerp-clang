@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -fsyntax-only -verify %s -fdelayed-template-parsing -DDELAYED_TEMPLATE_PARSING
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify %s -fdelayed-template-parsing -DDELAYED_TEMPLATE_PARSING
 // RUN: %clang_cc1 -fsyntax-only -verify -std=gnu++1z %s
 
 

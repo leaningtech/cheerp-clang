@@ -4,6 +4,7 @@
 // RUN: %clang_cc1 -E -triple x86_64-linux-gnu -std=c++14 %s -o - | FileCheck --check-prefix=CHECK-14 %s
 // RUN: %clang_cc1 -E -triple x86_64-linux-gnu -std=c++1z %s -o - | FileCheck --check-prefix=CHECK-1Z %s
 
+
 #if __has_feature(cxx_atomic)
 int has_atomic();
 #else

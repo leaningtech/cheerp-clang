@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -x objective-c++ -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -fblocks -Wexplicit-ownership-type -verify -Wno-objc-root-class %s
+// RUN: %clang_cc1 -std=gnu++98 -x objective-c++ -triple x86_64-apple-darwin11 -fsyntax-only -fobjc-arc -fblocks -Wexplicit-ownership-type -verify -Wno-objc-root-class %s
 // rdar://10244607
 
 typedef const struct __CFString * CFStringRef;
