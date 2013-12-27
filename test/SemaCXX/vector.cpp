@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin10 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -triple x86_64-apple-darwin10 -fsyntax-only -verify %s
 typedef char char16 __attribute__ ((__vector_size__ (16)));
 typedef long long longlong16 __attribute__ ((__vector_size__ (16)));
 typedef char char16_e __attribute__ ((__ext_vector_type__ (16)));

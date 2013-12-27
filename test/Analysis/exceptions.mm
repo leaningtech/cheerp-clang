@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -analyze -fexceptions -fobjc-exceptions -fcxx-exceptions -analyzer-checker=core,unix.Malloc,debug.ExprInspection -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -analyze -fexceptions -fobjc-exceptions -fcxx-exceptions -analyzer-checker=core,unix.Malloc,debug.ExprInspection -verify %s
 
 void clang_analyzer_checkInlined(bool);
 

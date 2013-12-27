@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -Wno-int-to-pointer-cast -fsyntax-only -verify -pedantic-errors %s
-// RUN: %clang_cc1 -Wno-int-to-pointer-cast -fsyntax-only -verify -pedantic-errors -x objective-c++ %s
+// RUN: %clang_cc1 -std=gnu++98 -Wno-int-to-pointer-cast -fsyntax-only -verify -pedantic-errors %s
+// RUN: %clang_cc1 -std=gnu++98 -Wno-int-to-pointer-cast -fsyntax-only -verify -pedantic-errors -x objective-c++ %s
 
 void f() {
   int a;

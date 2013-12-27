@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple=x86_64-apple-darwin10 -emit-llvm -o - | FileCheck %s
+// RUN: %clang_cc1 -std=gnu++98 %s -triple=x86_64-apple-darwin10 -emit-llvm -o - | FileCheck %s
 
 // Check that IR gen doesn't try to do an lvalue-to-rvalue conversion
 // on a volatile reference result.  rdar://problem/8338198

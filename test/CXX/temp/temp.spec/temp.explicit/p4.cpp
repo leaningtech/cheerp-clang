@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -pedantic %s
 
 template<typename T> void f0(T); // expected-note{{here}}
 template void f0(int); // expected-error{{explicit instantiation of undefined function template}}

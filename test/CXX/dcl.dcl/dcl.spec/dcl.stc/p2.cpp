@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-c++0x-compat %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -Wno-c++0x-compat %s
 
 // The auto or register specifiers can be applied only to names of objects
 // declared in a block (6.3) or to function parameters (8.4).

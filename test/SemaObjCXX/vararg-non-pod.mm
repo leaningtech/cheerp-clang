@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -Wno-error=non-pod-varargs
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s -Wno-error=non-pod-varargs
 
 extern char version[];
 

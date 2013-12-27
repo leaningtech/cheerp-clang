@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wformat -verify %s -Wno-error=non-pod-varargs
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -Wformat -verify %s -Wno-error=non-pod-varargs
 
 #include <stdarg.h>
 

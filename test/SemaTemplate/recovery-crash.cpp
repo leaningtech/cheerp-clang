@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1  -std=gnu++98 -fsyntax-only -verify %s
 
 // Clang used to crash trying to recover while adding 'this->' before Work(x);
 

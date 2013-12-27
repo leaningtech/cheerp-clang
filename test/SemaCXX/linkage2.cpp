@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -std=gnu++11 %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-c++11-extensions -Wno-local-type-template-args %s
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-c++11-extensions -Wno-local-type-template-args -fmodules %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -std=gnu++11 %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -Wno-c++11-extensions -Wno-local-type-template-args %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -Wno-c++11-extensions -Wno-local-type-template-args -fmodules %s
 
 namespace test1 {
   int x; // expected-note {{previous definition is here}}

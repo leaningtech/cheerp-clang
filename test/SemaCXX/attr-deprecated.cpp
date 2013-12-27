@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -verify -fexceptions
+// RUN: %clang_cc1 -std=gnu++98 %s -verify -fexceptions
 class A {
   void f() __attribute__((deprecated)); // expected-note 2 {{'f' has been explicitly marked deprecated here}}
   void g(A* a);

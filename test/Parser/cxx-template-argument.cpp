@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
-// RUN: %clang_cc1 -fsyntax-only -verify %s -fdelayed-template-parsing
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s -fdelayed-template-parsing
 
 template<typename T> struct A {};
 

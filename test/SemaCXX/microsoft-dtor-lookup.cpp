@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -triple %itanium_abi_triple -fsyntax-only %s
-// RUN: %clang_cc1 -triple %ms_abi_triple -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -triple %itanium_abi_triple -fsyntax-only %s
+// RUN: %clang_cc1 -std=gnu++98 -triple %ms_abi_triple -verify %s
 
 namespace Test1 {
 

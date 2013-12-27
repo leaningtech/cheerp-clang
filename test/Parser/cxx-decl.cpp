@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -triple i386-linux -pedantic-errors -fcxx-exceptions -fexceptions %s
+// RUN: %clang_cc1 -std=gnu++98 -verify -fsyntax-only -triple i386-linux -pedantic-errors -fcxx-exceptions -fexceptions %s
 
 const char const *x10; // expected-error {{duplicate 'const' declaration specifier}}
 

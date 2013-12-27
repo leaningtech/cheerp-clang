@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wthread-safety %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -Wthread-safety %s
 
 #define LOCKABLE            __attribute__ ((lockable))
 #define SCOPED_LOCKABLE     __attribute__ ((scoped_lockable))

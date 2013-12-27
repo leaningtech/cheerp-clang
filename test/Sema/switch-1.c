@@ -1,5 +1,5 @@
 // RUN: %clang_cc1 -fsyntax-only -verify -triple x86_64-apple-darwin10 %s
-// RUN: %clang_cc1 -x c++ -fsyntax-only -verify -triple x86_64-apple-darwin10 %s
+// RUN: %clang_cc1 -std=gnu++98 -x c++ -fsyntax-only -verify -triple x86_64-apple-darwin10 %s
 // rdar://11577384
 // rdar://13423975
 

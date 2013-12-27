@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -E -triple x86_64-linux-gnu -std=c++11 %s -o - | FileCheck --check-prefix=CHECK-11 %s
-// RUN: %clang_cc1 -E -triple armv7-apple-darwin -std=c++11 %s -o - | FileCheck --check-prefix=CHECK-NO-TLS %s
-// RUN: %clang_cc1 -E -triple x86_64-linux-gnu %s -o - | FileCheck --check-prefix=CHECK-NO-11 %s
-// RUN: %clang_cc1 -E -triple x86_64-linux-gnu -std=c++1y %s -o - | FileCheck --check-prefix=CHECK-1Y %s
+// RUN: %clang_cc1 -std=gnu++98 -E -triple x86_64-linux-gnu -std=c++11 %s -o - | FileCheck --check-prefix=CHECK-11 %s
+// RUN: %clang_cc1 -std=gnu++98 -E -triple armv7-apple-darwin -std=c++11 %s -o - | FileCheck --check-prefix=CHECK-NO-TLS %s
+// RUN: %clang_cc1 -std=gnu++98 -E -triple x86_64-linux-gnu %s -o - | FileCheck --check-prefix=CHECK-NO-11 %s
+// RUN: %clang_cc1 -std=gnu++98 -E -triple x86_64-linux-gnu -std=c++1y %s -o - | FileCheck --check-prefix=CHECK-1Y %s
 
 #if __has_feature(cxx_atomic)
 int has_atomic();
