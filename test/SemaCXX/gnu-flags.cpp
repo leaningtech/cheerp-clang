@@ -1,19 +1,19 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -DNONE -Wno-gnu
-// RUN: %clang_cc1 -fsyntax-only -verify %s -DALL -Wgnu 
-// RUN: %clang_cc1 -fsyntax-only -verify %s -DALL -Wno-gnu \
+// RUN: %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DNONE -Wno-gnu
+// RUN: %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DALL -Wgnu 
+// RUN: %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DALL -Wno-gnu \
 // RUN:   -Wgnu-anonymous-struct -Wredeclared-class-member \
 // RUN:   -Wgnu-flexible-array-union-member -Wgnu-folding-constant \
 // RUN:   -Wgnu-empty-struct
-// RUN: %clang_cc1 -fsyntax-only -verify %s -DNONE -Wgnu \
+// RUN: %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DNONE -Wgnu \
 // RUN:   -Wno-gnu-anonymous-struct -Wno-redeclared-class-member \
 // RUN:   -Wno-gnu-flexible-array-union-member -Wno-gnu-folding-constant \
 // RUN:   -Wno-gnu-empty-struct
 // Additional disabled tests:
-// %clang_cc1 -fsyntax-only -verify %s -DANONYMOUSSTRUCT -Wno-gnu -Wgnu-anonymous-struct
-// %clang_cc1 -fsyntax-only -verify %s -DREDECLAREDCLASSMEMBER -Wno-gnu -Wredeclared-class-member
-// %clang_cc1 -fsyntax-only -verify %s -DFLEXIBLEARRAYUNIONMEMBER -Wno-gnu -Wgnu-flexible-array-union-member
-// %clang_cc1 -fsyntax-only -verify %s -DFOLDINGCONSTANT -Wno-gnu -Wgnu-folding-constant
-// %clang_cc1 -fsyntax-only -verify %s -DEMPTYSTRUCT -Wno-gnu -Wgnu-empty-struct
+// %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DANONYMOUSSTRUCT -Wno-gnu -Wgnu-anonymous-struct
+// %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DREDECLAREDCLASSMEMBER -Wno-gnu -Wredeclared-class-member
+// %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DFLEXIBLEARRAYUNIONMEMBER -Wno-gnu -Wgnu-flexible-array-union-member
+// %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DFOLDINGCONSTANT -Wno-gnu -Wgnu-folding-constant
+// %clang_cc1 -std=gnu++98 -std=gnu++98 -fsyntax-only -verify %s -DEMPTYSTRUCT -Wno-gnu -Wgnu-empty-struct
 
 #if NONE
 // expected-no-diagnostics

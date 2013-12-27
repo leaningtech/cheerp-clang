@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 
 // C++0x [temp.arg.nontype] p5:
 //   The following conversions are performed on each expression used as

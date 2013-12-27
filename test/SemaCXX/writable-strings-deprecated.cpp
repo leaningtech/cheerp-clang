@@ -1,12 +1,12 @@
-// RUN: %clang_cc1 -fsyntax-only -Wno-deprecated-writable-strings -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wno-deprecated -Wdeprecated-increment-bool -verify %s
-// RUN: %clang_cc1 -fsyntax-only -fwritable-strings -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Wno-write-strings -verify %s
-// RUN: %clang_cc1 -fsyntax-only -Werror=c++11-compat -verify %s -DERROR
-// RUN: %clang_cc1 -fsyntax-only -Werror=deprecated -Wno-error=deprecated-increment-bool -verify %s -DERROR
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s -Wno-deprecated -Wdeprecated-increment-bool
-// RUN: %clang_cc1 -fsyntax-only -std=c++11 -verify %s -pedantic-errors -DERROR
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -Wno-deprecated-writable-strings -verify %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -Wno-deprecated -Wdeprecated-increment-bool -verify %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -fwritable-strings -verify %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -Wno-write-strings -verify %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -Werror=c++11-compat -verify %s -DERROR
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -Werror=deprecated -Wno-error=deprecated-increment-bool -verify %s -DERROR
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -std=c++11 -verify %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -std=c++11 -verify %s -Wno-deprecated -Wdeprecated-increment-bool
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -std=c++11 -verify %s -pedantic-errors -DERROR
 // rdar://8827606
 
 char *fun(void)

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify -fopenmp=libiomp5 %s
+// RUN: %clang_cc1 --std=gnu++98 -verify -fopenmp=libiomp5 %s
 
 void foo() {
 }

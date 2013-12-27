@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple x86_64-apple-darwin10 -emit-llvm -o - -mconstructor-aliases -fcxx-exceptions -fexceptions -O1 -disable-llvm-optzns > %t
+// RUN: %clang_cc1 %s --std=gnu++98 -triple x86_64-apple-darwin10 -emit-llvm -o - -mconstructor-aliases -fcxx-exceptions -fexceptions -O1 -disable-llvm-optzns > %t
 // RUN: FileCheck --check-prefix=CHECK1 --input-file=%t %s
 // RUN: FileCheck --check-prefix=CHECK2 --input-file=%t %s
 // RUN: FileCheck --check-prefix=CHECK3 --input-file=%t %s

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -emit-llvm %s -o %t
+// RUN: %clang_cc1 -std=gnu++98 -emit-llvm %s -o %t
 
 enum E {};
 int v1 = E();

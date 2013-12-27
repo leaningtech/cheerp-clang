@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -E -dM %s | FileCheck --check-prefix=CHECK-GNU-COMPAT %s
-// RUN: %clang_cc1 -std=c++98 -E -dM %s | FileCheck --check-prefix=CHECK-CONFORMING %s
-// RUN: %clang_cc1 -fsyntax-only -std=gnu++98 -verify -Weverything %s
+// RUN: %clang_cc1 -std=gnu++98 -E -dM %s | FileCheck --check-prefix=CHECK-GNU-COMPAT %s
+// RUN: %clang_cc1 -std=gnu++98 -std=c++98 -E -dM %s | FileCheck --check-prefix=CHECK-CONFORMING %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -std=gnu++98 -verify -Weverything %s
 #include <stdbool.h>
 #define zzz
 

@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s -Wno-unused
-// RUN: %clang_cc1 -fsyntax-only -verify %s -Wno-unused -fms-compatibility -DMSVC
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify %s -Wno-unused
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify %s -Wno-unused -fms-compatibility -DMSVC
 namespace N {
   struct A {
     typedef int type;

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 
 struct IntHolder { // expected-note{{here}} // expected-note 2{{candidate constructor (the implicit copy constructor)}}
   IntHolder(int); // expected-note 2{{candidate constructor}}

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -verify %s
 
 class A {
 public:

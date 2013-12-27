@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 
 //   A program that calls for default-initialization or value-initialization of
 //   an entity of reference type is illformed. If T is a cv-qualified type, the

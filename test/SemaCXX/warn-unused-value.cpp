@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wunused-value %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -Wunused-value %s
 
 // PR4806
 namespace test0 {

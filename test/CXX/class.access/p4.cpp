@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fcxx-exceptions -fexceptions -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fcxx-exceptions -fexceptions -fsyntax-only -verify %s
 
 // C++0x [class.access]p4:
 

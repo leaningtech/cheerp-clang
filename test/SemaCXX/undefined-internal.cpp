@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wbind-to-temporary-copy %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify -Wbind-to-temporary-copy %s
 
 // Make sure we don't produce invalid IR.
-// RUN: %clang_cc1 -emit-llvm-only %s
+// RUN: %clang_cc1 --std=gnu++98 -emit-llvm-only %s
 
 namespace test1 {
   static void foo(); // expected-warning {{function 'test1::foo' has internal linkage but is not defined}}

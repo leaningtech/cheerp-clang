@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -pedantic -verify %s
+// RUN: %clang_cc1 --std=gnu++98 -pedantic -verify %s
 int* f(int) { return 0; }
 float* f(float) { return 0; }
 void f();

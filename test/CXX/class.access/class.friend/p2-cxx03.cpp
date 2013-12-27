@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 template<typename T>
 class X0 {
   friend T; // expected-warning{{non-class friend type 'T' is a C++11 extension}}

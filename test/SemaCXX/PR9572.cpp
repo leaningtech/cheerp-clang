@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 class Base {
   virtual ~Base(); // expected-note {{implicitly declared private here}}
 };

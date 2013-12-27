@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -Wc++11-compat -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -Wc++11-compat -fdiagnostics-parseable-fixits %s 2>&1 | FileCheck %s
 
 // Verify that the appropriate fixits are emitted for narrowing conversions in
 // initializer lists.

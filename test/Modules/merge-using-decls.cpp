@@ -1,6 +1,6 @@
 // RUN: rm -rf %t
-// RUN: %clang_cc1 -fmodules -fmodules-cache-path=%t -x c++ -I%S/Inputs/merge-using-decls -verify %s -DORDER=1
-// RUN: %clang_cc1 -fmodules -fmodules-cache-path=%t -x c++ -I%S/Inputs/merge-using-decls -verify %s -DORDER=2
+// RUN: %clang_cc1 --std=gnu++98 -fmodules -fmodules-cache-path=%t -x c++ -I%S/Inputs/merge-using-decls -verify %s -DORDER=1
+// RUN: %clang_cc1 --std=gnu++98 -fmodules -fmodules-cache-path=%t -x c++ -I%S/Inputs/merge-using-decls -verify %s -DORDER=2
 
 #if ORDER == 1
 #include "a.h"

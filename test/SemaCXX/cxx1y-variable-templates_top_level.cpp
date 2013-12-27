@@ -1,6 +1,6 @@
-// RUN: %clang_cc1 -verify -fsyntax-only -Wno-c++11-extensions -Wno-c++1y-extensions %s -DPRECXX11
-// RUN: %clang_cc1 -std=c++11 -verify -fsyntax-only -Wno-c++1y-extensions %s
-// RUN: %clang_cc1 -std=c++1y -verify -fsyntax-only %s
+// RUN: %clang_cc1 -std=gnu++98 -verify -fsyntax-only -Wno-c++11-extensions -Wno-c++1y-extensions %s -DPRECXX11
+// RUN: %clang_cc1 -std=gnu++98 -std=c++11 -verify -fsyntax-only -Wno-c++1y-extensions %s
+// RUN: %clang_cc1 -std=gnu++98 -std=c++1y -verify -fsyntax-only %s
 
 #ifdef PRECXX11
   #define CONST const

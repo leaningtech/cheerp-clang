@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only %s
 
 template<typename T, int N>
 struct X0 {

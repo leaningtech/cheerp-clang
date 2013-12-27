@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -x objective-c++ -Wno-return-type -fblocks -fms-extensions -rewrite-objc -fobjc-runtime=macosx-fragile-10.5 %s -o %t-rw.cpp
-// RUN: %clang_cc1 -fsyntax-only -fblocks -Wno-address-of-temporary -D"id=void*" -D"SEL=void*" -D"__declspec(X)=" %t-rw.cpp
+// RUN: %clang_cc1 -std=gnu++98 -x objective-c++ -Wno-return-type -fblocks -fms-extensions -rewrite-objc -fobjc-runtime=macosx-fragile-10.5 %s -o %t-rw.cpp
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -fblocks -Wno-address-of-temporary -D"id=void*" -D"SEL=void*" -D"__declspec(X)=" %t-rw.cpp
 // radar 7540194
 
 extern "C" __declspec(dllexport) void BreakTheRewriter(int i) {
@@ -53,5 +53,5 @@ __declspec(dllexport) extern "C" __declspec(dllexport) void XXXXBreakTheRewriter
 - (void) Meth { __attribute__((__blocks__(byref))) void ** listp = (void **)list; }
 @end
 
-// $CLANG -cc1 -fms-extensions -rewrite-objc -fobjc-runtime=macosx-fragile-10.5 -x objective-c++ -fblocks bug.mm
+// $CLANG -cc1 -std=gnu++98 -fms-extensions -rewrite-objc -fobjc-runtime=macosx-fragile-10.5 -x objective-c++ -fblocks bug.mm
 // g++ -c -D"__declspec(X)=" bug.cpp

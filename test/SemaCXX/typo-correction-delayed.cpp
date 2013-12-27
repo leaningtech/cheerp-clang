@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -Wno-c++11-extensions %s
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify -Wno-c++11-extensions %s
 
 struct A {};
 struct B {};

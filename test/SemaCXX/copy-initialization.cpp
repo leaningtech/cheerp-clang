@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s 
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s 
 class X {
 public:
   explicit X(const X&); // expected-note {{candidate constructor}}

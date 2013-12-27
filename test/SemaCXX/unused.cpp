@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 
 // PR4103 : Make sure we don't get a bogus unused expression warning
 namespace PR4103 {

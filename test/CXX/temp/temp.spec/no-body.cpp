@@ -1,7 +1,7 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 // RUN: cp %s %t
-// RUN: not %clang_cc1 -x c++ -fixit %t -DFIXING
-// RUN: %clang_cc1 -x c++ %t -DFIXING
+// RUN: not %clang_cc1 -std=gnu++98 -x c++ -fixit %t -DFIXING
+// RUN: %clang_cc1 -std=gnu++98 -x c++ %t -DFIXING
 
 template<typename T> void f(T) { }
 template<typename T> void g(T) { }

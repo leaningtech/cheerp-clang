@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 template<class T> struct A {
   static T t; // expected-error{{static data member instantiated with function type 'int ()'}}
 };

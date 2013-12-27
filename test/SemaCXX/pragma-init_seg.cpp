@@ -1,5 +1,5 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -fms-extensions %s -triple x86_64-pc-win32
-// RUN: %clang_cc1 -fsyntax-only -verify -fms-extensions %s -triple i386-apple-darwin13.3.0
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify -fms-extensions %s -triple x86_64-pc-win32
+// RUN: %clang_cc1 --std=gnu++98 -fsyntax-only -verify -fms-extensions %s -triple i386-apple-darwin13.3.0
 
 #ifndef __APPLE__
 #pragma init_seg(L".my_seg") // expected-warning {{expected 'compiler', 'lib', 'user', or a string literal}}

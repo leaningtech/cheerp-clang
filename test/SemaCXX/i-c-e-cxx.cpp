@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify -pedantic %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify -pedantic %s
 
 // C++-specific tests for integral constant expressions.
 

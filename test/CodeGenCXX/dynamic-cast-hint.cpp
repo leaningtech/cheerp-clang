@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple x86_64-apple-darwin12 -emit-llvm -o - %s | FileCheck %s
+// RUN: %clang_cc1 -std=gnu++98 -triple x86_64-apple-darwin12 -emit-llvm -o - %s | FileCheck %s
 
 class A { virtual ~A() {} };
 class B { virtual ~B() {} };

@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -fsyntax-only -verify %s
+// RUN: %clang_cc1 -std=gnu++98 -fsyntax-only -verify %s
 
 class Base { // expected-error {{cannot define the implicit copy assignment operator for 'Base', because non-static reference member 'ref' can't use copy assignment operator}} \
   // expected-warning{{class 'Base' does not declare any constructor to initialize its non-modifiable members}}
