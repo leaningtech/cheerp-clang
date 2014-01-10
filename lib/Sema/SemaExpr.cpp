@@ -8135,13 +8135,6 @@ QualType Sema::CheckCompareOperands(ExprResult &LHS, ExprResult &RHS,
     QualType RCanPointeeTy =
       RHSType->castAs<PointerType>()->getPointeeType().getCanonicalType();
 
-    // Duetto: Comparison between void* values does not work
-    if (!Context.getTargetInfo().isByteAddressable() &&
-        (LCanPointeeTy->isVoidType() || RCanPointeeTy->isVoidType()) &&
-        (!LHSIsNull && !RHSIsNull))
-    {
-      Diag(Loc, diag::err_duetto_void_ptr_compare);
-    }
     if (getLangOpts().CPlusPlus) {
       if (LCanPointeeTy == RCanPointeeTy)
         return ResultTy;
