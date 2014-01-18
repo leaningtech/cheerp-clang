@@ -1984,11 +1984,11 @@ void RecordLayoutBuilder::LayoutBitField(const FieldDecl *D) {
       }
       LastBitfieldTypeSize = TypeSize;
     } else {
-      uint64_t NewSizeInBits = FieldOffset + FieldSize;
       //Duetto: This should be more generic. On JS the atomic allocation is a 32 bit int
       uint64_t BitfieldAlignment = byteAddressable ? Context.getTargetInfo().getCharAlign():
                                       Context.getTargetInfo().getIntWidth();
-      setDataSize(llvm::RoundUpToAlignment(NewSizeInBits, BitfieldAlignment));
+      uint64_t NewSizeInBits = FieldOffset + llvm::RoundUpToAlignment(FieldSize, BitfieldAlignment);
+      setDataSize(NewSizeInBits);
       UnfilledBitsInLastUnit = getDataSizeInBits() - NewSizeInBits;
       LastBitfieldTypeSize = 0;
     }
