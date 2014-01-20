@@ -1282,11 +1282,6 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
       if (castExpr == NULL ||
           castExpr->getSubExpr()->getType()->getPointeeType().getCanonicalType()!=allocType.getCanonicalType())
         CGM.getDiags().Report(E->getLocStart(), diag::err_duetto_invalid_plament_new) << E->getSourceRange();
-      else
-      {
-        // We can skip the cast
-        arg = castExpr->getSubExpr();
-      }
     }
     EmitCallArg(allocatorArgs, arg, argType);
   }
