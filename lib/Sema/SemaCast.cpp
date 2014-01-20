@@ -22,6 +22,7 @@
 #include "clang/AST/RecordLayout.h"
 #include "clang/Basic/PartialDiagnostic.h"
 #include "clang/Basic/TargetInfo.h"
+#include "clang/Basic/TargetBuiltins.h"
 #include "clang/Sema/Initialization.h"
 #include "llvm/ADT/SmallVector.h"
 #include <set>
@@ -92,6 +93,19 @@ namespace {
                                             Self.Context.ARCUnbridgedCastTy,
                                             CK_Dependent, castExpr, nullptr,
                                             castExpr->getValueKind());
+      }
+      //Duetto: Mark cast as safe for some builtins
+      if (CallExpr* CE = dyn_cast<CallExpr>(castExpr->getSubExpr()))
+      {
+        if (FunctionDecl* FDecl = CE->getDirectCallee())
+        {
+          if (unsigned builtin = FDecl->getBuiltinID())
+          {
+            // Casting a value returned from malloc it's ok
+            if (builtin == Builtin::BImalloc)
+              castExpr->setDuettoSafe(true);
+          }
+        }
       }
       return castExpr;
     }
