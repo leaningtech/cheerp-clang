@@ -2070,6 +2070,18 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
     if (!AllPlaceArgs.empty())
       PlacementArgs = AllPlaceArgs;
 
+    // Mark the placement new cast as duetto safe if possible
+    if(!PlacementArgs.empty() && OperatorNew->isReservedGlobalPlacementOperator())
+    {
+      CastExpr* castExpr = dyn_cast<CastExpr>(PlacementArgs[0]);
+      if(castExpr &&
+          castExpr->getSubExpr()->getType()->isPointerType() &&
+          castExpr->getSubExpr()->getType()->getPointeeType().getCanonicalType()==AllocType.getCanonicalType())
+      {
+        castExpr->setDuettoSafe(true);
+      }
+    }
+
     // FIXME: This is wrong: PlacementArgs misses out the first (size) argument.
     DiagnoseSentinelCalls(OperatorNew, PlacementLParen, PlacementArgs);
 
