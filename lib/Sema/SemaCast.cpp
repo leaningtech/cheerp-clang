@@ -102,7 +102,8 @@ namespace {
           if (unsigned builtin = FDecl->getBuiltinID())
           {
             // Casting a value returned from malloc it's ok
-            if (builtin == Builtin::BImalloc)
+            if (builtin == Builtin::BImalloc ||
+                builtin == Builtin::BIcalloc)
               castExpr->setDuettoSafe(true);
           }
         }
