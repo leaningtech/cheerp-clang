@@ -2469,6 +2469,7 @@ public:
                                CastExpr::path_const_iterator PathBegin,
                                CastExpr::path_const_iterator PathEnd);
   llvm::Value * GenerateDowncast(llvm::Value* Value,
+                                 QualType BaseType,
                                  const CXXRecordDecl *Derived,
                                  unsigned BaseIdOffset);
 
