@@ -352,6 +352,7 @@ CodeGenFunction::GenerateUpcast(llvm::Value* Value,
 
 llvm::Value *
 CodeGenFunction::GenerateDowncast(llvm::Value* Value,
+                                  QualType BaseTy,
                                   const CXXRecordDecl *Derived,
                                   unsigned BaseIdOffset)
 {
@@ -359,20 +360,28 @@ CodeGenFunction::GenerateDowncast(llvm::Value* Value,
     getContext().getCanonicalType(getContext().getTagDeclType(Derived));
   llvm::Type *DerivedPtrTy = ConvertType(DerivedTy)->getPointerTo();
 
-  //It sucks, but we need to cast to i8* and back
-  llvm::Value* tmp1=Builder.CreateBitCast(Value, Int8PtrTy);
-  llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGM.getModule(), llvm::Intrinsic::duetto_downcast);
+  llvm::Type* types[] = { DerivedPtrTy, Value->getType() };
+
+  // Forge the name suffix for this intrinsic since we need mangling
+  MangleContext& MCTX = CGM.getCXXABI().getMangleContext();
+  SmallString<256> MangledMethodName;
+  llvm::raw_svector_ostream OS(MangledMethodName);
+  OS << '.';
+  MCTX.mangleType(DerivedTy, OS);
+  OS << '.';
+  MCTX.mangleType(BaseTy, OS);
+
+  llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGM.getModule(),
+                              llvm::Intrinsic::duetto_downcast, types, OS.str());
 
   llvm::Constant* baseOffset = llvm::ConstantInt::get(Int32Ty, BaseIdOffset);
-  Value = Builder.CreateCall2(intrinsic, tmp1, baseOffset);
-
-  return Builder.CreateBitCast(Value, DerivedPtrTy);
+  return Builder.CreateCall2(intrinsic, Value, baseOffset);
 }
 
 llvm::Value *
 CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
                                           const CXXRecordDecl *Derived,
-                                        CastExpr::path_const_iterator PathBegin,
+                                          CastExpr::path_const_iterator PathBegin,
                                           CastExpr::path_const_iterator PathEnd,
                                           bool NullCheckValue) {
   assert(PathBegin != PathEnd && "Base path should not be empty!");
@@ -410,7 +419,7 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
       path.push_back(*I);
 
     unsigned BaseIdOffset=CGM.ComputeBaseIdOffset(Derived, path);
-    Value = GenerateDowncast(Value, Derived, BaseIdOffset);
+    Value = GenerateDowncast(Value, path.back()->getType(), Derived, BaseIdOffset);
   }
   else
   {
