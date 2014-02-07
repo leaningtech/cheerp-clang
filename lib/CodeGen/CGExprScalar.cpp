@@ -1213,7 +1213,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     }
     else
     {
-      llvm::Function* intrinsic = CGF.CGM.GetUserCastIntrinsic(CE->getLocStart(),
+      llvm::Function* intrinsic = CGF.CGM.GetUserCastIntrinsic(CE,
 		      CGF.getContext().getPointerType(E->getType()),
 		      CGF.getContext().getPointerType(DestTy));
       V = Builder.CreateCall(intrinsic, V);
@@ -1228,14 +1228,14 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     Value *Src = Visit(const_cast<Expr*>(E));
     llvm::Type* DestType = ConvertType(DestTy);
     //We don't care about casts to functions types
-    if (CGF.getTarget().isByteAddressable() || CE->isDuettoSafe() || isa<llvm::ConstantPointerNull>(Src) ||
+    if (CGF.getTarget().isByteAddressable() || isa<llvm::ConstantPointerNull>(Src) ||
         (isa<llvm::Function>(Src) && isa<llvm::FunctionType>(DestType)))
     {
       return Builder.CreateBitCast(Src, DestType);
     }
     else
     {
-      llvm::Function* intrinsic = CGF.CGM.GetUserCastIntrinsic(CE->getLocStart(), E->getType(), DestTy);
+      llvm::Function* intrinsic = CGF.CGM.GetUserCastIntrinsic(CE, E->getType(), DestTy);
       return Builder.CreateCall(intrinsic, Src);
     }
   }

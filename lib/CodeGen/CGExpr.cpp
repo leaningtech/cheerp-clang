@@ -2799,7 +2799,7 @@ LValue CodeGenFunction::EmitCastLValue(const CastExpr *E) {
     }
     else
     {
-      llvm::Function* intrinsic = CGM.GetUserCastIntrinsic(CE->getLocStart(),
+      llvm::Function* intrinsic = CGM.GetUserCastIntrinsic(CE,
 		      getContext().getPointerType(E->getSubExpr()->getType()),
 		      CE->getTypeAsWritten());
       V = Builder.CreateCall(intrinsic, V);
