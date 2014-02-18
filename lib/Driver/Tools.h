@@ -611,7 +611,7 @@ namespace visualstudio {
   };
 } // end namespace visualstudio
 
-  /// Duetto tools: llvm-link and duetto-compiler
+  /// Duetto tools: llvm-link and llc
 namespace duetto {
   class LLVM_LIBRARY_VISIBILITY Link : public Tool  {
   public:
