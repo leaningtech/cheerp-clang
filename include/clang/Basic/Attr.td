@@ -992,6 +992,11 @@ def NoInit : InheritableAttr {
   let Documentation = [Undocumented];
 }
 
+def JsExport : InheritableAttr {
+  let Spellings = [CXX11<"", "jsexport", 12>];
+  let Documentation = [Undocumented];
+}
+
 def ObjCBridge : InheritableAttr {
   let Spellings = [GNU<"objc_bridge">];
   let Subjects = SubjectList<[Record], ErrorDiag>;
