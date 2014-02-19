@@ -893,6 +893,11 @@ bool CodeGenFunction::IsConstructorDelegationValid(
     return false;
   }
 
+  // Do not elide js-exported constructors
+  if (Ctor->getParent()->hasAttr<JsExportAttr>()) {
+    return false;
+  }
+
   // We also disable the optimization for variadic functions because
   // it's impossible to "re-pass" varargs.
   if (Ctor->getType()->getAs<FunctionProtoType>()->isVariadic())
