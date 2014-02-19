@@ -199,6 +199,7 @@ void CodeGenModule::EmitCXXConstructor(const CXXConstructorDecl *ctor,
     // If there are no constructor variants, always emit the complete destructor.
     ctorType = Ctor_Complete;
   } else if (!ctor->getParent()->getNumVBases() &&
+             !ctor->getParent()->hasAttr<JsExportAttr>() &&
              (ctorType == Ctor_Complete || ctorType == Ctor_Base)) {
     // The complete constructor is equivalent to the base constructor
     // for classes with no virtual bases.  Try to emit it as an alias.
