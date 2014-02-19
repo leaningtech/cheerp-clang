@@ -4292,6 +4292,23 @@ void Sema::CheckCompletedCXXClass(CXXRecordDecl *Record) {
   //   instantiated (e.g. meta-functions). This doesn't apply to classes that
   //   have inheriting constructors.
   DeclareInheritingConstructors(Record);
+
+  //Verify that this object is simple enough to have JS layout
+  if (Record->hasAttr<JsExportAttr>())
+  {
+    if (Record->isDynamicClass())
+      Diag(Record->getLocation(), diag::err_duetto_jsexport_on_virtual_class);
+
+    if (Record->hasNonTrivialDestructor())
+      Diag(Record->getLocation(), diag::err_duetto_jsexport_with_non_trivial_destructor);
+
+    //Mark all methods as used
+    CXXRecordDecl::method_iterator it=Record->method_begin();
+    CXXRecordDecl::method_iterator itE=Record->method_end();
+    for(;it!=itE;++it)
+      (*it)->addAttr(::new (Context) UsedAttr(Record->getLocation(), Context));
+    //TODO: Check for any public data or static member
+  }
 }
 
 /// Is the special member function which would be selected to perform the

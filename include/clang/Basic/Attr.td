@@ -518,6 +518,10 @@ def NoInit : InheritableAttr {
   let Spellings = [CXX11<"", "noinit">];
 }
 
+def JsExport : InheritableAttr {
+  let Spellings = [CXX11<"", "jsexport">];
+}
+
 def NSBridged : InheritableAttr {
   let Spellings = [GNU<"ns_bridged">];
   let Subjects = [Record];

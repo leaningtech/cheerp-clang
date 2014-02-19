@@ -4689,6 +4689,13 @@ static void handleNoInit(Sema &S, Decl* D, const AttributeList &attr)
   D->addAttr(::new (S.Context) NoInitAttr(attr.getRange(), S.Context));
 }
 
+static void handleJsExportAttr(Sema &S, Decl *D, const AttributeList &Attr) {
+  if (CXXRecordDecl *RD = dyn_cast<CXXRecordDecl>(D))
+    RD->addAttr(::new (S.Context) JsExportAttr(Attr.getRange(), S.Context));
+  else
+    S.Diag(Attr.getLoc(), diag::warn_attribute_ignored) << Attr.getName();
+}
+
 static void ProcessInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
                                        const AttributeList &Attr) {
   switch (Attr.getKind()) {
@@ -4997,6 +5004,9 @@ static void ProcessInheritableDeclAttr(Sema &S, Scope *scope, Decl *D,
     break;
   case AttributeList::AT_NoInit:
     handleNoInit(S, D, Attr);
+    break;
+  case AttributeList::AT_JsExport:
+    handleJsExportAttr(S, D, Attr);
     break;
 
   default:
