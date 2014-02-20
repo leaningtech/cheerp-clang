@@ -3968,8 +3968,10 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // -fthreadsafe-static is default.
   if (!Args.hasFlag(options::OPT_fthreadsafe_statics,
-                    options::OPT_fno_threadsafe_statics))
+                    options::OPT_fno_threadsafe_statics) ||
+      getToolChain().getArch() == llvm::Triple::duetto) {
     CmdArgs.push_back("-fno-threadsafe-statics");
+  }
 
   // -fuse-cxa-atexit is default.
   if (!Args.hasFlag(options::OPT_fuse_cxa_atexit,
