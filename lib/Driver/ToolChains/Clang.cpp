@@ -3810,7 +3810,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   // than 19.
   if (!Args.hasFlag(options::OPT_fthreadsafe_statics,
                     options::OPT_fno_threadsafe_statics,
-                    !IsWindowsMSVC || IsMSVC2015Compatible))
+                    (!IsWindowsMSVC || IsMSVC2015Compatible)  && getToolChain().getArch() != llvm::Triple::cheerp))
     CmdArgs.push_back("-fno-threadsafe-statics");
 
   // -fno-delayed-template-parsing is default, except for Windows where MSVC STL
