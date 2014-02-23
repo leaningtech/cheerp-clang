@@ -1114,16 +1114,24 @@ public:
     if (!RHS)
       return 0;
 
-    if (E->getOpcode() == BO_Add ||
-        E->getOpcode() == BO_Sub)
+    switch (E->getOpcode())
     {
-      return EmitAddSub(LHS, RHS, E->getOpcode() == BO_Sub);
+       case BO_Add:
+       case BO_Sub:
+         return EmitAddSub(LHS, RHS, E->getOpcode() == BO_Sub);
+       case BO_Mul:
+         return llvm::ConstantExpr::getMul(LHS, RHS);
+       case BO_And:
+         return llvm::ConstantExpr::getAnd(LHS, RHS);
+       case BO_Or:
+         return llvm::ConstantExpr::getOr(LHS, RHS);
+       case BO_Xor:
+         return llvm::ConstantExpr::getXor(LHS, RHS);
+       case BO_Shl:
+         return llvm::ConstantExpr::getShl(LHS, RHS);
+       default:
+         break;
     }
-
-    if (E->getOpcode() == BO_Or)
-      return llvm::ConstantExpr::getOr(LHS, RHS);
-    else if (E->getOpcode() == BO_Shl)
-      return llvm::ConstantExpr::getShl(LHS, RHS);
 
     return 0;
   }
