@@ -1120,7 +1120,10 @@ public:
        case BO_Sub:
          return EmitAddSub(LHS, RHS, E->getOpcode() == BO_Sub);
        case BO_Mul:
-         return llvm::ConstantExpr::getMul(LHS, RHS);
+         if (LHS->getType()->isFloatingPointTy())
+           return llvm::ConstantExpr::getFMul(LHS, RHS);
+         else
+           return llvm::ConstantExpr::getMul(LHS, RHS);
        case BO_And:
          return llvm::ConstantExpr::getAnd(LHS, RHS);
        case BO_Or:
