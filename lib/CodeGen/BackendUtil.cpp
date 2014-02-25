@@ -253,11 +253,13 @@ bool DuettoNativeRewriterPass::runOnFunction(Function& F)
 
 char DuettoNativeRewriterPass::ID = 0;
 
-static void addDuettoNativeRewriterPass(const PassManagerBuilder &Builder,
+static void addDuettoPasses(const PassManagerBuilder &Builder,
                                    PassManagerBase &PM) {
   //Run InstCombine first, to remove load/stores for the this argument
   PM.add(createInstructionCombiningPass());
   PM.add(new DuettoNativeRewriterPass());
+  //Duetto is single threaded, convert atomic instructions to regular ones
+  PM.add(createLowerAtomicPass());
 }
 
 void EmitAssemblyHelper::CreatePasses() {
@@ -339,7 +341,7 @@ void EmitAssemblyHelper::CreatePasses() {
 
   if (TargetTriple.getArch() == llvm::Triple::duetto)
     PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
-                           addDuettoNativeRewriterPass);
+                           addDuettoPasses);
 
 
   PMBuilder.LibraryInfo = new TargetLibraryInfo(TargetTriple);
