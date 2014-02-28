@@ -6307,6 +6307,7 @@ static void EmitClientStub(Sema& S, FunctionDecl* F,
   Stmt* ret = new (S.Context) ReturnStmt(srcLoc, call, 0);
 
   F->setBody(ret);
+  F->addAttr(new (S.Context) WeakAttr(SourceRange(), S.Context));
 }
 
 NamedDecl*
