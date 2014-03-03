@@ -133,7 +133,11 @@ CodeGenFunction::GetAddressOfDirectBaseInCompleteClass(llvm::Value *This,
     GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
     // Duetto: if the base class has no member create a bitcast with duetto metadata
     if(Base->isEmpty())
-       return GenerateUpcastCollapsed(This, ConvertType(Base)->getPointerTo());
+    {
+       QualType BaseTy = getContext().getCanonicalType(getContext().getTagDeclType(Base));
+       QualType DerivedTy = getContext().getCanonicalType(getContext().getTagDeclType(Derived));
+       return GenerateUpcastCollapsed(This, BaseTy, DerivedTy, ConvertType(Base)->getPointerTo());
+    }
     else
     {
       // Get the layout.
@@ -316,14 +320,25 @@ CodeGenModule::ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
 
 llvm::Value *
 CodeGenFunction::GenerateUpcastCollapsed(llvm::Value* Value,
-                                         llvm::Type* BaseTy)
+                                         QualType BaseTy,
+                                         QualType DerivedTy,
+                                         llvm::Type* BasePtrTy)
 {
-  llvm::Value* tmp1=Builder.CreateBitCast(Value, Int8PtrTy);
-  llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGM.getModule(), llvm::Intrinsic::duetto_upcast_collapsed);
+  llvm::Type* types[] = { BasePtrTy, Value->getType() };
 
-  Value = Builder.CreateCall(intrinsic, tmp1);
+  // Forge the name suffix for this intrinsic since we need mangling
+  MangleContext& MCTX = CGM.getCXXABI().getMangleContext();
+  SmallString<256> MangledMethodName;
+  llvm::raw_svector_ostream OS(MangledMethodName);
+  OS << '.';
+  MCTX.mangleType(BaseTy, OS);
+  OS << '.';
+  MCTX.mangleType(DerivedTy, OS);
 
-  return Builder.CreateBitCast(Value, BaseTy);
+  llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGM.getModule(),
+                              llvm::Intrinsic::duetto_upcast_collapsed, types, OS.str());
+
+  return Builder.CreateCall(intrinsic, Value);
 }
 
 llvm::Value * 
@@ -340,13 +355,17 @@ CodeGenFunction::GenerateUpcast(llvm::Value* Value,
     Value=Builder.CreateGEP(Value, GEPConstantIndexes);
 
   // Get the base pointer type.
+  QualType BaseTy = PathEnd[-1]->getType();
   llvm::Type *BasePtrTy = 
     ConvertType((PathEnd[-1])->getType())->getPointerTo();
+  // Get the derived type
+  QualType DerivedTy =
+    getContext().getCanonicalType(getContext().getTagDeclType(Derived));
 
   //Duetto: Check if the type is the expected one. If not create a builtin to handle this.
   //This may happen when empty base classes are used
   if(Value->getType()!=BasePtrTy)
-    Value = GenerateUpcastCollapsed(Value, BasePtrTy);
+    Value = GenerateUpcastCollapsed(Value, BaseTy, DerivedTy, BasePtrTy);
   return Value;
 }
 
