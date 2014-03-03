@@ -494,7 +494,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
             ConvertRecordDeclType(RT->getDecl());
 
       // Return a placeholder type.
-      ResultType = llvm::StructType::get(getLLVMContext());
+      ResultType = llvm::StructType::create(getLLVMContext());
 
       SkippedLayout = true;
       break;
@@ -504,7 +504,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
     // to recursively convert any pointed-to structs.  Converting directly-used
     // structs is ok though.
     if (!RecordsBeingLaidOut.insert(Ty).second) {
-      ResultType = llvm::StructType::get(getLLVMContext());
+      ResultType = llvm::StructType::create(getLLVMContext());
       
       SkippedLayout = true;
       break;
@@ -526,7 +526,7 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
     // don't recurse into it again.
     if (FunctionsBeingProcessed.count(FI)) {
 
-      ResultType = llvm::StructType::get(getLLVMContext());
+      ResultType = llvm::StructType::create(getLLVMContext());
       SkippedLayout = true;
     } else {
 
