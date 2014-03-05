@@ -1207,7 +1207,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
   case CK_ObjCObjectLValueCast: {
     Value *V = EmitLValue(E).getAddress();
     llvm::Type* DestType = ConvertType(CGF.getContext().getPointerType(DestTy));
-    if (CGF.getTarget().isByteAddressable())
+    if (CGF.getTarget().isByteAddressable() || DestType==V->getType())
     {
       V = Builder.CreateBitCast(V, DestType);
     }
@@ -1229,7 +1229,8 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     llvm::Type* DestType = ConvertType(DestTy);
     //We don't care about casts to functions types
     if (CGF.getTarget().isByteAddressable() || isa<llvm::ConstantPointerNull>(Src) ||
-        (isa<llvm::Function>(Src) && isa<llvm::FunctionType>(DestType)))
+        (isa<llvm::Function>(Src) && isa<llvm::FunctionType>(DestType)) ||
+	DestType == Src->getType())
     {
       return Builder.CreateBitCast(Src, DestType);
     }
