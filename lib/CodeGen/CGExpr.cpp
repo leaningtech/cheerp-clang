@@ -2836,7 +2836,7 @@ LValue CodeGenFunction::EmitCastLValue(const CastExpr *E) {
     LValue LV = EmitLValue(E->getSubExpr());
     llvm::Value *V = LV.getAddress();
     llvm::Type* DestType = ConvertType(CE->getTypeAsWritten());
-    if (CGM.getTarget().isByteAddressable())
+    if (CGM.getTarget().isByteAddressable() || DestType==V->getType())
     {
       V = Builder.CreateBitCast(V, DestType);
     }
