@@ -7979,6 +7979,10 @@ bool ASTContext::DeclMustBeEmitted(const Decl *D) {
     return true;
 
   if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
+    // Duetto: Force emission on server methods on the server side
+    if (FD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() == LangOptions::DUETTO_Server)
+      return true;
+
     // Forward declarations aren't required.
     if (!FD->doesThisDeclarationHaveABody())
       return FD->doesDeclarationForceExternallyVisibleDefinition();
