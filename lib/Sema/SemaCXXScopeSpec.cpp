@@ -667,6 +667,10 @@ bool Sema::BuildCXXNestedNameSpecifier(Scope *S,
     Diag(IdentifierLoc, diag::err_no_member) 
       << &Identifier << LookupCtx << SS.getRange();
     return true;
+  } else if (getCurFunctionDecl() && getCurFunctionDecl()->hasAttr<ClientAttr>() &&
+	getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client) {
+    // If the on the wrong side, ignore errors
+    return true;
   } else
     DiagID = diag::err_undeclared_var_use;
 
