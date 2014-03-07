@@ -666,10 +666,14 @@ bool Sema::BuildCXXNestedNameSpecifier(Scope *S,
              diag::note_expected_class_or_namespace_declared_here)
           << &Identifier;
     }
-  } else if (SS.isSet())
+  } else if (SS.isSet()) {
     Diag(IdentifierLoc, diag::err_no_member) << &Identifier << LookupCtx
                                              << SS.getRange();
-  else
+  } else if (getCurFunctionDecl() && getCurFunctionDecl()->hasAttr<ClientAttr>() &&
+	getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client) {
+    // If the on the wrong side, ignore errors
+    return true;
+  } else
     Diag(IdentifierLoc, diag::err_undeclared_var_use) << &Identifier;
 
   return true;
