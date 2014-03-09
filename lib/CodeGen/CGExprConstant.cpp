@@ -947,10 +947,13 @@ public:
   }
 
   llvm::Constant *VisitCXXConstructExpr(CXXConstructExpr *E) {
+    QualType Ty = E->getType();
+
+    if(Ty->isArrayType())
+      return 0;
+
     if (!E->getConstructor()->isTrivial())
       return GenerateConstantCXXInitializer(E->getConstructor());
-
-    QualType Ty = E->getType();
 
     // FIXME: We should not have to call getBaseElementType here.
     const RecordType *RT = 
