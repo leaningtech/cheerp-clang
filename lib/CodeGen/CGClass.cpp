@@ -1666,6 +1666,9 @@ void CodeGenFunction::EnterDtorCleanups(const CXXDestructorDecl *DD,
   for (CXXRecordDecl::field_iterator I = ClassDecl->field_begin(),
        E = ClassDecl->field_end(); I != E; ++I) {
     const FieldDecl *field = *I;
+    // Do not automatically destroy [[noinit]] fields
+    if (field->hasAttr<NoInitAttr>())
+      continue;
     QualType type = field->getType();
     QualType::DestructionKind dtorKind = type.isDestructedType();
     if (!dtorKind) continue;
