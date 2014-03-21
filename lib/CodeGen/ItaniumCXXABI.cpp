@@ -2314,7 +2314,7 @@ static void emitGlobalDtorWithCXAAtExit(CodeGenFunction &CGF,
   // Create a variable that binds the atexit to this shared object.
   llvm::Constant *handle =
       CGF.CGM.CreateRuntimeVariable(CGF.Int8Ty, "__dso_handle");
-  auto *GV = cast<llvm::GlobalValue>(handle->stripPointerCasts());
+  auto *GV = cast<llvm::GlobalValue>(handle->stripPointerCastsSafe());
   GV->setVisibility(llvm::GlobalValue::HiddenVisibility);
 
   if (!addr)

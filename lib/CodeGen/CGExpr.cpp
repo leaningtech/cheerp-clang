@@ -486,7 +486,7 @@ EmitMaterializeTemporaryExpr(const MaterializeTemporaryExpr *M) {
   Address Alloca = Address::invalid();
   Address Object = createReferenceTemporary(*this, M, E, &Alloca);
   if (auto *Var = dyn_cast<llvm::GlobalVariable>(
-          Object.getPointer()->stripPointerCasts())) {
+          Object.getPointer()->stripPointerCastsSafe())) {
     Object = Address(llvm::ConstantExpr::getBitCast(
                          cast<llvm::Constant>(Object.getPointer()),
                          ConvertTypeForMem(E->getType())->getPointerTo()),
@@ -3078,7 +3078,7 @@ void CodeGenFunction::EmitCfiSlowPathCheck(
     CheckCall = Builder.CreateCall(SlowPathFn, {TypeId, Ptr});
   }
 
-  CGM.setDSOLocal(cast<llvm::GlobalValue>(SlowPathFn->stripPointerCasts()));
+  CGM.setDSOLocal(cast<llvm::GlobalValue>(SlowPathFn->stripPointerCastsSafe()));
   CheckCall->setDoesNotThrow();
 
   EmitBlock(Cont);
