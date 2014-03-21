@@ -456,7 +456,7 @@ EmitMaterializeTemporaryExpr(const MaterializeTemporaryExpr *M) {
   // Create and initialize the reference temporary.
   Address Object = createReferenceTemporary(*this, M, E);
   if (auto *Var = dyn_cast<llvm::GlobalVariable>(
-          Object.getPointer()->stripPointerCasts())) {
+          Object.getPointer()->stripPointerCastsSafe())) {
     Object = Address(llvm::ConstantExpr::getBitCast(
                          cast<llvm::Constant>(Object.getPointer()),
                          ConvertTypeForMem(E->getType())->getPointerTo()),

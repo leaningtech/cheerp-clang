@@ -2005,7 +2005,7 @@ llvm::Value *CodeGenFunction::EmitARCRetainBlock(llvm::Value *value,
   // count as escaping.
   if (!mandatory && isa<llvm::Instruction>(result)) {
     llvm::CallInst *call
-      = cast<llvm::CallInst>(result->stripPointerCasts());
+      = cast<llvm::CallInst>(result->stripPointerCastsSafe());
     assert(call->getCalledValue() == CGM.getObjCEntrypoints().objc_retainBlock);
 
     call->setMetadata("clang.arc.copy_on_escape",
