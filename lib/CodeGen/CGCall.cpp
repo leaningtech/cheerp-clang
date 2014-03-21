@@ -2119,7 +2119,7 @@ static llvm::Value *tryRemoveRetainOfSelf(CodeGenFunction &CGF,
 
   // Look for a retain call.
   llvm::CallInst *retainCall =
-    dyn_cast<llvm::CallInst>(result->stripPointerCasts());
+    dyn_cast<llvm::CallInst>(result->stripPointerCastsSafe());
   if (!retainCall ||
       retainCall->getCalledValue() != CGF.CGM.getARCEntrypoints().objc_retain)
     return nullptr;
@@ -2127,7 +2127,7 @@ static llvm::Value *tryRemoveRetainOfSelf(CodeGenFunction &CGF,
   // Look for an ordinary load of 'self'.
   llvm::Value *retainedValue = retainCall->getArgOperand(0);
   llvm::LoadInst *load =
-    dyn_cast<llvm::LoadInst>(retainedValue->stripPointerCasts());
+    dyn_cast<llvm::LoadInst>(retainedValue->stripPointerCastsSafe());
   if (!load || load->isAtomic() || load->isVolatile() || 
       load->getPointerOperand() != CGF.GetAddrOfLocalVar(self))
     return nullptr;

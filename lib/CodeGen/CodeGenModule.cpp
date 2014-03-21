@@ -239,7 +239,7 @@ static const llvm::GlobalObject *getAliasedGlobal(const llvm::GlobalAlias &GA) {
   llvm::SmallPtrSet<const llvm::GlobalAlias*, 4> Visited;
   const llvm::Constant *C = &GA;
   for (;;) {
-    C = C->stripPointerCasts();
+    C = C->stripPointerCasts(false);
     if (auto *GO = dyn_cast<llvm::GlobalObject>(C))
       return GO;
     // stripPointerCasts will not walk over weak aliases.

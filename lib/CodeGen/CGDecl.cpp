@@ -356,7 +356,7 @@ void CodeGenFunction::EmitStaticVarDecl(const VarDecl &D,
   llvm::Type *expectedType = addr->getType();
 
   llvm::GlobalVariable *var =
-    cast<llvm::GlobalVariable>(addr->stripPointerCasts());
+    cast<llvm::GlobalVariable>(addr->stripPointerCastsSafe());
   // If this value has an initializer, emit it.
   if (D.getInit())
     var = AddInitializerToStaticVarDecl(D, var);

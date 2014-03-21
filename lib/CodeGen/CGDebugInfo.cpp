@@ -1281,7 +1281,7 @@ CGDebugInfo::CollectTemplateParams(const TemplateParameterList *TPList,
       llvm::DITemplateValueParameter TVP =
           DBuilder.createTemplateValueParameter(
               TheCU, Name, TTy,
-              cast_or_null<llvm::Constant>(V->stripPointerCasts()));
+              cast_or_null<llvm::Constant>(V->stripPointerCastsSafe()));
       TemplateParams.push_back(TVP);
     } break;
     case TemplateArgument::NullPtr: {
@@ -1329,7 +1329,7 @@ CGDebugInfo::CollectTemplateParams(const TemplateParameterList *TPList,
       llvm::DIType TTy = getOrCreateType(T, Unit);
       llvm::DITemplateValueParameter TVP =
           DBuilder.createTemplateValueParameter(
-              TheCU, Name, TTy, cast<llvm::Constant>(V->stripPointerCasts()));
+              TheCU, Name, TTy, cast<llvm::Constant>(V->stripPointerCastsSafe()));
       TemplateParams.push_back(TVP);
     } break;
     // And the following should never occur:

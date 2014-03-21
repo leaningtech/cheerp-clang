@@ -277,7 +277,7 @@ static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn) {
     for (unsigned I = 0, E = LPI->getNumClauses(); I != E; ++I) {
       // Look for something that would've been returned by the ObjC
       // runtime's GetEHType() method.
-      llvm::Value *Val = LPI->getClause(I)->stripPointerCasts();
+      llvm::Value *Val = LPI->getClause(I)->stripPointerCastsSafe();
       if (LPI->isCatch(I)) {
         // Check if the catch value has the ObjC prefix.
         if (llvm::GlobalVariable *GV = dyn_cast<llvm::GlobalVariable>(Val))
@@ -291,7 +291,7 @@ static bool PersonalityHasOnlyCXXUses(llvm::Constant *Fn) {
         for (llvm::User::op_iterator
                II = CVal->op_begin(), IE = CVal->op_end(); II != IE; ++II) {
           if (llvm::GlobalVariable *GV =
-              cast<llvm::GlobalVariable>((*II)->stripPointerCasts()))
+              cast<llvm::GlobalVariable>((*II)->stripPointerCastsSafe()))
             // ObjC EH selector entries are always global variables with
             // names starting like this.
             if (GV->getName().startswith("OBJC_EHTYPE"))
