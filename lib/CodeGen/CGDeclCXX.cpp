@@ -252,7 +252,7 @@ llvm::Function *CodeGenFunction::createAtExitStub(const VarDecl &VD,
 
  // Make sure the call and the callee agree on calling convention.
   if (llvm::Function *dtorFn =
-          dyn_cast<llvm::Function>(dtor.getCallee()->stripPointerCasts()))
+          dyn_cast<llvm::Function>(dtor.getCallee()->stripPointerCastsSafe()))
     call->setCallingConv(dtorFn->getCallingConv());
 
   CGF.FinishFunction();

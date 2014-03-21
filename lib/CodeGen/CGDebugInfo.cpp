@@ -1769,7 +1769,7 @@ CGDebugInfo::CollectTemplateParams(const TemplateParameterList *TPList,
               CGM.getContext().toCharUnitsFromBits((int64_t)fieldOffset);
           V = CGM.getCXXABI().EmitMemberDataPointer(MPT, chars);
         }
-        V = V->stripPointerCasts();
+        V = V->stripPointerCasts(false);
       }
       TemplateParams.push_back(DBuilder.createTemplateValueParameter(
           TheCU, Name, TTy, cast_or_null<llvm::Constant>(V)));
@@ -1812,7 +1812,7 @@ CGDebugInfo::CollectTemplateParams(const TemplateParameterList *TPList,
       assert(V && "Expression in template argument isn't constant");
       llvm::DIType *TTy = getOrCreateType(T, Unit);
       TemplateParams.push_back(DBuilder.createTemplateValueParameter(
-          TheCU, Name, TTy, V->stripPointerCasts()));
+          TheCU, Name, TTy, V->stripPointerCastsSafe()));
     } break;
     // And the following should never occur:
     case TemplateArgument::TemplateExpansion:

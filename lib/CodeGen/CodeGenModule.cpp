@@ -278,7 +278,7 @@ static const llvm::GlobalObject *getAliasedGlobal(
   llvm::SmallPtrSet<const llvm::GlobalIndirectSymbol*, 4> Visited;
   const llvm::Constant *C = &GIS;
   for (;;) {
-    C = C->stripPointerCasts();
+    C = C->stripPointerCasts(false);
     if (auto *GO = dyn_cast<llvm::GlobalObject>(C))
       return GO;
     // stripPointerCasts will not walk over weak aliases.
@@ -3585,7 +3585,7 @@ CodeGenModule::CreateRuntimeVariable(llvm::Type *Ty,
                 Ty, getContext().getTargetAddressSpace(LangAS::opencl_global))
           : llvm::PointerType::getUnqual(Ty);
   auto *Ret = GetOrCreateLLVMGlobal(Name, PtrTy, nullptr);
-  setDSOLocal(cast<llvm::GlobalValue>(Ret->stripPointerCasts()));
+  setDSOLocal(cast<llvm::GlobalValue>(Ret->stripPointerCastsSafe()));
   return Ret;
 }
 
