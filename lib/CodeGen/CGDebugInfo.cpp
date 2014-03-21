@@ -1264,7 +1264,7 @@ CollectTemplateParams(const TemplateParameterList *TPList,
       }
       llvm::DITemplateValueParameter TVP =
           DBuilder.createTemplateValueParameter(TheCU, Name, TTy,
-                                                V->stripPointerCasts());
+                                                V->stripPointerCastsSafe());
       TemplateParams.push_back(TVP);
     } break;
     case TemplateArgument::NullPtr: {
@@ -1311,7 +1311,7 @@ CollectTemplateParams(const TemplateParameterList *TPList,
       llvm::DIType TTy = getOrCreateType(T, Unit);
       llvm::DITemplateValueParameter TVP =
           DBuilder.createTemplateValueParameter(TheCU, Name, TTy,
-                                                V->stripPointerCasts());
+                                                V->stripPointerCastsSafe());
       TemplateParams.push_back(TVP);
     } break;
     // And the following should never occur:
