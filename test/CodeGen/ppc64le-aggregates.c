@@ -54,7 +54,7 @@ struct fabc func_fabc(struct fabc x) { return x; }
 struct f2a2b func_f2a2b(struct f2a2b x) { return x; }
 
 // CHECK-LABEL: @call_f1
-// CHECK: %[[TMP:[^ ]+]] = load float* getelementptr inbounds (%struct.f1* @global_f1, i32 0, i32 0, i32 0), align 1
+// CHECK: %[[TMP:[^ ]+]] = load float* bitcast ([1 x float]* getelementptr inbounds (%struct.f1* @global_f1, i32 0, i32 0) to float*)
 // CHECK: call [1 x float] @func_f1(float inreg %[[TMP]])
 struct f1 global_f1;
 void call_f1(void) { global_f1 = func_f1(global_f1); }
@@ -172,7 +172,7 @@ struct vab func_vab(struct vab x) { return x; }
 struct vabc func_vabc(struct vabc x) { return x; }
 
 // CHECK-LABEL: @call_v1
-// CHECK: %[[TMP:[^ ]+]] = load <4 x i32>* getelementptr inbounds (%struct.v1* @global_v1, i32 0, i32 0, i32 0), align 1
+// CHECK: %[[TMP:[^ ]+]] = load <4 x i32>* bitcast ([1 x <4 x i32>]* getelementptr inbounds (%struct.v1* @global_v1, i32 0, i32 0) to <4 x i32>*), align 1
 // CHECK: call [1 x <4 x i32>] @func_v1(<4 x i32> inreg %[[TMP]])
 struct v1 global_v1;
 void call_v1(void) { global_v1 = func_v1(global_v1); }
@@ -289,7 +289,7 @@ struct v3fab func_v3fab(struct v3fab x) { return x; }
 struct v3fabc func_v3fabc(struct v3fabc x) { return x; }
 
 // CHECK-LABEL: @call_v3f1
-// CHECK: %[[TMP:[^ ]+]] = load <3 x float>* getelementptr inbounds (%struct.v3f1* @global_v3f1, i32 0, i32 0, i32 0), align 1
+// CHECK: %[[TMP:[^ ]+]] = load <3 x float>* bitcast ([1 x <3 x float>]* getelementptr inbounds (%struct.v3f1* @global_v3f1, i32 0, i32 0) to <3 x float>*), align 1
 // CHECK: call [1 x <3 x float>] @func_v3f1(<3 x float> inreg %[[TMP]])
 struct v3f1 global_v3f1;
 void call_v3f1(void) { global_v3f1 = func_v3f1(global_v3f1); }

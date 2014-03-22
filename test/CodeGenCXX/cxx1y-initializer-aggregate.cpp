@@ -29,7 +29,7 @@ A c { 1, 0, 'A', f(), { 3 } };
 
 // @b has a constant initializer
 // CHECK: @[[STR_B:.*]] = {{.*}} [8 x i8] c"bazquux\00"
-// CHECK: @b = global {{.*}} i32 4, {{.*}} @[[STR_B]], {{.*}} i8 117, i32 42, {{.*}} i8 9
+// CHECK: @b = global {{.*}} i32 4, {{.*}} @[[STR_B]] to {{.*}} i8 117, i32 42, {{.*}} i8 9
 
 B x;
 B y {};
@@ -57,7 +57,7 @@ C n{};
 // CHECK: store i8 %{{.*}}, i8* getelementptr inbounds ({{.*}} @a, i32 0, i32 2)
 // CHECK: call i32 @_ZN1A1fEv({{.*}} @a)
 // CHECK: store i32 %{{.*}}, i32* getelementptr inbounds ({{.*}}* @a, i32 0, i32 3)
-// CHECK: store double 1.000000e+00, double* getelementptr inbounds ({{.*}} @a, i32 0, i32 4, i32 0)
+// CHECK: store double 1.000000e+00, double* bitcast (%union.anon* getelementptr inbounds ({{.*}}* @a, i32 0, i32 4) to double*)
 
 // No dynamic initialization of 'b':
 
@@ -77,4 +77,4 @@ C n{};
 // CHECK: call void @_ZN1BC1Ev({{.*}} @x)
 
 // CHECK: call i32 @_ZN1B1fEv({{.*}} @y)
-// CHECK: store i32 %{{.*}}, i32* getelementptr inbounds ({{.*}} @y, i32 0, i32 0)
+// CHECK: store i32 %{{.*}}, i32* bitcast ({{.*}} @y to i32*)
