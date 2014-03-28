@@ -15,16 +15,17 @@ namespace PR16263 {
   struct C : A, B {};
   extern const A &&a = (A&&)(A&&)(C&&)(C{});
   // CHECK: @_ZGRN7PR162631aE_ = private global {{.*}} zeroinitializer,
-  // CHECK: @_ZN7PR162631aE = constant {{.*}} bitcast ({{.*}}* @_ZGRN7PR162631aE_ to
+  // CHECK: @_ZN7PR162631aE = constant {{.*}} bitcast ({{.*}}* @_ZGRN7PR162631aE_,
+
 
   extern const int &&t = ((B&&)C{}).n;
   // CHECK: @_ZGRN7PR162631tE_ = private global {{.*}} zeroinitializer,
-  // CHECK: @_ZN7PR162631tE = constant i32* {{.*}}* @_ZGRN7PR162631tE_ {{.*}} 4
+  // CHECK: @_ZN7PR162631tE = constant i32* {{.*}}* @_ZGRN7PR162631tE_, i32 0, i32 1)
 
   struct D { double d; C c; };
   extern const int &&u = (123, static_cast<B&&>(0, ((D&&)D{}).*&D::c).n);
   // CHECK: @_ZGRN7PR162631uE_ = private global {{.*}} zeroinitializer
-  // CHECK: @_ZN7PR162631uE = constant i32* {{.*}} @_ZGRN7PR162631uE_ {{.*}} 12
+  // CHECK: @_ZN7PR162631uE = constant i32* {{.*}} @_ZGRN7PR162631uE_, i32 0, i32 1, i32 1)
 }
 
 namespace PR20227 {

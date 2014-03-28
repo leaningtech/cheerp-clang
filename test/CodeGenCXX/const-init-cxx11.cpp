@@ -344,13 +344,13 @@ namespace VirtualMembers {
     char c[3];
   };
 
-  // CHECK: @_ZN14VirtualMembers1eE = global { i8**, double, i32, i8**, double, [5 x i8], i16, i8**, double, [5 x i8], [3 x i8] } { i8** getelementptr inbounds ([11 x i8*]* @_ZTVN14VirtualMembers1EE, i64 0, i64 2), double 1.000000e+00, i32 64, i8** getelementptr inbounds ([11 x i8*]* @_ZTVN14VirtualMembers1EE, i64 0, i64 5), double 2.000000e+00, [5 x i8] c"hello", i16 5, i8** getelementptr inbounds ([11 x i8*]* @_ZTVN14VirtualMembers1EE, i64 0, i64 9), double 3.000000e+00, [5 x i8] c"world", [3 x i8] c"bye" }
+  // CHECK: @_ZN14VirtualMembers1eE = global { i32 (...)**, double, i32, i32 (...)**, double, [5 x i8], i16, i32 (...)**, double, [5 x i8], [3 x i8] } { i32 (...)** bitcast (i8** getelementptr inbounds ([11 x i8*]* @_ZTVN14VirtualMembers1EE, i64 0, i64 2) to i32 (...)**), double 1.000000e+00, i32 64, i32 (...)** bitcast (i8** getelementptr inbounds ([11 x i8*]* @_ZTVN14VirtualMembers1EE, i64 0, i64 5) to i32 (...)**), double 2.000000e+00, [5 x i8] c"hello", i16 5, i32 (...)** bitcast (i8** getelementptr inbounds ([11 x i8*]* @_ZTVN14VirtualMembers1EE, i64 0, i64 9) to i32 (...)**), double 3.000000e+00, [5 x i8] c"world", [3 x i8] c"bye" }
   E e;
 
   struct nsMemoryImpl {
     virtual void f();
   };
-  // CHECK: @_ZN14VirtualMembersL13sGlobalMemoryE = internal global { i8** } { i8** getelementptr inbounds ([3 x i8*]* @_ZTVN14VirtualMembers12nsMemoryImplE, i64 0, i64 2) }
+  // CHECK: @_ZN14VirtualMembersL13sGlobalMemoryE = internal global %"struct.VirtualMembers::nsMemoryImpl" { i32 (...)** bitcast (i8** getelementptr inbounds ([3 x i8*]* @_ZTVN14VirtualMembers12nsMemoryImplE, i64 0, i64 2) to i32 (...)**) }
   static nsMemoryImpl sGlobalMemory;
 }
 
