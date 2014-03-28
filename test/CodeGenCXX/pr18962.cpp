@@ -24,7 +24,7 @@ void
 fn2(C *) {
 }
 
-// CHECK: %class.A = type { void (%class.A*)* }
+// CHECK: %class.A = type { %0* }
 // CHECK: %class.C = type <{ %class.D*, %class.B, [3 x i8] }>
 // CHECK: %class.D = type { %class.C.base, [3 x i8] }
 // CHECK: %class.C.base = type <{ %class.D*, %class.B }>

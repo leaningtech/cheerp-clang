@@ -52,7 +52,7 @@ public:
   static llvm::Constant *BuildStruct(ConstantEmitter &Emitter,
                                      InitListExpr *ILE, QualType StructTy);
   static llvm::Constant *BuildStruct(ConstantEmitter &Emitter,
-                                     const APValue &Value, QualType ValTy);
+                                     const APValue &Value, const RecordDecl* RD);
 
 private:
   ConstStructBuilder(ConstantEmitter &emitter)
@@ -77,9 +77,9 @@ private:
   bool Build(InitListExpr *ILE);
   bool Build(ConstExprEmitter *Emitter, llvm::Constant *Base,
              InitListExpr *Updater);
-  bool Build(const APValue &Val, const RecordDecl *RD, bool IsPrimaryBase,
+  bool Build(const APValue &Val, const RecordDecl *RD,
              const CXXRecordDecl *VTableClass, CharUnits BaseOffset);
-  llvm::Constant *Finalize(QualType Ty);
+  llvm::Constant *Finalize(const RecordDecl* RD);
 
   CharUnits getAlignment(const llvm::Constant *C) const {
     if (Packed)  return CharUnits::One();
@@ -433,18 +433,19 @@ struct BaseInfo {
 }
 
 bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
-                               bool IsPrimaryBase,
                                const CXXRecordDecl *VTableClass,
                                CharUnits Offset) {
   const ASTRecordLayout &Layout = CGM.getContext().getASTRecordLayout(RD);
 
   if (const CXXRecordDecl *CD = dyn_cast<CXXRecordDecl>(RD)) {
-    // Add a vtable pointer, if we need one and it hasn't already been added.
-    if (CD->isDynamicClass() && !IsPrimaryBase) {
+    // Add a vtable pointer, if we need one.
+    if (CD->isDynamicClass() && !Layout.getPrimaryBase()) {
       llvm::Constant *VTableAddressPoint =
           CGM.getCXXABI().getVTableAddressPointForConstExpr(
               BaseSubobject(CD, Offset), VTableClass);
-      AppendBytes(Offset, VTableAddressPoint);
+      // Cast to the type of the VTable field in classes
+      llvm::Type* VTableType = llvm::FunctionType::get(CGM.Int32Ty, /*isVarArg=*/true)->getPointerTo()->getPointerTo();
+      AppendBytes(Offset, llvm::ConstantExpr::getBitCast(VTableAddressPoint, VTableType));
     }
 
     // Accumulate and sort bases, in order to visit them in address order, which
@@ -464,9 +465,17 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
     for (unsigned I = 0, N = Bases.size(); I != N; ++I) {
       BaseInfo &Base = Bases[I];
 
-      bool IsPrimaryBase = Layout.getPrimaryBase() == Base.Decl;
-      Build(Val.getStructBase(Base.Index), Base.Decl, IsPrimaryBase,
+      // On NBA there is no alignment and we can use sub structs
+      if (CGM.getTarget().isByteAddressable())
+      {
+        Build(Val.getStructBase(Base.Index), Base.Decl,
             VTableClass, Offset + Base.Offset);
+      }
+      else
+      {
+        llvm::Constant* BaseConstant = ConstStructBuilder::BuildStruct(CGM, CGF, Val.getStructBase(Base.Index), Base.Decl);
+        AppendBytes(Base.Offset, BaseConstant);
+      }
     }
   }
 
@@ -504,8 +513,7 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
   return true;
 }
 
-llvm::Constant *ConstStructBuilder::Finalize(QualType Ty) {
-  RecordDecl *RD = Ty->getAs<RecordType>()->getDecl();
+llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
   const ASTRecordLayout &Layout = CGM.getContext().getASTRecordLayout(RD);
 
   CharUnits LayoutSizeInChars = Layout.getSize();
@@ -545,7 +553,7 @@ llvm::Constant *ConstStructBuilder::Finalize(QualType Ty) {
 
   // Pick the type to use.  If the type is layout identical to the ConvertType
   // type then use it, otherwise use whatever the builder produced for us.
-  llvm::Type *ValTy = CGM.getTypes().ConvertType(Ty);
+  llvm::Type *ValTy = CGM.getTypes().ConvertRecordDeclType(RD);
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
     // It makes sense to make the struct packed if the target one is
     if (ValSTy->isPacked() && !Packed)
@@ -579,7 +587,8 @@ llvm::Constant *ConstStructBuilder::BuildStruct(ConstantEmitter &Emitter,
   ConstStructBuilder Builder(Emitter);
   if (!Builder.Build(ExprEmitter, Base, Updater))
     return nullptr;
-  return Builder.Finalize(ValTy);
+  const RecordDecl *RD = Updater->getType()->castAs<RecordType>()->getDecl();
+  return Builder.Finalize(RD);
 }
 
 llvm::Constant *ConstStructBuilder::BuildStruct(ConstantEmitter &Emitter,
@@ -590,20 +599,20 @@ llvm::Constant *ConstStructBuilder::BuildStruct(ConstantEmitter &Emitter,
   if (!Builder.Build(ILE))
     return nullptr;
 
-  return Builder.Finalize(ValTy);
+  const RecordDecl *RD = ILE->getType()->castAs<RecordType>()->getDecl();
+  return Builder.Finalize(RD);
 }
 
 llvm::Constant *ConstStructBuilder::BuildStruct(ConstantEmitter &Emitter,
                                                 const APValue &Val,
-                                                QualType ValTy) {
+                                                const RecordDecl* RD) {
   ConstStructBuilder Builder(Emitter);
 
-  const RecordDecl *RD = ValTy->castAs<RecordType>()->getDecl();
   const CXXRecordDecl *CD = dyn_cast<CXXRecordDecl>(RD);
-  if (!Builder.Build(Val, RD, false, CD, CharUnits::Zero()))
+  if (!Builder.Build(Val, RD, CD, CharUnits::Zero()))
     return nullptr;
 
-  return Builder.Finalize(ValTy);
+  return Builder.Finalize(RD);
 }
 
 
@@ -1991,7 +2000,7 @@ llvm::Constant *ConstantEmitter::tryEmitPrivate(const APValue &Value,
   }
   case APValue::Struct:
   case APValue::Union:
-    return ConstStructBuilder::BuildStruct(*this, Value, DestType);
+    return ConstStructBuilder::BuildStruct(*this, Value, DestType->castAs<RecordType>()->getDecl());
   case APValue::Array: {
     const ConstantArrayType *CAT =
         CGM.getContext().getAsConstantArrayType(DestType);
