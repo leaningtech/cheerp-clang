@@ -29,7 +29,7 @@ A c { 1, 0, 'A', f(), { 3 } };
 
 // @b has a constant initializer
 // CHECK: @[[STR_B:.*]] = {{.*}} [8 x i8] c"bazquux\00"
-// CHECK: @b = global {{.*}} i32 4, {{.*}} @[[STR_B]] to {{.*}} i8 117, i32 42, {{.*}} i8 9
+// CHECK: @b = global {{.*}} i32 4, {{.*}} @[[STR_B]], i32 0, i32 0), i8 117, i32 42, {{.*}} i8 9
 
 B x;
 B y {};
