@@ -1154,24 +1154,55 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
     llvm_unreachable("Constant expressions should be initialized.");
   case APValue::LValue: {
     llvm::Type *DestTy = getTypes().ConvertTypeForMem(DestType);
-    llvm::Constant *Offset =
-      llvm::ConstantInt::get(Int64Ty, Value.getLValueOffset().getQuantity());
-
+    uint64_t OffsetVal = Value.getLValueOffset().getQuantity();
     llvm::Constant *C;
     if (APValue::LValueBase LVBase = Value.getLValueBase()) {
       // An array can be represented as an lvalue referring to the base.
       if (isa<llvm::ArrayType>(DestTy)) {
-        assert(Offset->isNullValue() && "offset on array initializer");
+        assert(OffsetVal==0 && "offset on array initializer");
         return ConstExprEmitter(*this, CGF).Visit(
           const_cast<Expr*>(LVBase.get<const Expr*>()));
       }
 
       C = ConstExprEmitter(*this, CGF).EmitLValue(LVBase);
 
+      // Try to build a naturally looking GEP from the returned expression to the
+      // required type
+      llvm::SmallVector<llvm::Constant*, 4> Indexes;
+      llvm::Type* CurrentType = C->getType()->getPointerElementType();
+      Indexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+      while(DestTy->isPointerTy() && (OffsetVal || CurrentType!=DestTy->getPointerElementType()))
+      {
+        if (llvm::StructType* ST=dyn_cast<llvm::StructType>(CurrentType))
+        {
+          if (ST->isOpaque())
+            break;
+          const llvm::StructLayout *SL = getDataLayout().getStructLayout(ST);
+          unsigned Index = SL->getElementContainingOffset(OffsetVal);
+          Indexes.push_back(llvm::ConstantInt::get(Int32Ty, Index));
+          OffsetVal -= SL->getElementOffset(Index);
+          CurrentType = ST->getElementType(Index);
+        }
+        else if (llvm::ArrayType* AT=dyn_cast<llvm::ArrayType>(CurrentType))
+        {
+          llvm::Type *ElementTy = AT->getElementType();
+          unsigned ElementSize = getDataLayout().getTypeAllocSize(ElementTy);
+          unsigned Index = OffsetVal / ElementSize;
+          Indexes.push_back(llvm::ConstantInt::get(Int32Ty, Index));
+          OffsetVal -= Index * ElementSize;
+          CurrentType = ElementTy;
+        }
+        else
+          break;
+      }
+
+      C = llvm::ConstantExpr::getGetElementPtr(C, Indexes);
+
       // Apply offset if necessary.
-      if (!Offset->isNullValue()) {
+      if (OffsetVal) {
         unsigned AS = C->getType()->getPointerAddressSpace();
         llvm::Type *CharPtrTy = Int8Ty->getPointerTo(AS);
+        llvm::Constant *Offset = llvm::ConstantInt::get(Int64Ty, OffsetVal);
         llvm::Constant *Casted = llvm::ConstantExpr::getBitCast(C, CharPtrTy);
         Casted = llvm::ConstantExpr::getGetElementPtr(Casted, Offset);
         C = llvm::ConstantExpr::getPointerCast(Casted, C->getType());
@@ -1184,7 +1215,7 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
 
       return llvm::ConstantExpr::getPtrToInt(C, DestTy);
     } else {
-      C = Offset;
+      C = llvm::ConstantInt::get(Int64Ty, OffsetVal);
 
       // Convert to the appropriate type; this could be an lvalue for
       // an integer.
