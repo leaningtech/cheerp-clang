@@ -15,6 +15,7 @@
 #include "clang/Frontend/FrontendDiagnostic.h"
 #include "clang/Frontend/Utils.h"
 #include "llvm/Bitcode/BitcodeWriterPass.h"
+#include "llvm/Duetto/NativeRewriter.h"
 #include "llvm/CodeGen/RegAllocRegistry.h"
 #include "llvm/CodeGen/SchedulerRegistry.h"
 #include "llvm/IR/DataLayout.h"
@@ -38,7 +39,6 @@
 #include "llvm/Transforms/ObjCARC.h"
 #include "llvm/Transforms/Scalar.h"
 #include <memory>
-#include "llvm/Duetto/Utils.h"
 using namespace clang;
 using namespace llvm;
 
@@ -230,34 +230,11 @@ static void addDataFlowSanitizerPass(const PassManagerBuilder &Builder,
   PM.add(createDataFlowSanitizerPass(CGOpts.SanitizerBlacklistFile));
 }
 
-namespace {
-  class DuettoNativeRewriterPass : public FunctionPass {
-  public:
-    static char ID;
-    explicit DuettoNativeRewriterPass() :
-      FunctionPass(ID) { }
-    bool runOnFunction(Function &F);
-    const char *getPassName() const;
-  };
-} // end anonymous namespace.
-
-const char *DuettoNativeRewriterPass::getPassName() const {
-  return "DuettoNativeRewriter";
-}
-
-bool DuettoNativeRewriterPass::runOnFunction(Function& F)
-{
-  DuettoUtils::rewriteNativeObjectsConstructors(*F.getParent(), F);
-  return true;
-}
-
-char DuettoNativeRewriterPass::ID = 0;
-
 static void addDuettoPasses(const PassManagerBuilder &Builder,
                                    PassManagerBase &PM) {
   //Run InstCombine first, to remove load/stores for the this argument
   PM.add(createInstructionCombiningPass());
-  PM.add(new DuettoNativeRewriterPass());
+  PM.add(createDuettoNativeRewriterPass());
   //Duetto is single threaded, convert atomic instructions to regular ones
   PM.add(createLowerAtomicPass());
 }
