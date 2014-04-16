@@ -1860,6 +1860,8 @@ defm whole_file : BooleanFFlag<"whole-file">, Group<gfortran_Group>;
 
 def duetto_side_EQ : Joined<["-"], "duetto-side=">, Flags<[CC1Option]>,
   Group<CompileOnly_Group>, HelpText<"Specify which side to build [client/server]">;
+def duetto_sourcemap_EQ : Joined<["-"], "duetto-sourcemap=">, Flags<[DriverOption]>,
+  HelpText<"Write sourcemap to <file>">, MetaVarName<"<file>">;
 
 include "CC1Options.td"
 
