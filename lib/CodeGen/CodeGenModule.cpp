@@ -689,6 +689,8 @@ void CodeGenModule::SetLLVMFunctionAttributes(const Decl *D,
   ConstructAttributeList(Info, D, AttributeList, CallingConv, false);
   F->setAttributes(llvm::AttributeSet::get(getLLVMContext(), AttributeList));
   F->setCallingConv(static_cast<llvm::CallingConv::ID>(CallingConv));
+  if(D->hasAttr<StaticAttr>())
+    F->addFnAttr(llvm::Attribute::Static);
 }
 
 /// Determines whether the language options require us to model

@@ -4884,6 +4884,7 @@ static void processTypeAttrs(TypeProcessingState &state, QualType &type,
     case AttributeList::IgnoredAttribute:
     case AttributeList::AT_Server:
     case AttributeList::AT_Client:
+    case AttributeList::AT_Static:
       break;
 
     case AttributeList::AT_MayAlias:
