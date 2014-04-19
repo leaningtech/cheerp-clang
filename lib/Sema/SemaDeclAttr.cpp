@@ -5933,6 +5933,14 @@ static void handleServer(Sema &S, Decl *D, const AttributeList &Attr)
     S.Diag(Attr.getLoc(), diag::err_duetto_attribute_not_on_function);
 }
 
+static void handleStatic(Sema &S, Decl *D, const AttributeList &Attr)
+{
+  D->addAttr(::new (S.Context) StaticAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
+  //This should be a function
+  if (!isa<FunctionDecl>(D))
+    S.Diag(Attr.getLoc(), diag::err_duetto_attribute_not_on_function);
+}
+
 static void handleNoInit(Sema &S, Decl* D, const AttributeList &Attr)
 {
   D->addAttr(::new (S.Context) NoInitAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
@@ -5962,7 +5970,8 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
   // instead.
   if (Attr.isCXX11Attribute() && !IncludeCXX11Attributes &&
       Attr.getKind()!=AttributeList::AT_Server &&
-      Attr.getKind()!=AttributeList::AT_Client)
+      Attr.getKind()!=AttributeList::AT_Client &&
+      Attr.getKind()!=AttributeList::AT_Static)
   {
     return;
   }
@@ -6575,16 +6584,14 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
   case AttributeList::AT_RenderScriptKernel:
     handleSimpleAttribute<RenderScriptKernelAttr>(S, D, Attr);
 
-  // Duetto attributes
-  case AttributeList::AT_Client:
-    handleClient(S, D, Attr);
-    break;
-  case AttributeList::AT_Server:
-    handleServer(S, D, Attr);
-    break;
   // XRay attributes.
   case AttributeList::AT_XRayInstrument:
     handleSimpleAttribute<XRayInstrumentAttr>(S, D, Attr);
+  break;
+
+  // Duetto attributes
+  case AttributeList::AT_Static:
+    handleStatic(S, D, Attr);
     break;
   case AttributeList::AT_XRayLogArgs:
     handleXRayLogArgsAttr(S, D, Attr);
