@@ -6675,6 +6675,14 @@ static void handleMSAllocatorAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
   handleSimpleAttribute<MSAllocatorAttr>(S, D, AL);
 }
 
+static void handleStatic(Sema &S, Decl *D, const AttributeList &Attr)
+{
+  D->addAttr(::new (S.Context) StaticAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
+  //This should be a function
+  if (!isa<FunctionDecl>(D))
+    S.Diag(Attr.getLoc(), diag::err_duetto_attribute_not_on_function);
+}
+
 static void handleNoInit(Sema &S, Decl* D, const AttributeList &Attr)
 {
   D->addAttr(::new (S.Context) NoInitAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
@@ -6703,8 +6711,9 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
   // Ignore C++11 attributes on declarator chunks: they appertain to the type
   // instead.
   if (AL.isCXX11Attribute() && !IncludeCXX11Attributes &&
-      Attr.getKind()!=AttributeList::AT_Server &&
-      Attr.getKind()!=AttributeList::AT_Client)
+      AL.getKind()!=AttributeList::AT_Server &&
+      AL.getKind()!=AttributeList::AT_Client &&
+      AL.getKind()!=AttributeList::AT_Static)
   {
     return;
   }
@@ -7445,11 +7454,14 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
     break;
 
   // Cheerp attributes
+  case AttributeList::AT_Static:
+    handleStatic(S, D, AL);
+    break;
   case AttributeList::AT_NoInit:
-    handleNoInit(S, D, Attr);
+    handleNoInit(S, D, AL);
     break;
   case AttributeList::AT_JsExport:
-    handleJsExportAttr(S, D, Attr);
+    handleJsExportAttr(S, D, AL);
     break;
   }
 }
