@@ -873,6 +873,11 @@ def Server : InheritableAttr {
   let Documentation = [Undocumented];
 }
 
+def Static : InheritableAttr {
+  let Spellings = [CXX11<"", "static">];
+  let Documentation = [Undocumented];
+}
+
 def NoInit : InheritableAttr {
   let Spellings = [CXX11<"", "noinit">];
   let Documentation = [Undocumented];
