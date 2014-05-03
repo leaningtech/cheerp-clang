@@ -132,15 +132,6 @@ private:
 
     /// VBaseOffsets - Contains a map from vbase classes to their offset.
     VBaseOffsetsMapTy VBaseOffsets;
-
-    // Map from base number to offset in base tree
-    llvm::SmallVector<unsigned, 4> BaseOffsetFromNo;
-
-    // The first element which is a base (e.g. not the vtable)
-    unsigned firstBaseElement;
-
-    // The total count of bases, including the inherited ones
-    unsigned totalNumberOfBases;
   };
 
   /// CXXInfo - If the record layout is for a C++ record, this will have
@@ -171,10 +162,7 @@ private:
                   bool EndsWithZeroSizedObject,
                   bool LeadsWithZeroSizedBase,
                   const BaseOffsetsMapTy& BaseOffsets,
-                  const VBaseOffsetsMapTy& VBaseOffsets,
-                  const llvm::SmallVector<unsigned, 4>& BaseOffsetFromNo,
-                  unsigned firstBaseElement,
-                  unsigned totalNumberOfBases);
+                  const VBaseOffsetsMapTy& VBaseOffsets);
 
   ~ASTRecordLayout() = default;
 
@@ -327,24 +315,6 @@ public:
   const VBaseOffsetsMapTy &getVBaseOffsetsMap() const {
     assert(CXXInfo && "Record layout does not have C++ specific info!");
     return CXXInfo->VBaseOffsets;
-  }
-
-  const llvm::SmallVector<unsigned, 4> &getBaseOffsetFromNo() const
-  {
-    assert(CXXInfo && "Record layout does not have C++ specific info!");
-    return CXXInfo->BaseOffsetFromNo;
-  }
-
-  unsigned getFirstBaseElement() const
-  {
-    assert(CXXInfo && "Record layout does not have C++ specific info!");
-    return CXXInfo->firstBaseElement;
-  }
-
-  unsigned getTotalNumberOfBases() const
-  {
-    assert(CXXInfo && "Record layout does not have C++ specific info!");
-    return CXXInfo->totalNumberOfBases;
   }
 };
 
