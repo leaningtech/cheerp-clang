@@ -622,12 +622,6 @@ protected:
   /// \brief Externally-provided virtual base offsets.
   llvm::DenseMap<const CXXRecordDecl *, CharUnits> ExternalVirtualBaseOffsets;
 
-  llvm::SmallVector<unsigned, 4> BaseOffsetFromNo;
-  // The first element which is a base (e.g. not the vtable)
-  unsigned firstBaseElement;
-  // The total count of bases, including the inherited ones
-  unsigned totalNumberOfBases;
-
   RecordLayoutBuilder(const ASTContext &Context,
                       EmptySubobjectMap *EmptySubobjects)
     : Context(Context), EmptySubobjects(EmptySubobjects), Size(0), 
@@ -640,9 +634,7 @@ protected:
       NonVirtualAlignment(CharUnits::One()), 
       PrimaryBase(nullptr), PrimaryBaseIsVirtual(false),
       HasOwnVFPtr(false),
-      FirstNearlyEmptyVBase(nullptr),
-      firstBaseElement(0xffffffff),
-      totalNumberOfBases(1) //Initialized to 1, counting itself
+      FirstNearlyEmptyVBase(nullptr)
       { }
 
   void Layout(const RecordDecl *D);
@@ -963,8 +955,6 @@ RecordLayoutBuilder::EnsureVTablePointerAlignment(CharUnits UnpackedBaseAlign) {
 
 void
 RecordLayoutBuilder::LayoutNonVirtualBases(const CXXRecordDecl *RD) {
-  assert(firstBaseElement == -1 && totalNumberOfBases == 1);
-
   // Only byte addressable targets have a primary base
   if (Context.getTargetInfo().isByteAddressable())
   {
@@ -1217,13 +1207,6 @@ CharUnits RecordLayoutBuilder::LayoutBase(const BaseSubobjectInfo *Base) {
 
   // Remember max struct/class alignment.
   UpdateAlignment(BaseAlign, UnpackedBaseAlign);
-
-  if (firstBaseElement==0xffffffff)
-    firstBaseElement = HasOwnVFPtr ? 1 : 0;
-
-  BaseOffsetFromNo.push_back(totalNumberOfBases);
-
-  totalNumberOfBases += Layout.getTotalNumberOfBases();
 
   return Offset;
 }
@@ -2881,8 +2864,7 @@ ASTContext::BuildMicrosoftASTRecordLayout(const RecordDecl *D) const {
         Builder.Alignment, CharUnits::Zero(), Builder.PrimaryBase,
         false, Builder.SharedVBPtrBase,
         Builder.EndsWithZeroSizedObject, Builder.LeadsWithZeroSizedBase,
-        Builder.Bases, Builder.VBases,
-        llvm::SmallVector<unsigned,4>(), 0, 0);
+        Builder.Bases, Builder.VBases);
   } else {
     Builder.layout(D);
     return new (*this) ASTRecordLayout(
@@ -2952,8 +2934,7 @@ ASTContext::getASTRecordLayout(const RecordDecl *D) const {
                                   Builder.PrimaryBase,
                                   Builder.PrimaryBaseIsVirtual,
                                   nullptr, false, false,
-                                  Builder.Bases, Builder.VBases,
-                                  Builder.BaseOffsetFromNo, Builder.firstBaseElement, Builder.totalNumberOfBases);
+                                  Builder.Bases, Builder.VBases);
   } else {
     RecordLayoutBuilder Builder(*this, /*EmptySubobjects=*/nullptr);
     Builder.Layout(D);
