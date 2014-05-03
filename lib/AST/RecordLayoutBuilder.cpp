@@ -674,12 +674,6 @@ protected:
   /// Valid if UseExternalLayout is true.
   ExternalLayout External;
 
-  llvm::SmallVector<unsigned, 4> BaseOffsetFromNo;
-  // The first element which is a base (e.g. not the vtable)
-  unsigned firstBaseElement;
-  // The total count of bases, including the inherited ones
-  unsigned totalNumberOfBases;
-
   ItaniumRecordLayoutBuilder(const ASTContext &Context,
                              EmptySubobjectMap *EmptySubobjects)
       : Context(Context), EmptySubobjects(EmptySubobjects), Size(0),
@@ -693,11 +687,8 @@ protected:
         NonVirtualAlignment(CharUnits::One()),
         PaddedFieldSize(CharUnits::Zero()), PrimaryBase(nullptr),
         PrimaryBaseIsVirtual(false), HasOwnVFPtr(false),
-        HasPackedField(false)
-        FirstNearlyEmptyVBase(nullptr),
-        firstBaseElement(0xffffffff),
-        totalNumberOfBases(1) //Initialized to 1, counting itself
-        { }
+        HasPackedField(false),
+        FirstNearlyEmptyVBase(nullptr) {}
 
   void Layout(const RecordDecl *D);
   void Layout(const CXXRecordDecl *D);
@@ -1014,7 +1005,6 @@ void ItaniumRecordLayoutBuilder::EnsureVTablePointerAlignment(
 
 void ItaniumRecordLayoutBuilder::LayoutNonVirtualBases(
     const CXXRecordDecl *RD) {
-  assert(firstBaseElement == -1 && totalNumberOfBases == 1);
 
   // Only byte addressable targets have a primary base
   if (Context.getTargetInfo().isByteAddressable())
@@ -1267,13 +1257,6 @@ ItaniumRecordLayoutBuilder::LayoutBase(const BaseSubobjectInfo *Base) {
 
   // Remember max struct/class alignment.
   UpdateAlignment(BaseAlign, UnpackedBaseAlign);
-
-  if (firstBaseElement==0xffffffff)
-    firstBaseElement = HasOwnVFPtr ? 1 : 0;
-
-  BaseOffsetFromNo.push_back(totalNumberOfBases);
-
-  totalNumberOfBases += Layout.getTotalNumberOfBases();
 
   return Offset;
 }
@@ -3181,8 +3164,7 @@ ASTContext::getASTRecordLayout(const RecordDecl *D) const {
           NonVirtualSize, Builder.NonVirtualAlignment,
           EmptySubobjects.SizeOfLargestEmptySubobject, Builder.PrimaryBase,
           Builder.PrimaryBaseIsVirtual, nullptr, false, false, Builder.Bases,
-          Builder.VBases,
-          Builder.BaseOffsetFromNo, Builder.firstBaseElement, Builder.totalNumberOfBases);
+          Builder.VBases);
     } else {
       ItaniumRecordLayoutBuilder Builder(*this, /*EmptySubobjects=*/nullptr);
       Builder.Layout(D);
