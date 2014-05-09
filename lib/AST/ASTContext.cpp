@@ -654,7 +654,7 @@ ASTContext::getCanonicalTemplateTemplateParmDecl(
 }
 
 CXXABI *ASTContext::createCXXABI(const TargetInfo &T) {
-  if (!LangOpts.CPlusPlus) return 0;
+  if (!LangOpts.CPlusPlus && T.isByteAddressable()) return 0;
 
   switch (T.getCXXABI().getKind()) {
   case TargetCXXABI::GenericARM:
