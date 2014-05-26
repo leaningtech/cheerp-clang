@@ -2221,17 +2221,8 @@ llvm::Function* CodeGenModule::GetUserCastIntrinsic(const CastExpr* CE, QualType
 
   llvm::Type* types[] = { getTypes().ConvertType(DestTy), getTypes().ConvertType(SrcTy) };
 
-  // Forge the name suffix for this intrinsic since we need mangling
-  ItaniumMangleContext& MCTX = (ItaniumMangleContext&)getCXXABI().getMangleContext();
-  SmallString<256> MangledMethodName;
-  llvm::raw_svector_ostream OS(MangledMethodName);
-  OS << '.';
-  MCTX.mangleType(DestTy, OS);
-  OS << '.';
-  MCTX.mangleType(SrcTy, OS);
-
   return llvm::Intrinsic::getDeclaration(&getModule(),
-                                     llvm::Intrinsic::duetto_cast_user, types, OS.str());
+                                     llvm::Intrinsic::duetto_cast_user, types);
 }
 
 void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {

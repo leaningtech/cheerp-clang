@@ -979,15 +979,8 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     QualType allocPtrType = CGF.getContext().getPointerType(*allocType);
     llvm::Type* types[] = { CGF.ConvertType(allocPtrType) };
 
-    // Forge the name suffix for this intrinsic since we need mangling
-    ItaniumMangleContext& MCTX = (ItaniumMangleContext&)CGF.CGM.getCXXABI().getMangleContext();
-    SmallString<256> MangledMethodName;
-    llvm::raw_svector_ostream OS(MangledMethodName);
-    OS << '.';
-    MCTX.mangleType(*allocType, OS);
-
     llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                llvm::Intrinsic::duetto_allocate, types, OS.str());
+                                llvm::Intrinsic::duetto_allocate, types);
     CalleeAddr = intrinsic;
     RV =
       CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(allocPtrType, Args,
