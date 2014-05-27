@@ -1522,8 +1522,9 @@ static void CheckAggExprForMemSetUse(AggValueSlot &Slot, const Expr *E,
   llvm::Constant *SizeVal = CGF.Builder.getInt64(Size.getQuantity());
 
   Address Loc = Slot.getAddress();  
-  Loc = CGF.Builder.CreateElementBitCast(Loc, CGF.Int8Ty);
-  CGF.Builder.CreateMemSet(Loc, CGF.Builder.getInt8(0), SizeVal, false);
+  if (CGF.getTarget().isByteAddressable())
+    Loc = CGF.Builder.CreateElementBitCast(Loc, CGF.Int8Ty);
+  CGF.Builder.CreateMemSet(Loc, CGF.Builder.getInt8(0), SizeVal, false, CGF.getTarget().isByteAddressable());
   
   // Tell the AggExprEmitter that the slot is known zero.
   Slot.setZeroed();
@@ -1643,8 +1644,11 @@ void CodeGenFunction::EmitAggregateCopy(Address DestPtr,
   // we need to use a different call here.  We use isVolatile to indicate when
   // either the source or the destination is volatile.
 
-  DestPtr = Builder.CreateElementBitCast(DestPtr, Int8Ty);
-  SrcPtr = Builder.CreateElementBitCast(SrcPtr, Int8Ty);
+  if (getTarget().isByteAddressable())
+  {
+    DestPtr = Builder.CreateElementBitCast(DestPtr, Int8Ty);
+    SrcPtr = Builder.CreateElementBitCast(SrcPtr, Int8Ty);
+  }
 
   // Don't do any of the memmove_collectable tests if GC isn't set.
   if (CGM.getLangOpts().getGC() == LangOptions::NonGC) {
@@ -1667,7 +1671,7 @@ void CodeGenFunction::EmitAggregateCopy(Address DestPtr,
     }
   }
 
-  auto Inst = Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, isVolatile);
+  auto Inst = Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, isVolatile, getTarget().isByteAddressable());
 
   // Determine the metadata to describe the position of any padding in this
   // memcpy, as well as the TBAA tags for the members of the struct, in case

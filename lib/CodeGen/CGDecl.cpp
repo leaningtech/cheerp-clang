@@ -1262,10 +1262,13 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
                            getContext().getTypeSizeInChars(type).getQuantity());
 
   if (D.getType()->isArrayType())
+  {
     Loc = Builder.CreateConstGEP2_32(Loc->getType()->getPointerElementType(), Loc, 0, 0);
+    type = type->castAsArrayTypeUnsafe()->getElementType().getCanonicalType();
+  }
 
   llvm::Type *BP = Int8PtrTy;
-  if (Loc.getType() != BP)
+  if (getTarget().isByteAddressable() && Loc.getType() != BP)
     Loc = Builder.CreateBitCast(Loc, BP);
 
   // If the initializer is all or mostly zeros, codegen with memset then do
@@ -1273,7 +1276,7 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
   if (shouldUseMemSetPlusStoresToInitialize(constant,
                 CGM.getDataLayout().getTypeAllocSize(constant->getType()))) {
     Builder.CreateMemSet(Loc, llvm::ConstantInt::get(Int8Ty, 0), SizeVal,
-                         isVolatile);
+                         isVolatile, getTarget().isByteAddressable());
     // Zero and undef don't require a stores.
     if (!constant->isNullValue() && !isa<llvm::UndefValue>(constant)) {
       Loc = Builder.CreateBitCast(Loc, constant->getType()->getPointerTo());
@@ -1300,10 +1303,10 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
     Address SrcPtr = Address(GV, Loc.getAlignment());
     if (constant->getType()->isArrayTy())
       SrcPtr = Builder.CreateConstGEP2_32(GV->getType()->getPointerElementType(), SrcPtr, 0, 0);
-    if (SrcPtr.getType() != BP)
+    if (getTarget().isByteAddressable() && SrcPtr.getType() != BP)
       SrcPtr = Builder.CreateBitCast(SrcPtr, BP);
 
-    Builder.CreateMemCpy(Loc, SrcPtr, SizeVal, isVolatile);
+    Builder.CreateMemCpy(Loc, SrcPtr, SizeVal, isVolatile, getTarget().isByteAddressable());
   }
 }
 
