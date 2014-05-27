@@ -1268,7 +1268,7 @@ CodeGenFunction::EmitNullInitialization(llvm::Value *DestPtr, QualType Ty) {
   unsigned DestAS =
     cast<llvm::PointerType>(DestPtr->getType())->getAddressSpace();
   llvm::Type *BP = Builder.getInt8PtrTy(DestAS);
-  if (DestPtr->getType() != BP)
+  if (DestPtr->getType() != BP && getTarget().isByteAddressable())
     DestPtr = Builder.CreateBitCast(DestPtr, BP);
 
   // Get size and alignment info for this aggregate.
@@ -1324,7 +1324,7 @@ CodeGenFunction::EmitNullInitialization(llvm::Value *DestPtr, QualType Ty) {
     if (vla) return emitNonZeroVLAInit(*this, Ty, DestPtr, SrcPtr, SizeVal);
 
     // Get and call the appropriate llvm.memcpy overload.
-    Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, Align.getQuantity(), false);
+    Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, Align.getQuantity(), false, NULL, NULL, NULL, NULL, getTarget().isByteAddressable());
     return;
   }
 
@@ -1332,7 +1332,7 @@ CodeGenFunction::EmitNullInitialization(llvm::Value *DestPtr, QualType Ty) {
   // because in LLVM, all default initializers (other than the ones we just
   // handled above) are guaranteed to have a bit pattern of all zeros.
   Builder.CreateMemSet(DestPtr, Builder.getInt8(0), SizeVal,
-                       Align.getQuantity(), false);
+                       Align.getQuantity(), false, NULL, NULL, NULL, getTarget().isByteAddressable());
 }
 
 llvm::BlockAddress *CodeGenFunction::GetAddrOfLabel(const LabelDecl *L) {

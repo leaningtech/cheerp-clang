@@ -347,7 +347,8 @@ static void EmitNullBaseClassInitialization(CodeGenFunction &CGF,
   if (Base->isEmpty())
     return;
 
-  DestPtr = CGF.EmitCastToVoidPtr(DestPtr);
+  if (CGF.getTarget().isByteAddressable())
+    DestPtr = CGF.EmitCastToVoidPtr(DestPtr);
 
   const ASTRecordLayout &Layout = CGF.getContext().getASTRecordLayout(Base);
   CharUnits Size = Layout.getNonVirtualSize();
@@ -373,7 +374,8 @@ static void EmitNullBaseClassInitialization(CodeGenFunction &CGF,
     llvm::Value *SrcPtr = CGF.EmitCastToVoidPtr(NullVariable);
 
     // Get and call the appropriate llvm.memcpy overload.
-    CGF.Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, Align.getQuantity());
+    CGF.Builder.CreateMemCpy(DestPtr, SrcPtr, SizeVal, Align.getQuantity(),
+                             false, NULL, NULL, NULL, NULL, CGF.getTarget().isByteAddressable());
     return;
   } 
   
@@ -381,7 +383,7 @@ static void EmitNullBaseClassInitialization(CodeGenFunction &CGF,
   // because in LLVM, all default initializers (other than the ones we just
   // handled above) are guaranteed to have a bit pattern of all zeros.
   CGF.Builder.CreateMemSet(DestPtr, CGF.Builder.getInt8(0), SizeVal,
-                           Align.getQuantity());
+                           Align.getQuantity(), false, NULL, NULL, NULL, CGF.getTarget().isByteAddressable());
 }
 
 void

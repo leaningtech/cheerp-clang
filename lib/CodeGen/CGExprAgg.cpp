@@ -1358,9 +1358,10 @@ static void CheckAggExprForMemSetUse(AggValueSlot &Slot, const Expr *E,
 
   llvm::Value *Loc = Slot.getAddr();
   
-  Loc = CGF.Builder.CreateBitCast(Loc, CGF.Int8PtrTy);
+  if (CGF.getTarget().isByteAddressable())
+    Loc = CGF.Builder.CreateBitCast(Loc, CGF.Int8PtrTy);
   CGF.Builder.CreateMemSet(Loc, CGF.Builder.getInt8(0), SizeVal, 
-                           Align.getQuantity(), false);
+                           Align.getQuantity(), false, NULL, NULL, NULL, CGF.getTarget().isByteAddressable());
   
   // Tell the AggExprEmitter that the slot is known zero.
   Slot.setZeroed();
@@ -1454,15 +1455,18 @@ void CodeGenFunction::EmitAggregateCopy(llvm::Value *DestPtr,
   // we need to use a different call here.  We use isVolatile to indicate when
   // either the source or the destination is volatile.
 
-  llvm::PointerType *DPT = cast<llvm::PointerType>(DestPtr->getType());
-  llvm::Type *DBP =
-    llvm::Type::getInt8PtrTy(getLLVMContext(), DPT->getAddressSpace());
-  DestPtr = Builder.CreateBitCast(DestPtr, DBP);
+  if (getTarget().isByteAddressable())
+  {
+    llvm::PointerType *DPT = cast<llvm::PointerType>(DestPtr->getType());
+    llvm::Type *DBP =
+      llvm::Type::getInt8PtrTy(getLLVMContext(), DPT->getAddressSpace());
+    DestPtr = Builder.CreateBitCast(DestPtr, DBP);
 
-  llvm::PointerType *SPT = cast<llvm::PointerType>(SrcPtr->getType());
-  llvm::Type *SBP =
-    llvm::Type::getInt8PtrTy(getLLVMContext(), SPT->getAddressSpace());
-  SrcPtr = Builder.CreateBitCast(SrcPtr, SBP);
+    llvm::PointerType *SPT = cast<llvm::PointerType>(SrcPtr->getType());
+    llvm::Type *SBP =
+      llvm::Type::getInt8PtrTy(getLLVMContext(), SPT->getAddressSpace());
+    SrcPtr = Builder.CreateBitCast(SrcPtr, SBP);
+  }
 
   // Don't do any of the memmove_collectable tests if GC isn't set.
   if (CGM.getLangOpts().getGC() == LangOptions::NonGC) {
@@ -1501,5 +1505,5 @@ void CodeGenFunction::EmitAggregateCopy(llvm::Value *DestPtr,
                        llvm::ConstantInt::get(IntPtrTy, 
                                               TypeInfo.first.getQuantity()),
                        alignment.getQuantity(), isVolatile,
-                       /*TBAATag=*/nullptr, TBAAStructTag);
+                       /*TBAATag=*/nullptr, TBAAStructTag, NULL, NULL, getTarget().isByteAddressable());
 }
