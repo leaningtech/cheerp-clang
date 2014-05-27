@@ -272,31 +272,31 @@ public:
 
   using CGBuilderBaseTy::CreateMemCpy;
   llvm::CallInst *CreateMemCpy(Address Dest, Address Src, llvm::Value *Size,
-                               bool IsVolatile = false) {
+                               bool IsVolatile = false, bool byteLayout = true) {
     return CreateMemCpy(Dest.getPointer(), Dest.getAlignment().getQuantity(),
                         Src.getPointer(), Src.getAlignment().getQuantity(),
-                        Size,IsVolatile);
+                        Size,IsVolatile, NULL, NULL, NULL, NULL, byteLayout);
   }
   llvm::CallInst *CreateMemCpy(Address Dest, Address Src, uint64_t Size,
-                               bool IsVolatile = false) {
+                               bool IsVolatile = false, bool byteLayout = true) {
     return CreateMemCpy(Dest.getPointer(), Dest.getAlignment().getQuantity(),
                         Src.getPointer(), Src.getAlignment().getQuantity(),
-                        Size, IsVolatile);
+                        Size, IsVolatile, NULL, NULL, NULL, NULL, byteLayout);
   }
 
   using CGBuilderBaseTy::CreateMemMove;
   llvm::CallInst *CreateMemMove(Address Dest, Address Src, llvm::Value *Size,
-                                bool IsVolatile = false) {
+                                bool IsVolatile = false, bool byteLayout = true) {
     return CreateMemMove(Dest.getPointer(), Dest.getAlignment().getQuantity(),
                          Src.getPointer(), Src.getAlignment().getQuantity(),
-                         Size, IsVolatile);
+                         Size, IsVolatile, NULL, NULL, NULL, byteLayout);
   }
 
   using CGBuilderBaseTy::CreateMemSet;
   llvm::CallInst *CreateMemSet(Address Dest, llvm::Value *Value,
-                               llvm::Value *Size, bool IsVolatile = false) {
+                               llvm::Value *Size, bool IsVolatile = false, bool byteLayout = true) {
     return CreateMemSet(Dest.getPointer(), Value, Size,
-                        Dest.getAlignment().getQuantity(), IsVolatile);
+                        Dest.getAlignment().getQuantity(), IsVolatile, NULL, NULL, NULL, byteLayout);
   }
 
   using CGBuilderBaseTy::CreatePreserveStructAccessIndex;
