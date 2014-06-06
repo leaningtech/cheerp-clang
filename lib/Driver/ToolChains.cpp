@@ -1409,7 +1409,7 @@ bool Generic_GCC::GCCInstallationDetector::getBiarchSibling(Multilib &M) const {
     BiarchTripleAliases.append(X86Triples,
                                X86Triples + llvm::array_lengthof(X86Triples));
     break;
-  case llvm::Triple::duetto:
+  case llvm::Triple::cheerp:
   case llvm::Triple::x86:
     LibDirs.append(X86LibDirs, X86LibDirs + llvm::array_lengthof(X86LibDirs));
     TripleAliases.append(X86Triples,
@@ -3171,7 +3171,7 @@ void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
   const StringRef PPC64MultiarchIncludeDirs[] = {
     "/usr/include/powerpc64-linux-gnu"
   };
-  const StringRef DuettoMultiarchIncludeDirs[] = {
+  const StringRef CheerpMultiarchIncludeDirs[] = {
     LLVM_PREFIX "/include"
   };
   ArrayRef<StringRef> MultiarchIncludeDirs;
@@ -3195,8 +3195,8 @@ void Linux::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
     MultiarchIncludeDirs = PPCMultiarchIncludeDirs;
   } else if (getTriple().getArch() == llvm::Triple::ppc64) {
     MultiarchIncludeDirs = PPC64MultiarchIncludeDirs;
-  } else if (getTriple().getArch() == llvm::Triple::duetto) {
-    MultiarchIncludeDirs = DuettoMultiarchIncludeDirs;
+  } else if (getTriple().getArch() == llvm::Triple::cheerp) {
+    MultiarchIncludeDirs = CheerpMultiarchIncludeDirs;
   }
   for (ArrayRef<StringRef>::iterator I = MultiarchIncludeDirs.begin(),
                                      E = MultiarchIncludeDirs.end();

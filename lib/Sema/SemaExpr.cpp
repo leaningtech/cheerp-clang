@@ -1744,7 +1744,7 @@ bool Sema::DiagnoseEmptyLookup(Scope *S, CXXScopeSpec &SS, LookupResult &R,
   DeclContext *DC = (SS.isEmpty() && !CallsUndergoingInstantiation.empty())
     ? CurContext : 0;
   FunctionDecl* curFD = getCurFunctionDecl();
-  if (curFD && curFD->hasAttr<ClientAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
+  if (curFD && curFD->hasAttr<ClientAttr>() && getLangOpts().getCheerpSide() != LangOptions::CHEERP_Client)
   {
     // If the on the wrong side, ignore errors
     return true;
@@ -4160,13 +4160,13 @@ Sema::ConvertArgumentsForCall(CallExpr *Call, Expr *Fn,
                                    Proto, 0, Args, AllArgs, CallType);
   if (Invalid)
     return true;
-  //Duetto: Mark cast as safe for some builtins
+  //Cheerp: Mark cast as safe for some builtins
   if (unsigned builtin = FDecl ? FDecl->getBuiltinID() : 0)
   {
     if (builtin == Builtin::BIfree)
     {
       if (CastExpr* CE=dyn_cast<CastExpr>(AllArgs[0]))
-        CE->setDuettoSafe(true);
+        CE->setCheerpSafe(true);
     }
   }
   unsigned TotalNumArgs = AllArgs.size();

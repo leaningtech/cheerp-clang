@@ -118,7 +118,7 @@ CodeGenFunction::GetAddressOfDirectBaseInCompleteClass(llvm::Value *This,
            == ConvertType(Derived));
 
   if (BaseIsVirtual && !getTarget().isByteAddressable())
-    CGM.ErrorUnsupported(Derived, "Duetto: Virtual bases on non-byte addressable targets are not supported yet");
+    CGM.ErrorUnsupported(Derived, "Cheerp: Virtual bases on non-byte addressable targets are not supported yet");
 
   // Compute the offset of the virtual base.
   CharUnits Offset;
@@ -133,7 +133,7 @@ CodeGenFunction::GetAddressOfDirectBaseInCompleteClass(llvm::Value *This,
   {
     SmallVector<llvm::Value*, 4> GEPConstantIndexes;
     GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
-    // Duetto: if the base class has no members create a bitcast with duetto specific intrinsic
+    // Cheerp: if the base class has no members create a bitcast with cheerp specific intrinsic
     if(Base->isEmpty())
        return GenerateUpcastCollapsed(This, ConvertType(Base)->getPointerTo());
     else
@@ -206,7 +206,7 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
 
   if (VBase && !getTarget().isByteAddressable())
   {
-    CGM.ErrorUnsupported(Derived, "Duetto: Virtual bases on non-byte addressable targets are not supported yet");
+    CGM.ErrorUnsupported(Derived, "Cheerp: Virtual bases on non-byte addressable targets are not supported yet");
     return Value;
   }
 
@@ -259,7 +259,7 @@ CodeGenFunction::GetAddressOfBaseClass(llvm::Value *Value,
       CGM.getCXXABI().GetVirtualBaseClassOffset(*this, Value, Derived, VBase);
   }
 
-  // First handle the non-byte addressable case (Duetto)
+  // First handle the non-byte addressable case (Cheerp)
   if (!getTarget().isByteAddressable())
     Value = GenerateUpcast(Value, Derived, PathBegin, PathEnd);
   else
@@ -320,7 +320,7 @@ CodeGenFunction::GenerateUpcastCollapsed(llvm::Value* Value,
   llvm::Type* types[] = { BasePtrTy, Value->getType() };
 
   llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGM.getModule(),
-                              llvm::Intrinsic::duetto_upcast_collapsed, types);
+                              llvm::Intrinsic::cheerp_upcast_collapsed, types);
 
   return Builder.CreateCall(intrinsic, Value);
 }
@@ -342,7 +342,7 @@ CodeGenFunction::GenerateUpcast(llvm::Value* Value,
   llvm::Type *BasePtrTy = 
     ConvertType((PathEnd[-1])->getType())->getPointerTo();
 
-  //Duetto: Check if the type is the expected one. If not create a builtin to handle this.
+  //Cheerp: Check if the type is the expected one. If not create a builtin to handle this.
   //This may happen when empty base classes are used
   if(Value->getType()!=BasePtrTy)
     Value = GenerateUpcastCollapsed(Value, BasePtrTy);
@@ -361,7 +361,7 @@ CodeGenFunction::GenerateDowncast(llvm::Value* Value,
   llvm::Type* types[] = { DerivedPtrTy, Value->getType() };
 
   llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGM.getModule(),
-                              llvm::Intrinsic::duetto_downcast, types);
+                              llvm::Intrinsic::cheerp_downcast, types);
 
   llvm::Constant* baseOffset = llvm::ConstantInt::get(Int32Ty, BaseIdOffset);
   return Builder.CreateCall2(intrinsic, Value, baseOffset);
@@ -2032,7 +2032,7 @@ CodeGenFunction::InitializeVTablePointer(BaseSubobject Base,
   CharUnits NonVirtualOffset = CharUnits::Zero();
   
   if (NeedsVirtualOffset && !getTarget().isByteAddressable())
-    CGM.ErrorUnsupported(VTableClass, "Duetto: Virtual bases on non-byte addressable targets are not supported yet");
+    CGM.ErrorUnsupported(VTableClass, "Cheerp: Virtual bases on non-byte addressable targets are not supported yet");
 
   if (NeedsVirtualOffset) {
     // We need to use the virtual base offset offset because the virtual base
