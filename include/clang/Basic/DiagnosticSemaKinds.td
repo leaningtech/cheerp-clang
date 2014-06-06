@@ -6958,23 +6958,23 @@ def warn_not_a_doxygen_trailing_member_comment : Warning<
   "not a Doxygen trailing comment">, InGroup<Documentation>, DefaultIgnore;
 } // end of documentation issue category
 
-let CategoryName = "Duetto Issue" in {
-def warn_duetto_unsafe_cast : Warning<
-  "Duetto: Using values casted to unrelated types is undefined behaviour unless the destination type is the actual type of the value">;
-def warn_duetto_inefficient_unions : Warning<
-  "Duetto: Unions are less efficient than on native targets">;
-def err_duetto_missing_special_definition : Error<
-  "Duetto: '%0' is undeclared">;
-def err_duetto_field_not_supported_in_union : Error<
-  "Duetto: Field not supported in union">;
-def err_duetto_invalid_plament_new : Error<
-  "Duetto: Placement new is only valid on memory of the same type. If this is a custom allocator, disable it">;
-def err_duetto_attribute_not_on_function : Error<
-  "Duetto: This attribute can only be used on functions">;
-def err_duetto_jsexport_on_virtual_class : Error<
-  "Duetto: A virtual class cannot have the [[jsexport]] attribute">;
-def err_duetto_jsexport_with_non_trivial_destructor : Error<
-  "Duetto: A class with non trivial destrutor cannot have the [[jsexport]] attribute">;
-} // end of duetto issue category
+let CategoryName = "Cheerp Issue" in {
+def warn_cheerp_unsafe_cast : Warning<
+  "Cheerp: Using values casted to unrelated types is undefined behaviour unless the destination type is the actual type of the value">;
+def warn_cheerp_inefficient_unions : Warning<
+  "Cheerp: Unions are less efficient than on native targets">;
+def err_cheerp_missing_special_definition : Error<
+  "Cheerp: '%0' is undeclared">;
+def err_cheerp_field_not_supported_in_union : Error<
+  "Cheerp: Field not supported in union">;
+def err_cheerp_invalid_plament_new : Error<
+  "Cheerp: Placement new is only valid on memory of the same type. If this is a custom allocator, disable it">;
+def err_cheerp_attribute_not_on_function : Error<
+  "Cheerp: This attribute can only be used on functions">;
+def err_cheerp_jsexport_on_virtual_class : Error<
+  "Cheerp: A virtual class cannot have the [[jsexport]] attribute">;
+def err_cheerp_jsexport_with_non_trivial_destructor : Error<
+  "Cheerp: A class with non trivial destrutor cannot have the [[jsexport]] attribute">;
+} // end of cheerp issue category
 
 } // end of sema component.

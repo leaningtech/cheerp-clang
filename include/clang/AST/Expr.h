@@ -2645,7 +2645,7 @@ public:
 
 private:
   Stmt *Op;
-  bool DuettoSafe;
+  bool CheerpSafe;
 
   bool CastConsistency() const;
 
@@ -2674,7 +2674,7 @@ protected:
           (op && op->isInstantiationDependent())),
          (ty->containsUnexpandedParameterPack() ||
           (op && op->containsUnexpandedParameterPack()))),
-    Op(op), DuettoSafe(false) {
+    Op(op), CheerpSafe(false) {
     assert(kind != CK_Invalid && "creating cast with invalid cast kind");
     CastExprBits.Kind = kind;
     setBasePathSize(BasePathSize);
@@ -2695,8 +2695,8 @@ public:
   Expr *getSubExpr() { return cast<Expr>(Op); }
   const Expr *getSubExpr() const { return cast<Expr>(Op); }
   void setSubExpr(Expr *E) { Op = E; }
-  void setDuettoSafe(bool s) { DuettoSafe = s; }
-  bool isDuettoSafe() const { return DuettoSafe; }
+  void setCheerpSafe(bool s) { CheerpSafe = s; }
+  bool isCheerpSafe() const { return CheerpSafe; }
 
   /// \brief Retrieve the cast subexpression as it was written in the source
   /// code, looking through any implicit casts or other intermediate nodes

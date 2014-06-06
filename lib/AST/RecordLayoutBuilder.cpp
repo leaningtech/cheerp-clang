@@ -1271,7 +1271,7 @@ bool RecordLayoutBuilder::verifyDataOnlyUnion(const RecordDecl* RD)
 	  ;
       }
     }
-    Diag(it->getLocation(), diag::err_duetto_field_not_supported_in_union);
+    Diag(it->getLocation(), diag::err_cheerp_field_not_supported_in_union);
     return false;
   }
   return true;
@@ -1287,7 +1287,7 @@ void RecordLayoutBuilder::InitializeLayout(const Decl *D) {
       bool isDataOnly = verifyDataOnlyUnion(RD);
       //Even if the union is suppported, tell the user it is less efficient
       if(isDataOnly)
-        Diag(RD->getLocation(), diag::warn_duetto_inefficient_unions);
+        Diag(RD->getLocation(), diag::warn_cheerp_inefficient_unions);
     }
     IsMsStruct = RD->isMsStruct(Context);
   }
@@ -1660,7 +1660,7 @@ void RecordLayoutBuilder::LayoutBitField(const FieldDecl *D) {
   if (ExternalLayout)
     FieldOffset = updateExternalFieldOffset(D, FieldOffset);
 
-  //Duetto: We must fit inside the unfilled space, otherwise we need to allocate a new slot
+  //Cheerp: We must fit inside the unfilled space, otherwise we need to allocate a new slot
   bool byteAddressable = Context.getTargetInfo().isByteAddressable();
   if (!byteAddressable && FieldSize > UnfilledBitsInLastUnit)
   {
@@ -1712,7 +1712,7 @@ void RecordLayoutBuilder::LayoutBitField(const FieldDecl *D) {
       NewSizeInBits = FieldOffset;
     if ((FieldOffset + FieldSize) > NewSizeInBits)
     {
-      // We need to bump a unit, on Duetto units are 32bit wide
+      // We need to bump a unit, on Cheerp units are 32bit wide
       uint64_t BitfieldBumpUnit = byteAddressable ? Context.getTargetInfo().getCharWidth():
                                    Context.getTargetInfo().getIntWidth();
       NewSizeInBits += llvm::RoundUpToAlignment(FieldOffset + FieldSize - NewSizeInBits, BitfieldBumpUnit);

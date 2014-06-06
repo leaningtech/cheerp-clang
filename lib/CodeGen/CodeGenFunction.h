@@ -2216,7 +2216,7 @@ public:
                                  llvm::Type *Ty, bool usgn, const char *name);
 
   llvm::Value *BuildVector(ArrayRef<llvm::Value*> Ops);
-  llvm::Value *EmitDuettoBuiltinExpr(unsigned BuiltinID, const CallExpr *E);
+  llvm::Value *EmitCheerpBuiltinExpr(unsigned BuiltinID, const CallExpr *E);
   llvm::Value *EmitX86BuiltinExpr(unsigned BuiltinID, const CallExpr *E);
   llvm::Value *EmitPPCBuiltinExpr(unsigned BuiltinID, const CallExpr *E);
 

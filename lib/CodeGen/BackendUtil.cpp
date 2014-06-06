@@ -15,7 +15,7 @@
 #include "clang/Frontend/FrontendDiagnostic.h"
 #include "clang/Frontend/Utils.h"
 #include "llvm/Bitcode/BitcodeWriterPass.h"
-#include "llvm/Duetto/NativeRewriter.h"
+#include "llvm/Cheerp/NativeRewriter.h"
 #include "llvm/CodeGen/RegAllocRegistry.h"
 #include "llvm/CodeGen/SchedulerRegistry.h"
 #include "llvm/IR/DataLayout.h"
@@ -230,12 +230,12 @@ static void addDataFlowSanitizerPass(const PassManagerBuilder &Builder,
   PM.add(createDataFlowSanitizerPass(CGOpts.SanitizerBlacklistFile));
 }
 
-static void addDuettoPasses(const PassManagerBuilder &Builder,
+static void addCheerpPasses(const PassManagerBuilder &Builder,
                                    PassManagerBase &PM) {
   //Run InstCombine first, to remove load/stores for the this argument
   PM.add(createInstructionCombiningPass());
-  PM.add(createDuettoNativeRewriterPass());
-  //Duetto is single threaded, convert atomic instructions to regular ones
+  PM.add(createCheerpNativeRewriterPass());
+  //Cheerp is single threaded, convert atomic instructions to regular ones
   PM.add(createLowerAtomicPass());
 }
 
@@ -316,9 +316,9 @@ void EmitAssemblyHelper::CreatePasses() {
   // Figure out TargetLibraryInfo.
   Triple TargetTriple(TheModule->getTargetTriple());
 
-  if (TargetTriple.getArch() == llvm::Triple::duetto)
+  if (TargetTriple.getArch() == llvm::Triple::cheerp)
     PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
-                           addDuettoPasses);
+                           addCheerpPasses);
 
 
   PMBuilder.LibraryInfo = new TargetLibraryInfo(TargetTriple);
