@@ -1373,7 +1373,10 @@ llvm::GlobalVariable *ItaniumCXXABI::getAddrOfVTable(const CXXRecordDecl *RD,
 
   ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
   llvm::ArrayType *ArrayType = llvm::ArrayType::get(
-      CGM.Int8PtrTy, VTContext.getVTableLayout(RD).getNumVTableComponents());
+       CGM.getTarget().isByteAddressable() ?
+           CGM.Int8PtrTy :
+           llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo(),
+       VTContext.getVTableLayout(RD).getNumVTableComponents());
 
   VTable = CGM.CreateOrReplaceCXXRuntimeVariable(
       Name, ArrayType, llvm::GlobalValue::ExternalLinkage);

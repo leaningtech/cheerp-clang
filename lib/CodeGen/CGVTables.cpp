@@ -537,7 +537,9 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     unsigned NumVTableThunks, llvm::Constant *RTTI) {
   SmallVector<llvm::Constant *, 64> Inits;
 
-  llvm::Type *Int8PtrTy = CGM.Int8PtrTy;
+  llvm::Type *Int8PtrTy = CGM.getTarget().isByteAddressable() ?
+    CGM.Int8PtrTy :
+    llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
   
   llvm::Type *PtrDiffTy = 
     CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
@@ -598,7 +600,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
           StringRef PureCallName = CGM.getCXXABI().GetPureVirtualCallName();
           PureVirtualFn = CGM.CreateRuntimeFunction(Ty, PureCallName);
           PureVirtualFn = llvm::ConstantExpr::getBitCast(PureVirtualFn,
-                                                         CGM.Int8PtrTy);
+                                                         Int8PtrTy);
         }
         Init = PureVirtualFn;
       } else if (cast<CXXMethodDecl>(GD.getDecl())->isDeleted()) {
@@ -609,7 +611,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
             CGM.getCXXABI().GetDeletedVirtualCallName();
           DeletedVirtualFn = CGM.CreateRuntimeFunction(Ty, DeletedCallName);
           DeletedVirtualFn = llvm::ConstantExpr::getBitCast(DeletedVirtualFn,
-                                                         CGM.Int8PtrTy);
+                                                         Int8PtrTy);
         }
         Init = DeletedVirtualFn;
       } else {
@@ -617,9 +619,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
         if (NextVTableThunkIndex < NumVTableThunks &&
             VTableThunks[NextVTableThunkIndex].first == I) {
           ThunkInfo Thunk = VTableThunks[NextVTableThunkIndex].second;
-        
-          if (!CGM.getTarget().isByteAddressable())
-          {
+          if (!CGM.getTarget().isByteAddressable()) {
             // Override the non virtual offset in bytes with the topological offset
             // TODO: Really move topological offset logic in AST
             Thunk.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentSource);
@@ -677,7 +677,10 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   StringRef Name = OutName.str();
 
   llvm::ArrayType *ArrayType = 
-    llvm::ArrayType::get(CGM.Int8PtrTy, VTLayout->getNumVTableComponents());
+    llvm::ArrayType::get( CGM.getTarget().isByteAddressable() ?
+        CGM.Int8PtrTy :
+        llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo(),
+      VTLayout->getNumVTableComponents());
 
   // Construction vtable symbols are not part of the Itanium ABI, so we cannot
   // guarantee that they actually will be available externally. Instead, when
