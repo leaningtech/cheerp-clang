@@ -1232,6 +1232,8 @@ bool RecordLayoutBuilder::verifyDataOnlyUnion(const RecordDecl* RD)
       {
         case BuiltinType::Char_S:
         case BuiltinType::UChar:
+        case BuiltinType::WChar_S:
+        case BuiltinType::WChar_U:
         case BuiltinType::Short:
         case BuiltinType::UShort:
         case BuiltinType::Int:
