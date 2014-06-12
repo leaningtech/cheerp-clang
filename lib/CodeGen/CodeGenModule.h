@@ -142,8 +142,8 @@ struct CodeGenTypeCache {
 
   /// The size and alignment of a pointer into the generic address
   /// space.
+  unsigned char PointerAlignInBytes;
   union {
-    unsigned char PointerAlignInBytes;
     unsigned char PointerSizeInBytes;
     unsigned char SizeSizeInBytes; // sizeof(size_t)
   };
