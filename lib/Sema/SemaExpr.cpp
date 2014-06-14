@@ -4761,7 +4761,7 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
     if (CheckFunctionCall(FDecl, TheCall, Proto))
       return ExprError();
 
-    if (BuiltinID)
+    if (BuiltinID && !Context.BuiltinInfo.isFullyTyped(BuiltinID))
       return CheckBuiltinFunctionCall(BuiltinID, TheCall);
   } else if (NDecl) {
     if (CheckPointerCall(NDecl, TheCall, Proto))

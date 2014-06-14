@@ -2470,6 +2470,8 @@ unsigned FunctionDecl::getBuiltinID() const {
     return 0;
 
   ASTContext &Context = getASTContext();
+  if (Context.BuiltinInfo.isFullyTyped(BuiltinID))
+    return BuiltinID;
   if (Context.getLangOpts().CPlusPlus) {
     const LinkageSpecDecl *LinkageDecl = dyn_cast<LinkageSpecDecl>(
         getFirstDecl()->getDeclContext());

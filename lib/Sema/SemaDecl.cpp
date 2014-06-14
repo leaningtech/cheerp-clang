@@ -1497,6 +1497,10 @@ NamedDecl *Sema::LazilyCreateBuiltin(IdentifierInfo *II, unsigned bid,
   
   Builtin::ID BID = (Builtin::ID)bid;
 
+  // If a builtin type is determined by the header, bail out immediately
+  if (Context.BuiltinInfo.isFullyTyped(BID))
+    return 0;
+
   ASTContext::GetBuiltinTypeError Error;
   QualType R = Context.GetBuiltinType(BID, Error);
   switch (Error) {
@@ -7618,7 +7622,8 @@ bool Sema::CheckFunctionDeclaration(Scope *S, FunctionDecl *NewFD,
 
     // If this function declares a builtin function, check the type of this
     // declaration against the expected type for the builtin. 
-    if (unsigned BuiltinID = NewFD->getBuiltinID()) {
+    unsigned BuiltinID = NewFD->getBuiltinID();
+    if (BuiltinID && !Context.BuiltinInfo.isFullyTyped(BuiltinID)) {
       ASTContext::GetBuiltinTypeError Error;
       LookupPredefedObjCSuperType(*this, S, NewFD->getIdentifier());
       QualType T = Context.GetBuiltinType(BuiltinID, Error);

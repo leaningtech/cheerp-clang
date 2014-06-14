@@ -87,6 +87,7 @@
 //  e -> const, but only when -fmath-errno=0
 //  j -> returns_twice (like setjmp)
 //  u -> arguments are not evaluated for their side-effects
+//  h -> signature is meaningless, use the one declared in the header. Do not include automatically.
 //  FIXME: gcc has nonnull
 
 #if defined(BUILTIN) && !defined(LIBBUILTIN)
