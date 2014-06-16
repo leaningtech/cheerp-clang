@@ -37,6 +37,18 @@ namespace {
 class ItaniumCXXABI : public CodeGen::CGCXXABI {
   /// VTables - All the vtables which have been defined.
   llvm::DenseMap<const CXXRecordDecl *, llvm::GlobalVariable *> VTables;
+  /// MemberPointerTy - Store the member pointer type
+  llvm::StructType* MemberPtrTyCache;
+
+  llvm::StructType* GetMemberPtrTy() {
+    if (MemberPtrTyCache)
+      return MemberPtrTyCache;
+    llvm::Type* elementType = CGM.getTarget().isByteAddressable()?
+                              (llvm::Type*)CGM.PtrDiffTy:
+                              (llvm::Type*)llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo();
+    MemberPtrTyCache = llvm::StructType::create("memberptr", elementType, CGM.PtrDiffTy, NULL);
+    return MemberPtrTyCache;
+  }
 
 protected:
   bool UseARMMethodPtrABI;
@@ -50,7 +62,7 @@ public:
   ItaniumCXXABI(CodeGen::CodeGenModule &CGM,
                 bool UseARMMethodPtrABI = false,
                 bool UseARMGuardVarABI = false) :
-    CGCXXABI(CGM), UseARMMethodPtrABI(UseARMMethodPtrABI),
+    CGCXXABI(CGM), MemberPtrTyCache(0), UseARMMethodPtrABI(UseARMMethodPtrABI),
     UseARMGuardVarABI(UseARMGuardVarABI) { }
 
   bool classifyReturnType(CGFunctionInfo &FI) const override;
@@ -360,10 +372,7 @@ llvm::Type *
 ItaniumCXXABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
   if (MPT->isMemberDataPointer())
     return CGM.PtrDiffTy;
-  llvm::Type* elementType = CGM.getTarget().isByteAddressable()?
-                            (llvm::Type*)CGM.PtrDiffTy:
-                            (llvm::Type*)llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo();
-  return llvm::StructType::get(elementType, CGM.PtrDiffTy, nullptr);
+  return GetMemberPtrTy();
 }
 
 /// In the Itanium and ARM ABIs, method pointers have the form:
@@ -638,7 +647,7 @@ ItaniumCXXABI::EmitNullMemberPointer(const MemberPointerType *MPT) {
                           (llvm::Constant*)llvm::ConstantPointerNull::get(
 					llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo());
   llvm::Constant *Values[2] = { Zero2, Zero };
-  return llvm::ConstantStruct::getAnon(Values);
+  return llvm::ConstantStruct::get(GetMemberPtrTy(), Values);
 }
 
 llvm::Constant *
@@ -725,7 +734,7 @@ llvm::Constant *ItaniumCXXABI::BuildMemberPointer(const CXXMethodDecl *MD,
                                        ThisAdjustment.getQuantity());
   }
   
-  return llvm::ConstantStruct::getAnon(MemPtr);
+  return llvm::ConstantStruct::get(GetMemberPtrTy(), MemPtr);
 }
 
 llvm::Constant *ItaniumCXXABI::EmitMemberPointer(const APValue &MP,
