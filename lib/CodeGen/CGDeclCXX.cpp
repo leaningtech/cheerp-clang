@@ -365,23 +365,36 @@ CodeGenModule::EmitCXXGlobalInitFunc() {
       std::string PrioritySuffix = llvm::utostr(Priority);
       // Priority is always <= 65535 (enforced by sema)..
       PrioritySuffix = std::string(6-PrioritySuffix.size(), '0')+PrioritySuffix;
-      llvm::Function *Fn = 
-        CreateGlobalInitOrDestructFunction(*this, FTy,
-                                           "_GLOBAL__I_" + PrioritySuffix);
+      // On Cheerp we prefer to give each variable it's own global constructor
+      if (getTarget().isByteAddressable()) {
+        llvm::Function *Fn = 
+          CreateGlobalInitOrDestructFunction(*this, FTy,
+                                             "_GLOBAL__I_" + PrioritySuffix);
       
-      for (; I < PrioE; ++I)
-        LocalCXXGlobalInits.push_back(I->second);
+        for (; I < PrioE; ++I)
+          LocalCXXGlobalInits.push_back(I->second);
 
-      CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn, LocalCXXGlobalInits);
-      AddGlobalCtor(Fn, Priority);
+        CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn, LocalCXXGlobalInits);
+        AddGlobalCtor(Fn, Priority);
+      }
+      else
+        AddGlobalCtor(I->second, Priority);
     }
   }
   
-  llvm::Function *Fn = 
-    CreateGlobalInitOrDestructFunction(*this, FTy, "_GLOBAL__I_a");
+  if (getTarget().isByteAddressable()) {
+    llvm::Function *Fn = 
+      CreateGlobalInitOrDestructFunction(*this, FTy, "_GLOBAL__I_a");
 
-  CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn, CXXGlobalInits);
-  AddGlobalCtor(Fn);
+    CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn, CXXGlobalInits);
+    AddGlobalCtor(Fn);
+  } else {
+    for (llvm::Constant* Fn: CXXGlobalInits)
+    {
+      if(Fn)
+        AddGlobalCtor(cast<llvm::Function>(Fn));
+    }
+  }
 
   CXXGlobalInits.clear();
   PrioritizedCXXGlobalInits.clear();
