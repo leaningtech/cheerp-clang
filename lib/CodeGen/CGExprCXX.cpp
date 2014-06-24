@@ -1051,11 +1051,9 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                 QualType* allocType = NULL) {
   llvm::Instruction *CallOrInvoke;
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
-  llvm::Type* allocatedType = allocType?CGF.ConvertType(*allocType):NULL;
 
   RValue RV;
-  if(Callee->hasAttr<MallocAttr>() && !CGF.getTarget().isByteAddressable() &&
-     allocatedType && allocatedType->isStructTy())
+  if(Callee->hasAttr<MallocAttr>() && !CGF.getTarget().isByteAddressable())
   {
     // Forge a call to a special type safe allocator intrinsic
     QualType allocPtrType = CGF.getContext().getPointerType(*allocType);
