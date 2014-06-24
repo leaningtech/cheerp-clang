@@ -100,7 +100,7 @@ CXXNewExpr::CXXNewExpr(bool IsGlobalNew, FunctionDecl *OperatorNew,
                        Expr *ArraySize, InitializationStyle InitializationStyle,
                        Expr *Initializer, QualType Ty,
                        TypeSourceInfo *AllocatedTypeInfo, SourceRange Range,
-                       SourceRange DirectInitRange)
+                       SourceRange DirectInitRange, bool doNotInitialize)
     : Expr(CXXNewExprClass, Ty, VK_RValue, OK_Ordinary, Ty->isDependentType(),
            Ty->isDependentType(), Ty->isInstantiationDependentType(),
            Ty->containsUnexpandedParameterPack()),
@@ -119,6 +119,7 @@ CXXNewExpr::CXXNewExpr(bool IsGlobalNew, FunctionDecl *OperatorNew,
       Initializer ? InitializationStyle + 1 : 0;
   bool IsParenTypeId = TypeIdParens.isValid();
   CXXNewExprBits.IsParenTypeId = IsParenTypeId;
+  CXXNewExprBits.DoNotInitialize = doNotInitialize;
   CXXNewExprBits.NumPlacementArgs = PlacementArgs.size();
 
   if (ArraySize) {
@@ -182,7 +183,7 @@ CXXNewExpr::Create(const ASTContext &Ctx, bool IsGlobalNew,
                    Expr *ArraySize, InitializationStyle InitializationStyle,
                    Expr *Initializer, QualType Ty,
                    TypeSourceInfo *AllocatedTypeInfo, SourceRange Range,
-                   SourceRange DirectInitRange) {
+                   SourceRange DirectInitRange, bool doNotInitialize) {
   bool IsArray = ArraySize != nullptr;
   bool HasInit = Initializer != nullptr;
   unsigned NumPlacementArgs = PlacementArgs.size();
@@ -195,7 +196,7 @@ CXXNewExpr::Create(const ASTContext &Ctx, bool IsGlobalNew,
       CXXNewExpr(IsGlobalNew, OperatorNew, OperatorDelete, ShouldPassAlignment,
                  UsualArrayDeleteWantsSize, PlacementArgs, TypeIdParens,
                  ArraySize, InitializationStyle, Initializer, Ty,
-                 AllocatedTypeInfo, Range, DirectInitRange);
+                 AllocatedTypeInfo, Range, DirectInitRange, doNotInitialize);
 }
 
 CXXNewExpr *CXXNewExpr::CreateEmpty(const ASTContext &Ctx, bool IsArray,
