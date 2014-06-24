@@ -5197,7 +5197,8 @@ Expr *ASTNodeImporter::VisitCXXNewExpr(CXXNewExpr *CE) {
         Importer.Import(CE->getTypeIdParens()),
         ToArrSize, CE->getInitializationStyle(), ToInit, T, TInfo,
         Importer.Import(CE->getSourceRange()),
-        Importer.Import(CE->getDirectInitRange()));
+        Importer.Import(CE->getDirectInitRange()),
+        CE->shouldNotInitialize());
 }
 
 Expr *ASTNodeImporter::VisitCXXDeleteExpr(CXXDeleteExpr *E) {

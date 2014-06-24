@@ -1806,6 +1806,8 @@ class CXXNewExpr : public Expr {
   unsigned Array : 1;
   /// Should the alignment be passed to the allocation function?
   unsigned PassAlignment : 1;
+  /// Should the objects be left not initialized?
+  unsigned DoNotInitialize : 1;
   /// If this is an array allocation, does the usual deallocation
   /// function for the allocated type want to know the allocated size?
   unsigned UsualArrayDeleteWantsSize : 1;
@@ -1831,7 +1833,7 @@ public:
              SourceRange typeIdParens, Expr *arraySize,
              InitializationStyle initializationStyle, Expr *initializer,
              QualType ty, TypeSourceInfo *AllocatedTypeInfo,
-             SourceRange Range, SourceRange directInitRange);
+             SourceRange Range, SourceRange directInitRange, bool doNotInitialize);
   explicit CXXNewExpr(EmptyShell Shell)
     : Expr(CXXNewExprClass, Shell), SubExprs(nullptr) { }
 
@@ -1895,6 +1897,8 @@ public:
   SourceRange getTypeIdParens() const { return TypeIdParens; }
 
   bool isGlobalNew() const { return GlobalNew; }
+
+  bool shouldNotInitialize() const { return DoNotInitialize; }
 
   /// \brief Whether this new-expression has any initializer at all.
   bool hasInitializer() const { return StoredInitializationStyle > 0; }
