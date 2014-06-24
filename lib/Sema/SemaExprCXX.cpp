@@ -1112,6 +1112,19 @@ Sema::ActOnCXXNew(SourceLocation StartLoc, bool UseGlobal,
   if (ParenListExpr *List = dyn_cast_or_null<ParenListExpr>(Initializer))
     DirectInitRange = List->getSourceRange();
 
+  // Find out if [[noinit]] has been used
+  bool isNoInit = false;
+  const AttributeList* Attrs = D.getAttributes();
+  while(Attrs)
+  {
+    if (Attrs->getKind() == AttributeList::AT_NoInit)
+    {
+      isNoInit = true;
+      break;
+    }
+    Attrs = Attrs->getNext();
+  }
+
   return BuildCXXNew(SourceRange(StartLoc, D.getLocEnd()), UseGlobal,
                      PlacementLParen,
                      PlacementArgs,
@@ -1122,6 +1135,7 @@ Sema::ActOnCXXNew(SourceLocation StartLoc, bool UseGlobal,
                      ArraySize,
                      DirectInitRange,
                      Initializer,
+                     isNoInit,
                      TypeContainsAuto);
 }
 
@@ -1155,6 +1169,7 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
                   Expr *ArraySize,
                   SourceRange DirectInitRange,
                   Expr *Initializer,
+                  bool isNoInit,
                   bool TypeMayContainAuto) {
   SourceRange TypeRange = AllocTypeInfo->getTypeLoc().getSourceRange();
   SourceLocation StartLoc = Range.getBegin();
@@ -1486,7 +1501,7 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
   if (!AllocType->isDependentType() &&
       !Expr::hasAnyTypeDependentArguments(
         llvm::makeArrayRef(Inits, NumInits)) &&
-      !HaveCompleteInit) {
+      !HaveCompleteInit && !isNoInit) {
     // C++11 [expr.new]p15:
     //   A new-expression that creates an object of type T initializes that
     //   object as follows:
@@ -1557,7 +1572,7 @@ Sema::BuildCXXNew(SourceRange Range, bool UseGlobal,
                                         PlacementArgs, TypeIdParens,
                                         ArraySize, initStyle, Initializer,
                                         ResultType, AllocTypeInfo,
-                                        Range, DirectInitRange));
+                                        Range, DirectInitRange, isNoInit));
 }
 
 /// \brief Checks that a type is suitable as the allocated type

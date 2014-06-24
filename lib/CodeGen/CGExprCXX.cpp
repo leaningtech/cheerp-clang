@@ -923,6 +923,9 @@ static void EmitNewInitializer(CodeGenFunction &CGF, const CXXNewExpr *E,
                                llvm::Value *NewPtr,
                                llvm::Value *NumElements,
                                llvm::Value *AllocSizeWithoutCookie) {
+  // Support [[noinit]] attribute
+  //if (E->shouldNotInitialize())
+  //  return;
   const Expr *Init = E->getInitializer();
   if (E->isArray()) {
     if (const CXXConstructExpr *CCE = dyn_cast_or_null<CXXConstructExpr>(Init)){

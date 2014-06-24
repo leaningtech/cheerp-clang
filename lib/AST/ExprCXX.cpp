@@ -144,7 +144,7 @@ CXXNewExpr::CXXNewExpr(const ASTContext &C, bool globalNew,
                        InitializationStyle initializationStyle,
                        Expr *initializer, QualType ty,
                        TypeSourceInfo *allocatedTypeInfo,
-                       SourceRange Range, SourceRange directInitRange)
+                       SourceRange Range, SourceRange directInitRange, bool doNotInitialize)
   : Expr(CXXNewExprClass, ty, VK_RValue, OK_Ordinary,
          ty->isDependentType(), ty->isDependentType(),
          ty->isInstantiationDependentType(),
@@ -152,7 +152,8 @@ CXXNewExpr::CXXNewExpr(const ASTContext &C, bool globalNew,
     SubExprs(0), OperatorNew(operatorNew), OperatorDelete(operatorDelete),
     AllocatedTypeInfo(allocatedTypeInfo), TypeIdParens(typeIdParens),
     Range(Range), DirectInitRange(directInitRange),
-    GlobalNew(globalNew), UsualArrayDeleteWantsSize(usualArrayDeleteWantsSize) {
+    GlobalNew(globalNew), DoNotInitialize(doNotInitialize),
+    UsualArrayDeleteWantsSize(usualArrayDeleteWantsSize) {
   assert((initializer != 0 || initializationStyle == NoInit) &&
          "Only NoInit can have no initializer.");
   StoredInitializationStyle = initializer ? initializationStyle + 1 : 0;
