@@ -4471,6 +4471,7 @@ public:
                          Expr *ArraySize,
                          SourceRange DirectInitRange,
                          Expr *Initializer,
+                         bool noInit,
                          bool TypeMayContainAuto = true);
 
   bool CheckAllocatedType(QualType AllocType, SourceLocation Loc,
