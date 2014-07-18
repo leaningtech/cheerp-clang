@@ -1843,13 +1843,13 @@ void RecordLayoutBuilder::LayoutField(const FieldDecl *D,
   uint64_t FieldSizeInBits = Context.toBits(FieldSize);
   if (IsUnion)
   {
-    setDataSize(std::max(getDataSizeInBits(), FieldSizeInBits));
     if (!Context.getTargetInfo().isByteAddressable())
     {
       //HACK: Set maximal alignment for unions
-      FieldAlign = CharUnits::fromQuantity(8);
-      UnpackedFieldAlign = CharUnits::fromQuantity(8);
+      FieldSizeInBits += 63;
+      FieldSizeInBits &= ~63;
     }
+    setDataSize(std::max(getDataSizeInBits(), FieldSizeInBits));
   }
   else
     setDataSize(FieldOffset + FieldSize);
