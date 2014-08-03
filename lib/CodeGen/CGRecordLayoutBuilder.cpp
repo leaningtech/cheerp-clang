@@ -742,6 +742,16 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
     }
   }
 
+  // Unions and anonymous structures inside unions use bytelayout
+  const RecordDecl *CurDecl = D;
+  while (CurDecl && (CurDecl->isUnion() || CurDecl->isAnonymousStructOrUnion()))
+  {
+    if (CurDecl->isUnion())
+      Ty->setByteLayout();
+    const DeclContext* Owner = CurDecl->getParent();
+    CurDecl = dyn_cast<RecordDecl>(Owner);
+  }
+
   // Add all the field numbers.
   RL->FieldInfo.swap(Builder.Fields);
 
