@@ -445,7 +445,7 @@ void ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
       BaseInfo &Base = Bases[I];
 
       // On NBA there is no alignment and we can use sub structs
-      if (CGM.getTarget().isByteAddressable())
+      if (CGM.getTarget().isByteAddressable() || I==0)
       {
         Build(Val.getStructBase(Base.Index), Base.Decl,
             VTableClass, Offset + Base.Offset);
