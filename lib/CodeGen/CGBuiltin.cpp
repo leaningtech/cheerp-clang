@@ -17,6 +17,7 @@
 #include "TargetInfo.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
+#include "clang/AST/ParentMap.h"
 #include "clang/Basic/TargetBuiltins.h"
 #include "clang/Basic/TargetInfo.h"
 #include "clang/CodeGen/CGFunctionInfo.h"
@@ -1710,6 +1711,11 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
     LoadInst *Load =
         Builder.CreateAlignedLoad(IntToPtr, /*Align=*/4, /*isVolatile=*/true);
     return RValue::get(Load);
+  }
+  case Builtin::BIrealloc: {
+    // On cheerp we need special handling for realloc
+    if (getTarget().getTriple().getArch() == llvm::Triple::cheerp)
+      return RValue::get(EmitCheerpBuiltinExpr(BuiltinID, E));
   }
   }
 
@@ -5845,6 +5851,30 @@ Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
   else if (BuiltinID == Cheerp::BI__builtin_cheerp_make_complete_object) {
     llvm::Type *Tys[] = { ConvertType(E->getType()), Ops[0]->getType() };
     Function *F = CGM.getIntrinsic(Intrinsic::cheerp_make_complete_object, Tys);
+    return Builder.CreateCall(F, Ops);
+  }
+  else if (BuiltinID == Builtin::BIrealloc) {
+    // There must be an incoming cast, void* are not directly accepted
+    const CastExpr* argCE=dyn_cast<CastExpr>(E->getArg(0));
+    assert(argCE);
+    assert(argCE->getType()->isVoidPointerType());
+    //TODO: realloc can be invoked with NULL, support that
+    const Expr* existingMem=argCE->getSubExpr();
+    // The type for the realloc is decided from the base type
+    QualType reallocType=existingMem->getType();
+    const FunctionDecl* FD=dyn_cast<FunctionDecl>(CurFuncDecl);
+    assert(FD);
+    ParentMap PM(FD->getBody());
+    const Stmt* parent=PM.getParent(E);
+    // We need an explicit cast after the call, void* can't be used
+    const CastExpr* retCE=dyn_cast<CastExpr>(parent);
+    assert(retCE);
+    QualType returnType=retCE->getType();
+    assert(returnType.getCanonicalType()==reallocType.getCanonicalType());
+
+    llvm::Type *Tys[] = { ConvertType(reallocType), ConvertType(reallocType) };
+    Function *F = CGM.getIntrinsic(Intrinsic::cheerp_reallocate, Tys);
+    Ops[0]=EmitScalarExpr(existingMem);
     return Builder.CreateCall(F, Ops);
   }
   return 0;
