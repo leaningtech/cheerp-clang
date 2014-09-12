@@ -1269,7 +1269,7 @@ bool RecordLayoutBuilder::verifyDataOnlyUnion(const RecordDecl* RD)
 	  ;
       }
     }
-    Diag(it->getLocation(), diag::err_cheerp_field_not_supported_in_union);
+    //Diag(it->getLocation(), diag::err_cheerp_field_not_supported_in_union);
     return false;
   }
   return true;
