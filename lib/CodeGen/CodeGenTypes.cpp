@@ -399,7 +399,12 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
     llvm_unreachable("Unexpected undeduced auto type!");
   case Type::Complex: {
     llvm::Type *EltTy = ConvertType(cast<ComplexType>(Ty)->getElementType());
-    ResultType = llvm::StructType::get(EltTy, EltTy, NULL);
+    SmallString<16> TypeName;
+    llvm::raw_svector_ostream OS(TypeName);
+    OS << "complex.";
+    getCXXABI().getMangleContext().mangleTypeName(cast<ComplexType>(Ty)->getElementType(), OS);
+
+    ResultType = llvm::StructType::create(OS.str(), EltTy, EltTy, NULL);
     break;
   }
   case Type::LValueReference:
