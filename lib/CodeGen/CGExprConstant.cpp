@@ -525,6 +525,8 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
   llvm::StructType *STy =
       llvm::ConstantStruct::getTypeForElements(CGM.getLLVMContext(),
                                                Elements, Packed);
+  if (RD->isUnion())
+    STy->setByteLayout();
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
     if (ValSTy->isLayoutIdentical(STy))
       STy = ValSTy;
