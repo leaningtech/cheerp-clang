@@ -3580,6 +3580,20 @@ void RecordDecl::setCapturedRecord() {
   addAttr(CapturedRecordAttr::CreateImplicit(getASTContext()));
 }
 
+bool RecordDecl::isByteLayout() const
+{
+  // Unions and anonymous structures inside unions use bytelayout
+  const RecordDecl *CurDecl = this;
+  while (CurDecl && (CurDecl->isUnion() || CurDecl->isAnonymousStructOrUnion()))
+  {
+    if (CurDecl->isUnion())
+      return true;
+    const DeclContext* Owner = CurDecl->getParent();
+    CurDecl = dyn_cast<RecordDecl>(Owner);
+  }
+  return false;
+}
+
 RecordDecl::field_iterator RecordDecl::field_begin() const {
   if (hasExternalLexicalStorage() && !LoadedFieldsFromExternalStorage)
     LoadFieldsFromExternalStorage();

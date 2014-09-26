@@ -3245,6 +3245,8 @@ public:
     return cast_or_null<RecordDecl>(TagDecl::getDefinition());
   }
 
+  bool isByteLayout() const;
+
   // Iterator access to field members. The field iterator only visits
   // the non-static data members of this class, ignoring any static
   // data members, functions, constructors, destructors, etc.
