@@ -542,6 +542,8 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
       llvm::ConstantStruct::getTypeForElements(CGM.getLLVMContext(),
                                                Elements, Packed);
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
+    if (ValSTy->hasByteLayout())
+      STy->setByteLayout();
     if (ValSTy->isLayoutIdentical(STy))
       STy = ValSTy;
     else if(!CGM.getTarget().isByteAddressable())
