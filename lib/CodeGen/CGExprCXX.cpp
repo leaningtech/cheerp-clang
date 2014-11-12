@@ -979,18 +979,23 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
 
   RValue RV;
-  if(Callee->hasAttr<MallocAttr>() && !CGF.getTarget().isByteAddressable())
-  {
-    // Forge a call to a special type safe allocator intrinsic
-    QualType allocPtrType = CGF.getContext().getPointerType(*allocType);
-    llvm::Type* types[] = { CGF.ConvertType(allocPtrType) };
+  if(!CGF.getTarget().isByteAddressable()) {
+    // If allocType is specified this is an allocation, otherwise a free
+    QualType retType;
+    if(allocType) {
+      // Forge a call to a special type safe allocator intrinsic
+      retType = CGF.getContext().getPointerType(*allocType);
+      llvm::Type* types[] = { CGF.ConvertType(retType) };
 
-    llvm::Function* intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                llvm::Intrinsic::cheerp_allocate, types);
-    CalleeAddr = intrinsic;
+      CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+                                  llvm::Intrinsic::cheerp_allocate, types);
+    } else {
+      retType = CGF.getContext().VoidTy;
+      CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+                                  llvm::Intrinsic::cheerp_deallocate);
+    }
     RV =
-      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(allocPtrType, Args,
-                                                              FunctionType::ExtInfo(), RequiredArgs::All),
+      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(retType, Args, FunctionType::ExtInfo(), RequiredArgs::All),
                    CalleeAddr, ReturnValueSlot(), Args,
                    Callee, &CallOrInvoke);
   }
