@@ -1705,6 +1705,10 @@ void ItaniumVTableBuilder::LayoutPrimaryAndSecondaryVTables(
 
   uint64_t AddressPoint = Components.size();
 
+  // On Cheerp we want to start vtable pointer to start from 0 when possible
+  if(!Context.getTargetInfo().isByteAddressable())
+    AddressPoint -= 2;
+
   // Now go through all virtual member functions and add them.
   PrimaryBasesSetVectorTy PrimaryBases;
   AddMethods(Base, OffsetInLayoutClass,
