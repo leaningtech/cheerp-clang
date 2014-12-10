@@ -934,17 +934,15 @@ llvm::Value *CodeGenFunction::EmitLifetimeStart(uint64_t Size,
     return nullptr;
 
   llvm::Value *SizeV = llvm::ConstantInt::get(Int64Ty, Size);
-  Addr = Builder.CreateBitCast(Addr, AllocaInt8PtrTy);
   llvm::CallInst *C =
-      Builder.CreateCall(CGM.getLLVMLifetimeStartFn(), {SizeV, Addr});
+      Builder.CreateCall(CGM.getLLVMLifetimeStartFn(Addr->getType()), {SizeV, Addr});
   C->setDoesNotThrow();
   return SizeV;
 }
 
 void CodeGenFunction::EmitLifetimeEnd(llvm::Value *Size, llvm::Value *Addr) {
-  Addr = Builder.CreateBitCast(Addr, AllocaInt8PtrTy);
   llvm::CallInst *C =
-      Builder.CreateCall(CGM.getLLVMLifetimeEndFn(), {Size, Addr});
+      Builder.CreateCall(CGM.getLLVMLifetimeEndFn(Addr->getType()), {Size, Addr});
   C->setDoesNotThrow();
 }
 
@@ -1742,21 +1740,13 @@ void CodeGenFunction::pushRegularPartialArrayCleanup(llvm::Value *arrayBegin,
 }
 
 /// Lazily declare the @llvm.lifetime.start intrinsic.
-llvm::Constant *CodeGenModule::getLLVMLifetimeStartFn() {
-  if (LifetimeStartFn)
-    return LifetimeStartFn;
-  LifetimeStartFn = llvm::Intrinsic::getDeclaration(&getModule(),
-    llvm::Intrinsic::lifetime_start, AllocaInt8PtrTy);
-  return LifetimeStartFn;
+llvm::Constant *CodeGenModule::getLLVMLifetimeStartFn(llvm::Type* ptrType) {
+  return llvm::Intrinsic::getDeclaration(&getModule(), llvm::Intrinsic::lifetime_start, ptrType);
 }
 
 /// Lazily declare the @llvm.lifetime.end intrinsic.
-llvm::Constant *CodeGenModule::getLLVMLifetimeEndFn() {
-  if (LifetimeEndFn)
-    return LifetimeEndFn;
-  LifetimeEndFn = llvm::Intrinsic::getDeclaration(&getModule(),
-    llvm::Intrinsic::lifetime_end, AllocaInt8PtrTy);
-  return LifetimeEndFn;
+llvm::Constant *CodeGenModule::getLLVMLifetimeEndFn(llvm::Type* ptrType) {
+  return llvm::Intrinsic::getDeclaration(&getModule(), llvm::Intrinsic::lifetime_end, ptrType);
 }
 
 namespace {
