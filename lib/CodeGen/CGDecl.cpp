@@ -516,9 +516,8 @@ namespace {
       : Addr(addr), Size(size) {}
 
     void Emit(CodeGenFunction &CGF, Flags flags) override {
-      llvm::Value *castAddr = CGF.Builder.CreateBitCast(Addr, CGF.Int8PtrTy);
-      CGF.Builder.CreateCall2(CGF.CGM.getLLVMLifetimeEndFn(),
-                              Size, castAddr)
+      CGF.Builder.CreateCall2(CGF.CGM.getLLVMLifetimeEndFn(Addr->getType()),
+                              Size, Addr)
         ->setDoesNotThrow();
     }
   };
@@ -960,8 +959,7 @@ CodeGenFunction::EmitAutoVarAlloca(const VarDecl &D) {
         llvm::Value *sizeV = llvm::ConstantInt::get(Int64Ty, size);
 
         emission.SizeForLifetimeMarkers = sizeV;
-        llvm::Value *castAddr = Builder.CreateBitCast(Alloc, Int8PtrTy);
-        Builder.CreateCall2(CGM.getLLVMLifetimeStartFn(), sizeV, castAddr)
+        Builder.CreateCall2(CGM.getLLVMLifetimeStartFn(Alloc->getType()), sizeV, Alloc)
           ->setDoesNotThrow();
       } else {
         assert(!emission.useLifetimeMarkers());
@@ -1616,19 +1614,13 @@ void CodeGenFunction::pushRegularPartialArrayCleanup(llvm::Value *arrayBegin,
 }
 
 /// Lazily declare the @llvm.lifetime.start intrinsic.
-llvm::Constant *CodeGenModule::getLLVMLifetimeStartFn() {
-  if (LifetimeStartFn) return LifetimeStartFn;
-  LifetimeStartFn = llvm::Intrinsic::getDeclaration(&getModule(),
-                                            llvm::Intrinsic::lifetime_start);
-  return LifetimeStartFn;
+llvm::Constant *CodeGenModule::getLLVMLifetimeStartFn(llvm::Type* ptrType) {
+  return llvm::Intrinsic::getDeclaration(&getModule(), llvm::Intrinsic::lifetime_start, ptrType);
 }
 
 /// Lazily declare the @llvm.lifetime.end intrinsic.
-llvm::Constant *CodeGenModule::getLLVMLifetimeEndFn() {
-  if (LifetimeEndFn) return LifetimeEndFn;
-  LifetimeEndFn = llvm::Intrinsic::getDeclaration(&getModule(),
-                                              llvm::Intrinsic::lifetime_end);
-  return LifetimeEndFn;
+llvm::Constant *CodeGenModule::getLLVMLifetimeEndFn(llvm::Type* ptrType) {
+  return llvm::Intrinsic::getDeclaration(&getModule(), llvm::Intrinsic::lifetime_end, ptrType);
 }
 
 namespace {

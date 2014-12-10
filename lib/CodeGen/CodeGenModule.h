@@ -471,12 +471,6 @@ private:
     int GlobalUniqueCount;
   } Block;
 
-  /// void @llvm.lifetime.start(i64 %size, i8* nocapture <ptr>)
-  llvm::Constant *LifetimeStartFn;
-
-  /// void @llvm.lifetime.end(i64 %size, i8* nocapture <ptr>)
-  llvm::Constant *LifetimeEndFn;
-
   GlobalDecl initializedGlobalDecl;
 
   std::unique_ptr<SanitizerMetadata> SanitizerMD;
@@ -905,8 +899,8 @@ public:
 
   ///@}
 
-  llvm::Constant *getLLVMLifetimeStartFn();
-  llvm::Constant *getLLVMLifetimeEndFn();
+  llvm::Constant *getLLVMLifetimeStartFn(llvm::Type* ptrType);
+  llvm::Constant *getLLVMLifetimeEndFn(llvm::Type* ptrType);
 
   // Make sure that this type is translated.
   void UpdateCompletedType(const TagDecl *TD);
