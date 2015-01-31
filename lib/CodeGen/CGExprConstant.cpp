@@ -532,15 +532,17 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
   // Pick the type to use.  If the type is layout identical to the ConvertType
   // type then use it, otherwise use whatever the builder produced for us.
   llvm::Type *ValTy = CGM.getTypes().ConvertRecordDeclType(RD);
+  llvm::StructType *DirectBaseTy = NULL;
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
     // It makes sense to make the struct packed if the target one is
     if (ValSTy->isPacked() && !Packed)
       ConvertStructToPacked();
+    DirectBaseTy = ValSTy->getDirectBase();
   }
 
   llvm::StructType *STy =
       llvm::ConstantStruct::getTypeForElements(CGM.getLLVMContext(),
-                                               Elements, Packed);
+                                               Elements, Packed, DirectBaseTy);
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
     if (ValSTy->hasByteLayout())
       STy->setByteLayout();
