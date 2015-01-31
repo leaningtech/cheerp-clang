@@ -5321,7 +5321,7 @@ ObjCNonFragileABITypesHelper::ObjCNonFragileABITypesHelper(CodeGen::CodeGenModul
   // }
   ProtocolListnfABITy->setBody(LongTy,
                                llvm::ArrayType::get(ProtocolnfABIPtrTy, 0),
-                               NULL);
+                               (llvm::Type*)NULL);
 
   // struct _objc_protocol_list*
   ProtocolListnfABIPtrTy = llvm::PointerType::getUnqual(ProtocolListnfABITy);
