@@ -506,21 +506,6 @@ namespace {
       CGF.EmitCall(FnInfo, CleanupFn, ReturnValueSlot(), Args);
     }
   };
-
-  /// A cleanup to call @llvm.lifetime.end.
-  class CallLifetimeEnd : public EHScopeStack::Cleanup {
-    llvm::Value *Addr;
-    llvm::Value *Size;
-  public:
-    CallLifetimeEnd(llvm::Value *addr, llvm::Value *size)
-      : Addr(addr), Size(size) {}
-
-    void Emit(CodeGenFunction &CGF, Flags flags) override {
-      CGF.Builder.CreateCall2(CGF.CGM.getLLVMLifetimeEndFn(Addr->getType()),
-                              Size, Addr)
-        ->setDoesNotThrow();
-    }
-  };
 }
 
 /// EmitAutoVarWithLifetime - Does the setup required for an automatic

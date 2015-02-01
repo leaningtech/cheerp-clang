@@ -138,7 +138,12 @@ RValue CodeGenFunction::EmitAnyExprToTemp(const Expr *E) {
   AggValueSlot AggSlot = AggValueSlot::ignored();
 
   if (hasAggregateEvaluationKind(E->getType()))
+  {
     AggSlot = CreateAggTemp(E->getType(), "agg.tmp");
+    llvm::Value *sizeV = llvm::ConstantInt::get(Int64Ty, -1);
+    Builder.CreateCall2(CGM.getLLVMLifetimeStartFn(AggSlot.getAddr()->getType()), sizeV, AggSlot.getAddr())->setDoesNotThrow();
+    EHStack.pushCleanup<CallLifetimeEnd>(NormalCleanup, AggSlot.getAddr(), sizeV);
+  }
   return EmitAnyExpr(E, AggSlot);
 }
 
@@ -3257,7 +3262,10 @@ LValue CodeGenFunction::EmitCXXUuidofLValue(const CXXUuidofExpr *E) {
 
 LValue
 CodeGenFunction::EmitCXXBindTemporaryLValue(const CXXBindTemporaryExpr *E) {
+  llvm::Value *sizeV = llvm::ConstantInt::get(Int64Ty, -1);
   AggValueSlot Slot = CreateAggTemp(E->getType(), "temp.lvalue");
+  Builder.CreateCall2(CGM.getLLVMLifetimeStartFn(Slot.getAddr()->getType()), sizeV, Slot.getAddr())->setDoesNotThrow();
+  EHStack.pushCleanup<CallLifetimeEnd>(NormalCleanup, Slot.getAddr(), sizeV);
   Slot.setExternallyDestructed();
   EmitAggExpr(E->getSubExpr(), Slot);
   EmitCXXTemporary(E->getTemporary(), E->getType(), Slot.getAddr());
