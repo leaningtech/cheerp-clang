@@ -474,6 +474,11 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
   case Type::FunctionNoProto:
   case Type::FunctionProto: {
     const FunctionType *FT = cast<FunctionType>(Ty);
+    // Convert all required parameters types ahead of time
+    ConvertType(FT->getReturnType());
+    if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(FT))
+      for (unsigned i = 0, e = FPT->getNumParams(); i != e; i++)
+        ConvertType(FPT->getParamType(i));
     // First, check whether we can build the full function type.  If the
     // function type depends on an incomplete type (e.g. a struct or enum), we
     // cannot lower the function type.

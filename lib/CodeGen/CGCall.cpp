@@ -283,6 +283,13 @@ CodeGenTypes::arrangeFunctionDeclaration(const FunctionDecl *FD) {
   CanQualType FTy = FD->getType()->getCanonicalTypeUnqualified();
 
   assert(isa<FunctionType>(FTy));
+  const FunctionType* FT = cast<FunctionType>(FTy);
+
+  // Convert all required parameters types ahead of time
+  ConvertType(FT->getReturnType());
+  if (const FunctionProtoType *FPT = dyn_cast<FunctionProtoType>(FT))
+    for (unsigned i = 0, e = FPT->getNumParams(); i != e; i++)
+      ConvertType(FPT->getParamType(i));
 
   // When declaring a function without a prototype, always use a
   // non-variadic type.
