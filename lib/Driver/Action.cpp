@@ -36,6 +36,7 @@ const char *Action::getClassName(ActionClass AC) {
   case VerifyDebugInfoJobClass: return "verify-debug-info";
   case VerifyPCHJobClass: return "verify-pch";
   case CheerpCompileJobClass: return "cheerp-compiler";
+  case CheerpOptimizeJobClass: return "opt";
   }
 
   llvm_unreachable("invalid class");
@@ -150,4 +151,10 @@ void CheerpCompileJobAction::anchor() {}
 
 CheerpCompileJobAction::CheerpCompileJobAction(ActionList &Inputs, types::ID Type)
   : JobAction(CheerpCompileJobClass, Inputs, Type) {
+}
+
+void CheerpOptimizeJobAction::anchor() {}
+
+CheerpOptimizeJobAction::CheerpOptimizeJobAction(ActionList &Inputs, types::ID Type)
+  : JobAction(CheerpOptimizeJobClass, Inputs, Type) {
 }

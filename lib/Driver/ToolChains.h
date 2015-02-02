@@ -768,6 +768,7 @@ public:
 class LLVM_LIBRARY_VISIBILITY Cheerp : public ToolChain {
 private:
   mutable std::unique_ptr<tools::cheerp::CheerpCompiler> CheerpCompiler;
+  mutable std::unique_ptr<tools::cheerp::CheerpOptimizer> CheerpOptimizer;
 public:
   Cheerp(const Driver &D, const llvm::Triple& Triple,
          const llvm::opt::ArgList &Args);

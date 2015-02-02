@@ -53,9 +53,10 @@ public:
     VerifyDebugInfoJobClass,
     VerifyPCHJobClass,
     CheerpCompileJobClass,
+    CheerpOptimizeJobClass,
 
     JobClassFirst=PreprocessJobClass,
-    JobClassLast=CheerpCompileJobClass
+    JobClassLast=CheerpOptimizeJobClass
   };
 
   static const char *getClassName(ActionClass AC);
@@ -267,6 +268,15 @@ public:
   CheerpCompileJobAction(ActionList &Inputs, types::ID Type);
   static bool classof(const Action *A) {
     return A->getKind() == CheerpCompileJobClass;
+  }
+};
+
+class CheerpOptimizeJobAction : public JobAction {
+  virtual void anchor();
+public:
+  CheerpOptimizeJobAction(ActionList &Inputs, types::ID Type);
+  static bool classof(const Action *A) {
+    return A->getKind() == CheerpOptimizeJobClass;
   }
 };
 
