@@ -673,7 +673,7 @@ public:
 };
 }
 
-/// Cheerp tools: llvm-link and llc
+/// Cheerp tools: llvm-link, opt and llc
 namespace cheerp {
   class LLVM_LIBRARY_VISIBILITY Link : public Tool  {
   public:
@@ -681,6 +681,19 @@ namespace cheerp {
 
     virtual bool hasIntegratedCPP() const { return false; }
     virtual bool isLinkJob() const { return true; }
+
+    virtual void ConstructJob(Compilation &C, const JobAction &JA,
+                              const InputInfo &Output,
+                              const InputInfoList &Inputs,
+                              const llvm::opt::ArgList &TCArgs,
+                              const char *LinkingOutput) const;
+  };
+
+  class LLVM_LIBRARY_VISIBILITY CheerpOptimizer : public Tool {
+  public:
+    CheerpOptimizer(const ToolChain &TC) : Tool("cheerp::CheerpOptimizer", "optimizer", TC) {}
+
+    virtual bool hasIntegratedCPP() const { return false; }
 
     virtual void ConstructJob(Compilation &C, const JobAction &JA,
                               const InputInfo &Output,
