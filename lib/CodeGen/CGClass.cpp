@@ -1518,10 +1518,12 @@ void CodeGenFunction::EmitDestructorBody(FunctionArgList &Args) {
   // possible to delegate the destructor body to the complete
   // destructor.  Do so.
   if (DtorType == Dtor_Deleting) {
-    EnterDtorCleanups(Dtor, Dtor_Deleting);
+    if(getTarget().isByteAddressable())
+      EnterDtorCleanups(Dtor, Dtor_Deleting);
     EmitCXXDestructorCall(Dtor, Dtor_Complete, /*ForVirtualBase=*/false,
                           /*Delegating=*/false, LoadCXXThis());
-    PopCleanupBlock();
+    if(getTarget().isByteAddressable())
+      PopCleanupBlock();
     return;
   }
 
