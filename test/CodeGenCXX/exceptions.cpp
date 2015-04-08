@@ -146,6 +146,7 @@ namespace test1 {
     // CHECK:      [[NEW:%.*]] = call i8* @_Znwm(i64 8)
     // CHECK-NEXT: store i1 true, i1* [[ACTIVE]] 
     // CHECK-NEXT: [[CAST:%.*]] = bitcast i8* [[NEW]] to [[A]]*
+    // CHECK-NEXT: call void @"llvm.lifetime.start
     // CHECK-NEXT: invoke void @_ZN5test15makeBEv([[B:%.*]]* sret [[T0:%.*]])
     // CHECK:      [[T1:%.*]] = invoke i32 @_ZN5test11BcviEv([[B]]* [[T0]])
     // CHECK:      invoke void @_ZN5test11AC1Ei([[A]]* [[CAST]], i32 [[T1]])
