@@ -25,7 +25,7 @@
 // use it (GCC doesn't emit a value for pointers to member functions either - so
 // it's not clear what, if any, format would be acceptable to GDB)
 //
-// CHECK: [[TCARG5]] = {{.*}}metadata !"b", metadata [[MEMFUNPTR:![0-9]*]], { i64, i64 } { i64 ptrtoint (void (%struct.foo*)* @_ZN3foo1fEv to i64), i64 0 }, {{.*}} ; [ DW_TAG_template_value_parameter ]
+// CHECK: [[TCARG5]] = {{.*}}metadata !"b", metadata [[MEMFUNPTR:![0-9]*]], %memberptr { i64 ptrtoint (void (%struct.foo*)* @_ZN3foo1fEv to i64), i64 0 }, {{.*}} ; [ DW_TAG_template_value_parameter ]
 // CHECK: [[MEMFUNPTR]] = {{.*}}, metadata [[FTYPE:![0-9]*]], metadata !"_ZTS3foo"} ; [ DW_TAG_ptr_to_member_type ]
 // CHECK: [[FTYPE]] = {{.*}}, metadata [[FARGS:![0-9]*]], i32 0, null, null, null} ; [ DW_TAG_subroutine_type ]
 // CHECK: [[FARGS]] = metadata !{null, metadata [[FARG1:![0-9]*]]}

@@ -33,11 +33,13 @@ void test0(X x) {
   test0_helper(x);
   // CHECK-LABEL:    define void @_Z5test01X(
   // CHECK:      [[TMP:%.*]] = alloca [[A:%.*]], align
+  // CHECK-NEXT: call void @llvm.lifetime.start
   // CHECK-NEXT: [[T0:%.*]] = call [[B:%.*]]* @_ZN1XcvR1BEv(
   // CHECK-NEXT: [[T1:%.*]] = bitcast [[B]]* [[T0]] to [[A]]*
   // CHECK-NEXT: call void @_ZN1AC1ERKS_([[A]]* [[TMP]], [[A]]* [[T1]])
   // CHECK-NEXT: call void @_Z12test0_helper1A([[A]]* [[TMP]])
   // CHECK-NEXT: call void @_ZN1AD1Ev([[A]]* [[TMP]])
+  // CHECK-NEXT: call void @llvm.lifetime.end
   // CHECK-NEXT: ret void
 }
 

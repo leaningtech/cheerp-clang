@@ -433,4 +433,4 @@ void test54() {
   test54_helper(x54, x54, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0i);
 }
 // AVX: @test54_helper(<8 x float> {{%[a-zA-Z0-9]+}}, <8 x float> {{%[a-zA-Z0-9]+}}, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double {{%[a-zA-Z0-9]+}}, double {{%[a-zA-Z0-9]+}})
-// AVX: @test54_helper(<8 x float> {{%[a-zA-Z0-9]+}}, <8 x float> {{%[a-zA-Z0-9]+}}, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, { double, double }* byval align 8 {{%[a-zA-Z0-9]+}})
+// AVX: @test54_helper(<8 x float> {{%[a-zA-Z0-9]+}}, <8 x float> {{%[a-zA-Z0-9]+}}, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, double 1.000000e+00, %complex._ZTSd* byval align 8 {{%[a-zA-Z0-9]+}})

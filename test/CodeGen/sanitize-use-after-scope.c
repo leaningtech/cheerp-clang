@@ -8,15 +8,15 @@ extern int bar(char *A, int n);
 // ADDRESS-ONLY-NOT: @llvm.lifetime.start
 int foo (int n) {
   if (n) {
-    // USE-AFTER-SCOPE: @llvm.lifetime.start(i64 10, i8* {{.*}})
+    // USE-AFTER-SCOPE: @llvm.lifetime.start
     char A[10];
     return bar(A, 1);
-    // USE-AFTER-SCOPE: @llvm.lifetime.end(i64 10, i8* {{.*}})
+    // USE-AFTER-SCOPE: @llvm.lifetime.end
   } else {
-    // USE-AFTER-SCOPE: @llvm.lifetime.start(i64 20, i8* {{.*}})
+    // USE-AFTER-SCOPE: @llvm.lifetime.start
     char A[20];
     return bar(A, 2);
-    // USE-AFTER-SCOPE: @llvm.lifetime.end(i64 20, i8* {{.*}})
+    // USE-AFTER-SCOPE: @llvm.lifetime.end
   }
 }
 

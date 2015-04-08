@@ -90,8 +90,8 @@ struct s20 f20(void) {}
 struct s21 { struct {} f1; long f0 : 4; };
 struct s21 f21(void) {}
 
-// PCS: define { float, float } @f22()
-// PCS: define { double, double } @f23(
+// PCS: define %complex._ZTSf @f22()
+// PCS: define %complex._ZTSd @f23(
 _Complex float      f22(void) {}
 _Complex double     f23(void) {}
 
