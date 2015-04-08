@@ -476,6 +476,6 @@ _Bool ne_float_cc(float _Complex a, float _Complex b) {
 // Check that the libcall will obtain proper calling convention on ARM
 _Complex double foo(_Complex double a, _Complex double b) {
   // ARM-LABEL: @foo(
-  // ARM: call arm_aapcscc { double, double } @__muldc3
+  // ARM: call arm_aapcscc %complex._ZTSd @__muldc3
   return a*b;
 }

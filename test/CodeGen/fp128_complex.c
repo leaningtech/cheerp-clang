@@ -2,8 +2,8 @@
 
 _Complex long double a, b, c, d;
 void test_fp128_compound_assign(void) {
-  // CHECK: tail call { fp128, fp128 } @__multc3
+  // CHECK: tail call %complex._ZTSe @__multc3
   a *= b;
-  // CHECK: tail call { fp128, fp128 } @__divtc3
+  // CHECK: tail call %complex._ZTSe @__divtc3
   c /= d;
 }
