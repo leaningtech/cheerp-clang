@@ -751,8 +751,8 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
     }
   }
 
-  // Unions and anonymous structures inside unions use bytelayout
-  if (D->isByteLayout())
+  // Unions and anonymous structures inside unions use bytelayout on Cheerp
+  if (!getTarget().isByteAddressable() && D->isByteLayout())
       Ty->setByteLayout();
 
   // Add all the field numbers.
