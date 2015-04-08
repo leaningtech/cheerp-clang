@@ -21,11 +21,11 @@ void f4(unsigned short a) {}
 // CHECK-LABEL: define void @f5(i64 %a.coerce)
 void f5(_Complex float a) {}
 
-// CHECK-LABEL: define void @f6({ double, double }* %a)
+// CHECK-LABEL: define void @f6(%"complex.?AN"* %a)
 void f6(_Complex double a) {}
 
 // CHECK-LABEL: define i64 @f7()
 _Complex float f7() { return 1.0; }
 
-// CHECK-LABEL: define void @f8({ double, double }* noalias sret %agg.result)
+// CHECK-LABEL: define void @f8(%"complex.?AN"* noalias sret %agg.result)
 _Complex double f8() { return 1.0; }

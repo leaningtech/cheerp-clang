@@ -26,21 +26,21 @@ union s2 {
 
 int g0 = (int)(&(((union s2 *) 0)->f0.f0) - 0);
 
-// CHECK: @g1x = global { double, double } { double 1.000000e+00{{[0]*}}, double 0.000000e+00{{[0]*}} }
+// CHECK: @g1x = global %complex._ZTSd { double 1.000000e+00{{[0]*}}, double 0.000000e+00{{[0]*}} }
 _Complex double g1x = 1.0f;
-// CHECK: @g1y = global { double, double } { double 0.000000e+00{{[0]*}}, double 1.000000e+00{{[0]*}} }
+// CHECK: @g1y = global %complex._ZTSd { double 0.000000e+00{{[0]*}}, double 1.000000e+00{{[0]*}} }
 _Complex double g1y = 1.0fi;
-// CHECK: @g1 = global { i8, i8 } { i8 1, i8 10 }
+// CHECK: @g1 = global %complex._ZTSc { i8 1, i8 10 }
 _Complex char g1 = (char) 1 + (char) 10 * 1i;
-// CHECK: @g2 = global { i32, i32 } { i32 1, i32 10 }
+// CHECK: @g2 = global %complex._ZTSi { i32 1, i32 10 }
 _Complex int g2 = 1 + 10i;
-// CHECK: @g3 = global { float, float } { float 1.000000e+00{{[0]*}}, float 1.000000e+0{{[0]*}}1 }
+// CHECK: @g3 = global %complex._ZTSf { float 1.000000e+00{{[0]*}}, float 1.000000e+0{{[0]*}}1 }
 _Complex float g3 = 1.0 + 10.0i;
-// CHECK: @g4 = global { double, double } { double 1.000000e+00{{[0]*}}, double 1.000000e+0{{[0]*}}1 }
+// CHECK: @g4 = global %complex._ZTSd { double 1.000000e+00{{[0]*}}, double 1.000000e+0{{[0]*}}1 }
 _Complex double g4 = 1.0 + 10.0i;
-// CHECK: @g5 = global { i32, i32 } zeroinitializer
+// CHECK: @g5 = global %complex._ZTSi zeroinitializer
 _Complex int g5 = (2 + 3i) == (5 + 7i);
-// CHECK: @g6 = global { double, double } { double -1.100000e+0{{[0]*}}1, double 2.900000e+0{{[0]*}}1 }
+// CHECK: @g6 = global %complex._ZTSd { double -1.100000e+0{{[0]*}}1, double 2.900000e+0{{[0]*}}1 }
 _Complex double g6 = (2.0 + 3.0i) * (5.0 + 7.0i);
 // CHECK: @g7 = global i32 1
 int g7 = (2 + 3i) * (5 + 7i) == (-11 + 29i);

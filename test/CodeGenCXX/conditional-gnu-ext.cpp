@@ -94,6 +94,7 @@ namespace test3 {
   B test1() {
     // CHECK-LABEL:    define void @_ZN5test35test1Ev(
     // CHECK:      [[TEMP:%.*]] = alloca [[B]],
+    // CHECK-NEXT: call void @"llvm.lifetime.start
     // CHECK-NEXT: call  void @_ZN5test312test1_helperEv([[B]]* sret [[TEMP]])
     // CHECK-NEXT: [[BOOL:%.*]] = call zeroext i1 @_ZN5test31BcvbEv([[B]]* [[TEMP]])
     // CHECK-NEXT: br i1 [[BOOL]]
@@ -102,6 +103,7 @@ namespace test3 {
     // CHECK:      call void @_ZN5test31BC1Ev([[B]]* [[RESULT]])
     // CHECK-NEXT: br label
     // CHECK:      call void @_ZN5test31BD1Ev([[B]]* [[TEMP]])
+    // CHECK-NEXT: call void @"llvm.lifetime.end
     // CHECK-NEXT: ret void
     extern B test1_helper();
     return test1_helper() ?: B();
@@ -126,6 +128,7 @@ namespace test3 {
   A test3() {
     // CHECK-LABEL:    define void @_ZN5test35test3Ev(
     // CHECK:      [[TEMP:%.*]] = alloca [[B]],
+    // CHECK-NEXT: call void @"llvm.lifetime.start
     // CHECK-NEXT: call  void @_ZN5test312test3_helperEv([[B]]* sret [[TEMP]])
     // CHECK-NEXT: [[BOOL:%.*]] = call zeroext i1 @_ZN5test31BcvbEv([[B]]* [[TEMP]])
     // CHECK-NEXT: br i1 [[BOOL]]
@@ -134,6 +137,7 @@ namespace test3 {
     // CHECK:      call void @_ZN5test31AC1Ev([[A]]* [[RESULT]])
     // CHECK-NEXT: br label
     // CHECK:      call void @_ZN5test31BD1Ev([[B]]* [[TEMP]])
+    // CHECK-NEXT: call void @"llvm.lifetime.end
     // CHECK-NEXT: ret void
     extern B test3_helper();
     return test3_helper() ?: A();
