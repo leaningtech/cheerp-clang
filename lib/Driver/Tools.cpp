@@ -2971,6 +2971,11 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   // Forward cheerp-side argument
   if (Arg *CheerpSide = Args.getLastArg(options::OPT_cheerp_side_EQ))
     CheerpSide->render(Args, CmdArgs);
+  // Forward cheerp-no-pointer-scev argument
+  if (Arg *CheerpNoPointerSCEV = Args.getLastArg(options::OPT_cheerp_no_pointer_scev)) {
+    CmdArgs.push_back("-mllvm");
+    CheerpNoPointerSCEV->render(Args, CmdArgs);
+  }
 
   // GCC's behavior for -Wwrite-strings is a bit strange:
   //  * In C, this "warning flag" changes the types of string literals from
@@ -7549,6 +7554,12 @@ void cheerp::CheerpOptimizer::ConstructJob(Compilation &C, const JobAction &JA,
 
   const InputInfo &II = *Inputs.begin();
   CmdArgs.push_back(II.getFilename());
+
+  // Honor -mllvm
+  Args.AddAllArgValues(CmdArgs, options::OPT_mllvm);
+  // Honot -cheerp-no-pointer-scev
+  if (Arg *CheerpNoPointerSCEV = Args.getLastArg(options::OPT_cheerp_no_pointer_scev))
+    CheerpNoPointerSCEV->render(Args, CmdArgs);
 
   const char *Exec = Args.MakeArgString((getToolChain().GetProgramPath("opt")));
   C.addCommand(new Command(JA, *this, Exec, CmdArgs));
