@@ -1224,6 +1224,20 @@ void CodeGenFunction::EmitStoreOfScalar(llvm::Value *Value, llvm::Value *Addr,
                                         QualType Ty, llvm::MDNode *TBAAInfo,
                                         bool isInit, QualType TBAABaseType,
                                         uint64_t TBAAOffset) {
+  if (cast<BuiltinType>(Ty)->isHighInt()) {
+    llvm::Value *highLoc = Builder.CreateConstGEP2_32(Value, 0, 0);
+    llvm::Value *lowLoc = Builder.CreateConstGEP2_32(Value, 0, 1);
+
+    llvm::Value *highPart = Builder.CreateLoad(highLoc);
+    llvm::Value *lowPart = Builder.CreateLoad(lowLoc);
+
+    highLoc = Builder.CreateConstGEP2_32(Addr, 0, 0);
+    lowLoc = Builder.CreateConstGEP2_32(Addr, 0, 1);
+
+    Builder.CreateStore(highPart, highLoc, Volatile);
+    Builder.CreateStore(lowPart, lowLoc, Volatile);
+    return;
+  }
 
   // Handle vectors differently to get better performance.
   if (Ty->isVectorType()) {
