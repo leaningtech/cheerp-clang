@@ -1546,7 +1546,7 @@ void CodeGenFunction::EmitStoreOfScalar(llvm::Value *Value, Address Addr,
                                         bool isInit, QualType TBAABaseType,
                                         uint64_t TBAAOffset,
                                         bool isNontemporal) {
-  if (cast<BuiltinType>(Ty)->isHighInt()) {
+  if (cast<BuiltinType>(Ty.getCanonicalType())->isHighInt()) {
     llvm::Value *highLoc = Builder.CreateConstGEP2_32(Value, 0, 0);
     llvm::Value *lowLoc = Builder.CreateConstGEP2_32(Value, 0, 1);
 
