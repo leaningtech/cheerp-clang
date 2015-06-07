@@ -1799,6 +1799,10 @@ RValue CodeGenFunction::EmitLoadOfLValue(LValue LV, SourceLocation Loc) {
   if (LV.isSimple()) {
     assert(!LV.getType()->isFunctionType());
 
+    if (cast<BuiltinType>(LV.getType().getCanonicalType())->isHighInt()) {
+      return RValue::getAggregate(LV.getAddress(), /*volatile*/false);
+    }
+
     // Everything needs a load.
     return RValue::get(EmitLoadOfScalar(LV, Loc));
   }
