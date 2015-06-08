@@ -219,7 +219,8 @@ public:
 
   // Leaves.
   Value *VisitIntegerLiteral(const IntegerLiteral *E) {
-    if (cast<BuiltinType>(E->getType().getCanonicalType())->isHighInt()) {
+    if (isa<BuiltinType>(E->getType().getCanonicalType())
+        && cast<BuiltinType>(E->getType().getCanonicalType())->isHighInt()) {
       assert(cast<BuiltinType>(E->getType())->getKind() == BuiltinType::ULongLong || cast<BuiltinType>(E->getType())->getKind() == BuiltinType::LongLong);
       llvm::Type* t = CGF.ConvertType(E->getType());
       llvm::AllocaInst *highint = Builder.CreateAlloca(t, NULL, "highint");
@@ -503,7 +504,8 @@ public:
   Value *EmitShl(const BinOpInfo &Ops);
   Value *EmitShr(const BinOpInfo &Ops);
   Value *EmitAnd(const BinOpInfo &Ops) {
-    if (cast<BuiltinType>(Ops.Ty.getCanonicalType())->isHighInt()) {
+    if (isa<BuiltinType>(Ops.Ty.getCanonicalType())
+        && cast<BuiltinType>(Ops.Ty.getCanonicalType())->isHighInt()) {
       llvm::Value *lhsHigh = Builder.CreateLoad(Builder.CreateConstGEP2_32(Ops.LHS, 0, 0));
       llvm::Value *lhsLow = Builder.CreateLoad(Builder.CreateConstGEP2_32(Ops.LHS, 0, 1));
       llvm::Value *rhsHigh = Builder.CreateLoad(Builder.CreateConstGEP2_32(Ops.RHS, 0, 0));
@@ -1584,7 +1586,8 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
   case CK_IntegralToFloating:
   case CK_FloatingToIntegral:
   case CK_FloatingCast:
-    if (cast<BuiltinType>(CE->getType().getCanonicalType())->isHighInt()) {
+    if (isa<BuiltinType>(CE->getType().getCanonicalType())
+        && cast<BuiltinType>(CE->getType().getCanonicalType())->isHighInt()) {
       Value *Elt = Visit(E);
       llvm::Type *llvmTy = CGF.getTypes().ConvertTypeForMem(CE->getType());
       llvm::AllocaInst *highint = Builder.CreateAlloca(llvmTy, NULL, "highint");
@@ -2738,7 +2741,8 @@ Value *ScalarExprEmitter::GetWidthMinusOneValue(Value* LHS,Value* RHS) {
 Value *ScalarExprEmitter::EmitShl(const BinOpInfo &Ops) {
   Value *RHS = Ops.RHS;
 
-  if (cast<BuiltinType>(Ops.Ty.getCanonicalType())->isHighInt()) {
+  if (isa<BuiltinType>(Ops.Ty.getCanonicalType())
+      && cast<BuiltinType>(Ops.Ty.getCanonicalType())->isHighInt()) {
     // { h, l } << N =>
     // { (N >= 32) ? l << (N - 32) : h << (32 - N) | l >> N ,
     //   (N >= 32) ? 0 : l << N }
@@ -2895,7 +2899,8 @@ Value *ScalarExprEmitter::EmitCompare(const BinaryOperator *E,unsigned UICmpOpc,
   QualType LHSTy = E->getLHS()->getType();
   QualType RHSTy = E->getRHS()->getType();
 
-  if (cast<BuiltinType>(LHSTy.getCanonicalType())->isHighInt()) {
+  if (isa<BuiltinType>(LHSTy.getCanonicalType())
+      && cast<BuiltinType>(LHSTy.getCanonicalType())->isHighInt()) {
     Value *LHS = Visit(E->getLHS());
     Value *RHS = Visit(E->getRHS());
 
