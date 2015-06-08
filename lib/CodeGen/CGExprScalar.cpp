@@ -1586,9 +1586,16 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
   case CK_IntegralToFloating:
   case CK_FloatingToIntegral:
   case CK_FloatingCast:
+    // Type cast to an highint
     if (isa<BuiltinType>(CE->getType().getCanonicalType())
         && cast<BuiltinType>(CE->getType().getCanonicalType())->isHighInt()) {
       Value *Elt = Visit(E);
+      // Do not type cast a highint into highint
+      if (isa<BuiltinType>(E->getType().getCanonicalType())
+          && cast<BuiltinType>(E->getType().getCanonicalType())->isHighInt()) {
+        return Elt;
+      }
+
       llvm::Type *llvmTy = CGF.getTypes().ConvertTypeForMem(CE->getType());
       llvm::AllocaInst *highint = Builder.CreateAlloca(llvmTy, NULL, "highint");
 
@@ -1603,7 +1610,15 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
 
       return highint;
     }
-    return EmitScalarConversion(Visit(E), E->getType(), DestTy);
+    // Type cast from an highint
+    else if (isa<BuiltinType>(E->getType().getCanonicalType())
+        && cast<BuiltinType>(E->getType().getCanonicalType())->isHighInt()) {
+      Value *Elt = Visit(E);
+      Elt = Builder.CreateLoad(Builder.CreateConstGEP2_32(Elt, 0, 1));
+      return EmitScalarConversion(Elt, E->getType(), DestTy);
+    } else {
+      return EmitScalarConversion(Visit(E), E->getType(), DestTy);
+    }
   case CK_IntegralToBoolean:
     return EmitIntToBoolConversion(Visit(E));
   case CK_PointerToBoolean:

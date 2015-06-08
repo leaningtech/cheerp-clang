@@ -1101,6 +1101,11 @@ llvm::Value *CodeGenFunction::EmitLoadOfScalar(llvm::Value *Addr, bool Volatile,
                                                llvm::MDNode *TBAAInfo,
                                                QualType TBAABaseType,
                                                uint64_t TBAAOffset) {
+  if (isa<BuiltinType>(Ty.getCanonicalType())
+      && cast<BuiltinType>(Ty.getCanonicalType())->isHighInt()) {
+      return Addr;
+  }
+
   // For better performance, handle vector loads differently.
   if (Ty->isVectorType()) {
     llvm::Value *V;
@@ -1318,12 +1323,6 @@ RValue CodeGenFunction::EmitLoadOfLValue(LValue LV, SourceLocation Loc) {
 
   if (LV.isSimple()) {
     assert(!LV.getType()->isFunctionType());
-
-    if (isa<BuiltinType>(LV.getType().getCanonicalType())
-        && cast<BuiltinType>(LV.getType().getCanonicalType())->isHighInt()) {
-      return RValue::get(LV.getAddress());
-    }
-
     // Everything needs a load.
     return RValue::get(EmitLoadOfScalar(LV, Loc));
   }
