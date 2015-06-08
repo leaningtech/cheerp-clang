@@ -1709,16 +1709,15 @@ void CodeGenFunction::EmitStoreOfScalar(llvm::Value *Value, Address Addr,
                                         LValueBaseInfo BaseInfo,
                                         TBAAAccessInfo TBAAInfo,
                                         bool isInit, bool isNontemporal) {
-  if (cast<BuiltinType>(Ty.getCanonicalType())->isHighInt()) {
+  if (isa<BuiltinType>(Ty.getCanonicalType())
+      && cast<BuiltinType>(Ty.getCanonicalType())->isHighInt()) {
     llvm::Value *highLoc = Builder.CreateConstGEP2_32(Value, 0, 0);
     llvm::Value *lowLoc = Builder.CreateConstGEP2_32(Value, 0, 1);
-
     llvm::Value *highPart = Builder.CreateLoad(highLoc);
     llvm::Value *lowPart = Builder.CreateLoad(lowLoc);
 
     highLoc = Builder.CreateConstGEP2_32(Addr, 0, 0);
     lowLoc = Builder.CreateConstGEP2_32(Addr, 0, 1);
-
     Builder.CreateStore(highPart, highLoc, Volatile);
     Builder.CreateStore(lowPart, lowLoc, Volatile);
     return;
@@ -1799,8 +1798,9 @@ RValue CodeGenFunction::EmitLoadOfLValue(LValue LV, SourceLocation Loc) {
   if (LV.isSimple()) {
     assert(!LV.getType()->isFunctionType());
 
-    if (cast<BuiltinType>(LV.getType().getCanonicalType())->isHighInt()) {
-      return RValue::getAggregate(LV.getAddress(), /*volatile*/false);
+    if (isa<BuiltinType>(LV.getType().getCanonicalType())
+        && cast<BuiltinType>(LV.getType().getCanonicalType())->isHighInt()) {
+      return RValue::get(LV.getAddress());
     }
 
     // Everything needs a load.
