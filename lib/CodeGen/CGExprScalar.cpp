@@ -1966,10 +1966,21 @@ Value *ScalarExprEmitter::VisitUnaryMinus(const UnaryOperator *E) {
   BinOpInfo BinOp;
   BinOp.RHS = Visit(E->getSubExpr());
 
-  if (BinOp.RHS->getType()->isFPOrFPVectorTy())
+  if (BinOp.RHS->getType()->isFPOrFPVectorTy()) {
     BinOp.LHS = llvm::ConstantFP::getZeroValueForNegation(BinOp.RHS->getType());
-  else
+  } else if (isa<BuiltinType>(E->getType().getCanonicalType())
+      && cast<BuiltinType>(E->getType().getCanonicalType())->isHighInt()) {
+    llvm::Value *zero = Builder.getInt32(0);
+    llvm::Type* t = CGF.ConvertType(E->getType().getCanonicalType());
+    llvm::AllocaInst *highint = Builder.CreateAlloca(t, NULL, "highint");
+    llvm::Value *highLoc = Builder.CreateConstGEP2_32(highint, 0, 0);
+    llvm::Value *lowLoc = Builder.CreateConstGEP2_32(highint, 0, 1);
+    Builder.CreateStore(zero, highLoc, /*volatile*/false);
+    Builder.CreateStore(zero, lowLoc, /*volatile*/false);
+    BinOp.LHS = highint;
+  } else {
     BinOp.LHS = llvm::Constant::getNullValue(BinOp.RHS->getType());
+  }
   BinOp.Ty = E->getType();
   BinOp.Opcode = BO_Sub;
   BinOp.FPContractable = false;
