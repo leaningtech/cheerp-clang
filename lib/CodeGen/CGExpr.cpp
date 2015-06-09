@@ -1101,9 +1101,8 @@ llvm::Value *CodeGenFunction::EmitLoadOfScalar(llvm::Value *Addr, bool Volatile,
                                                llvm::MDNode *TBAAInfo,
                                                QualType TBAABaseType,
                                                uint64_t TBAAOffset) {
-  if (isa<BuiltinType>(Ty.getCanonicalType())
-      && cast<BuiltinType>(Ty.getCanonicalType())->isHighInt()) {
-      return Addr;
+  if (IsHighInt(Ty)) {
+    return Addr;
   }
 
   // For better performance, handle vector loads differently.
@@ -1229,17 +1228,13 @@ void CodeGenFunction::EmitStoreOfScalar(llvm::Value *Value, llvm::Value *Addr,
                                         QualType Ty, llvm::MDNode *TBAAInfo,
                                         bool isInit, QualType TBAABaseType,
                                         uint64_t TBAAOffset) {
-  if (isa<BuiltinType>(Ty.getCanonicalType())
-      && cast<BuiltinType>(Ty.getCanonicalType())->isHighInt()) {
-    llvm::Value *highLoc = Builder.CreateConstGEP2_32(Value, 0, 0);
-    llvm::Value *lowLoc = Builder.CreateConstGEP2_32(Value, 0, 1);
-    llvm::Value *highPart = Builder.CreateLoad(highLoc);
-    llvm::Value *lowPart = Builder.CreateLoad(lowLoc);
-
-    highLoc = Builder.CreateConstGEP2_32(Addr, 0, 0);
-    lowLoc = Builder.CreateConstGEP2_32(Addr, 0, 1);
-    Builder.CreateStore(highPart, highLoc, Volatile);
-    Builder.CreateStore(lowPart, lowLoc, Volatile);
+  if (IsHighInt(Ty)) {
+    llvm::Value *high = EmitLoadHighBitsOfHighInt(Value);
+    llvm::Value *low = EmitLoadLowBitsOfHighInt(Value);
+    llvm::Value *highLoc = Builder.CreateConstGEP2_32(Addr, 0, 0);
+    llvm::Value *lowLoc = Builder.CreateConstGEP2_32(Addr, 0, 1);
+    Builder.CreateStore(high, highLoc, Volatile);
+    Builder.CreateStore(low, lowLoc, Volatile);
     return;
   }
 
