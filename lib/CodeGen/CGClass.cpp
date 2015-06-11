@@ -275,24 +275,7 @@ llvm::Value *CodeGenFunction::GetAddressOfBaseClass(
 
   // First handle the non-byte addressable case (Duetto)
   if (!getTarget().isByteAddressable())
-  {
-    //Use type safe path
-    SmallVector<llvm::Value*, 4> GEPConstantIndexes;
-
-    GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
-    ComputeNonVirtualBaseClassGepPath(CGM, GEPConstantIndexes,
-                                    Derived, PathBegin, PathEnd);
-    Value = Builder.CreateGEP(Value, GEPConstantIndexes);
-    //Duetto: Check if the type is the expected one. If not create a cast with a metadata for duetto
-    //This may happen when empty classes are found
-    if(Value->getType()!=BasePtrTy)
-    {
-       llvm::Instruction* castI=cast<llvm::Instruction>(Builder.CreateBitCast(Value, BasePtrTy));
-       llvm::MDNode* md=llvm::MDNode::get(getLLVMContext(), llvm::SmallVector<llvm::Metadata*, 1>());
-       //TODO: Convert this to a builtin
-       castI->setMetadata("duetto.upcast.collapsed", md);
-    }
-  }
+    return GenerateUpcast(Value, Derived, PathBegin, PathEnd);
   else
   {
     // Apply both offsets.
@@ -345,6 +328,35 @@ CodeGenModule::ComputeBaseIdOffset(const CXXRecordDecl *DerivedClass,
     RD = BaseDecl;
   }
   return Offset;
+}
+
+llvm::Value * 
+CodeGenFunction::GenerateUpcast(llvm::Value* Value,
+                                const CXXRecordDecl *Derived,
+                                CastExpr::path_const_iterator PathBegin,
+                                CastExpr::path_const_iterator PathEnd)
+{
+  SmallVector<llvm::Value*, 4> GEPConstantIndexes;
+  GEPConstantIndexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+  ComputeNonVirtualBaseClassGepPath(CGM, GEPConstantIndexes,
+                                    Derived, PathBegin, PathEnd);
+  Value=Builder.CreateGEP(Value, GEPConstantIndexes);
+
+  // Get the base pointer type.
+  llvm::Type *BasePtrTy = 
+    ConvertType((PathEnd[-1])->getType())->getPointerTo();
+
+  //Duetto: Check if the type is the expected one. If not create a cast with a metadata for duetto
+  //This may happen when empty base classes are used
+  if(Value->getType()!=BasePtrTy)
+  {
+    //This should become an intrinsic
+    llvm::Instruction* castI=cast<llvm::Instruction>(Builder.CreateBitCast(Value, BasePtrTy));
+    llvm::MDNode* md=llvm::MDNode::get(getLLVMContext(), llvm::SmallVector<llvm::Metadata*, 1>());
+    castI->setMetadata("duetto.upcast.collapsed", md);
+    Value=castI;
+  }
+  return Value;
 }
 
 llvm::Value *
