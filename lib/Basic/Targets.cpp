@@ -6437,12 +6437,12 @@ const Builtin::Info XCoreTargetInfo::BuiltinInfo[] = {
 } // end anonymous namespace.
 
 namespace {
-// Duetto base class
-class DuettoTargetInfo : public TargetInfo {
+// Cheerp base class
+class CheerpTargetInfo : public TargetInfo {
 private:
     static const Builtin::Info BuiltinInfo[];
 public:
-  DuettoTargetInfo(const llvm::Triple &triple) : TargetInfo(triple) {
+  CheerpTargetInfo(const llvm::Triple &triple) : TargetInfo(triple) {
     DescriptionString = "b-e-p:32:8-i16:8-i32:8-"
                         "i64:8-f32:8-f64:8-"
                         "a:0:8-f80:8-n8:8:8-S8";
@@ -6466,13 +6466,13 @@ public:
   virtual void getTargetBuiltins(const Builtin::Info *&Records,
                                  unsigned &NumRecords) const {
     Records = BuiltinInfo;
-    NumRecords = clang::Duetto::LastTSBuiltin - Builtin::FirstTSBuiltin;
+    NumRecords = clang::Cheerp::LastTSBuiltin - Builtin::FirstTSBuiltin;
   }
 
   virtual void getTargetDefines(const LangOptions &Opts,
                                 MacroBuilder &Builder) const {
     // Target identification.
-    Builder.defineMacro("__DUETTO__");
+    Builder.defineMacro("__CHEERP__");
 
     if (Opts.CPlusPlus)
       Builder.defineMacro("_GNU_SOURCE");
@@ -6505,11 +6505,11 @@ public:
   }
 };
 
-const Builtin::Info DuettoTargetInfo::BuiltinInfo[] = {
+const Builtin::Info CheerpTargetInfo::BuiltinInfo[] = {
 #define BUILTIN(ID, TYPE, ATTRS) { #ID, TYPE, ATTRS, 0, ALL_LANGUAGES },
 #define LIBBUILTIN(ID, TYPE, ATTRS, HEADER) { #ID, TYPE, ATTRS, HEADER,\
                                               ALL_LANGUAGES },
-#include "clang/Basic/BuiltinsDuetto.def"
+#include "clang/Basic/BuiltinsCheerp.def"
 };
 } // end anonymous namespace.
 
@@ -6524,8 +6524,8 @@ static TargetInfo *AllocateTarget(const llvm::Triple &Triple) {
   default:
     return nullptr;
 
-  case llvm::Triple::duetto:
-    return new DuettoTargetInfo(Triple);
+  case llvm::Triple::cheerp:
+    return new CheerpTargetInfo(Triple);
 
   case llvm::Triple::xcore:
     return new XCoreTargetInfo(Triple);

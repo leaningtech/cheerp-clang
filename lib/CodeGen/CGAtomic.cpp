@@ -502,7 +502,7 @@ RValue CodeGenFunction::EmitAtomicExpr(AtomicExpr *E, llvm::Value *Dest) {
   unsigned Align = alignChars.getQuantity();
   unsigned MaxInlineWidthInBits =
     getTarget().getMaxAtomicInlineWidth();
-  //Duetto: Force using intrinsics for atomic ops. They will be lowered
+  //Cheerp: Force using intrinsics for atomic ops. They will be lowered
   //to regular code early during optimization
   bool UseLibcall = getTarget().isByteAddressable() && (Size != Align ||
                      getContext().toBits(sizeChars) > MaxInlineWidthInBits);

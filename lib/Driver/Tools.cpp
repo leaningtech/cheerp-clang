@@ -3453,9 +3453,9 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                     options::OPT_fno_trigraphs);
   }
 
-  // Forward duetto-side argument
-  if (Arg *DuettoSide = Args.getLastArg(options::OPT_duetto_side_EQ))
-    DuettoSide->render(Args, CmdArgs);
+  // Forward cheerp-side argument
+  if (Arg *CheerpSide = Args.getLastArg(options::OPT_cheerp_side_EQ))
+    CheerpSide->render(Args, CmdArgs);
 
   // GCC's behavior for -Wwrite-strings is a bit strange:
   //  * In C, this "warning flag" changes the types of string literals from
@@ -3940,7 +3940,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
 
   // -frtti is default.
   if (!Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti) ||
-      KernelOrKext || getToolChain().getArch() == llvm::Triple::duetto) {
+      KernelOrKext || getToolChain().getArch() == llvm::Triple::cheerp) {
     CmdArgs.push_back("-fno-rtti");
 
     // -fno-rtti cannot usefully be combined with -fsanitize=vptr.
@@ -3969,7 +3969,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   // -fthreadsafe-static is default.
   if (!Args.hasFlag(options::OPT_fthreadsafe_statics,
                     options::OPT_fno_threadsafe_statics) ||
-      getToolChain().getArch() == llvm::Triple::duetto) {
+      getToolChain().getArch() == llvm::Triple::cheerp) {
     CmdArgs.push_back("-fno-threadsafe-statics");
   }
 
@@ -8355,7 +8355,7 @@ void CrossWindows::Link::ConstructJob(Compilation &C, const JobAction &JA,
   C.addCommand(llvm::make_unique<Command>(JA, *this, Exec, CmdArgs));
 }
 
-void duetto::Link::ConstructJob(Compilation &C, const JobAction &JA,
+void cheerp::Link::ConstructJob(Compilation &C, const JobAction &JA,
                                 const InputInfo &Output,
                                 const InputInfoList &Inputs,
                                 const ArgList &Args,
@@ -8397,19 +8397,19 @@ void duetto::Link::ConstructJob(Compilation &C, const JobAction &JA,
   C.addCommand(llvm::make_unique<Command>(JA, *this, Exec, CmdArgs));
 }
 
-void duetto::DuettoCompiler::ConstructJob(Compilation &C, const JobAction &JA,
+void cheerp::CheerpCompiler::ConstructJob(Compilation &C, const JobAction &JA,
                                           const InputInfo &Output,
                                           const InputInfoList &Inputs,
                                           const ArgList &Args,
                                           const char *LinkingOutput) const {
   ArgStringList CmdArgs;
 
-  CmdArgs.push_back("-march=duetto");
+  CmdArgs.push_back("-march=cheerp");
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());
 
-  if(Arg* duettoSourceMap = Args.getLastArg(options::OPT_duetto_sourcemap_EQ))
-    duettoSourceMap->render(Args, CmdArgs);
+  if(Arg* cheerpSourceMap = Args.getLastArg(options::OPT_cheerp_sourcemap_EQ))
+    cheerpSourceMap->render(Args, CmdArgs);
 
   const InputInfo &II = *Inputs.begin();
   CmdArgs.push_back(II.getFilename());

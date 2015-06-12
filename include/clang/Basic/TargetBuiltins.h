@@ -52,12 +52,12 @@ namespace clang {
   };
   }
 
-  /// \brief Duetto builtins
-  namespace Duetto {
+  /// \brief Cheerp builtins
+  namespace Cheerp {
     enum {
         LastTIBuiltin = clang::Builtin::FirstTSBuiltin-1,
 #define BUILTIN(ID, TYPE, ATTRS) BI##ID,
-#include "clang/Basic/BuiltinsDuetto.def"
+#include "clang/Basic/BuiltinsCheerp.def"
         LastTSBuiltin
     };
   }

@@ -36,7 +36,7 @@ const char *Action::getClassName(ActionClass AC) {
   case DsymutilJobClass: return "dsymutil";
   case VerifyDebugInfoJobClass: return "verify-debug-info";
   case VerifyPCHJobClass: return "verify-pch";
-  case DuettoCompileJobClass: return "duetto-compiler";
+  case CheerpCompileJobClass: return "cheerp-compiler";
   }
 
   llvm_unreachable("invalid class");
@@ -152,8 +152,8 @@ VerifyPCHJobAction::VerifyPCHJobAction(std::unique_ptr<Action> Input,
                                        types::ID Type)
     : VerifyJobAction(VerifyPCHJobClass, std::move(Input), Type) {}
 
-void DuettoCompileJobAction::anchor() {}
+void CheerpCompileJobAction::anchor() {}
 
-DuettoCompileJobAction::DuettoCompileJobAction(ActionList &Inputs, types::ID Type)
-  : JobAction(DuettoCompileJobClass, Inputs, Type) {
+CheerpCompileJobAction::CheerpCompileJobAction(ActionList &Inputs, types::ID Type)
+  : JobAction(CheerpCompileJobClass, Inputs, Type) {
 }

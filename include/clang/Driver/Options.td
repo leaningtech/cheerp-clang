@@ -1858,9 +1858,9 @@ defm stack_arrays : BooleanFFlag<"stack-arrays">, Group<gfortran_Group>;
 defm underscoring : BooleanFFlag<"underscoring">, Group<gfortran_Group>;
 defm whole_file : BooleanFFlag<"whole-file">, Group<gfortran_Group>;
 
-def duetto_side_EQ : Joined<["-"], "duetto-side=">, Flags<[CC1Option]>,
+def cheerp_side_EQ : Joined<["-"], "cheerp-side=">, Flags<[CC1Option]>,
   Group<CompileOnly_Group>, HelpText<"Specify which side to build [client/server]">;
-def duetto_sourcemap_EQ : Joined<["-"], "duetto-sourcemap=">, Flags<[DriverOption]>,
+def cheerp_sourcemap_EQ : Joined<["-"], "cheerp-sourcemap=">, Flags<[DriverOption]>,
   HelpText<"Write sourcemap to <file>">, MetaVarName<"<file>">;
 
 include "CC1Options.td"

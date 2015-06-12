@@ -336,17 +336,17 @@ void InstrProfStats::reportDiagnostics(DiagnosticsEngine &Diags,
 }
 
 void CodeGenModule::Release() {
-  //Output the function map for duetto
-  if (!duettoFunctionMap.empty())
+  //Output the function map for cheerp
+  if (!cheerpFunctionMap.empty())
   {
-    llvm::StructType* st=cast<llvm::StructType>(duettoFunctionMap[0]->getType());
+    llvm::StructType* st=cast<llvm::StructType>(cheerpFunctionMap[0]->getType());
     llvm::Constant* nulls[] = { llvm::ConstantPointerNull::get(cast<llvm::PointerType>(st->getElementType(0))),
                                 llvm::ConstantPointerNull::get(cast<llvm::PointerType>(st->getElementType(1)))};
-    duettoFunctionMap.push_back(llvm::ConstantStruct::getAnon(nulls));
-    llvm::ArrayType* arrayType=llvm::ArrayType::get(st, duettoFunctionMap.size());
-    llvm::Constant* mapConst = llvm::ConstantArray::get(arrayType, duettoFunctionMap);
+    cheerpFunctionMap.push_back(llvm::ConstantStruct::getAnon(nulls));
+    llvm::ArrayType* arrayType=llvm::ArrayType::get(st, cheerpFunctionMap.size());
+    llvm::Constant* mapConst = llvm::ConstantArray::get(arrayType, cheerpFunctionMap);
     new llvm::GlobalVariable(getModule(), arrayType, true,
-        llvm::GlobalVariable::AppendingLinkage, mapConst, "duettoFuncMap");
+        llvm::GlobalVariable::AppendingLinkage, mapConst, "cheerpFuncMap");
   }
   EmitDeferred();
   applyReplacements();
@@ -2382,7 +2382,7 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
                                                  llvm::GlobalValue *GV) {
   const auto *D = cast<FunctionDecl>(GD.getDecl());
 
-  if (D->hasAttr<ClientAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
+  if (D->hasAttr<ClientAttr>() && getLangOpts().getCheerpSide() != LangOptions::CHEERP_Client)
   {
     // If the on the wrong side, do not compile
     return;
@@ -2487,7 +2487,7 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
   if (D->hasAttr<AnnotateAttr>())
     AddGlobalAnnotations(D, Fn);
 
-  if (D->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() == LangOptions::DUETTO_Server)
+  if (D->hasAttr<ServerAttr>() && getLangOpts().getCheerpSide() == LangOptions::CHEERP_Server)
   {
     llvm::Constant* skelAddr = GetAddrOfFunction(GlobalDecl(D->skelFunction));
     llvm::SmallVector<llvm::Type*, 2> structTypes;
@@ -2505,19 +2505,19 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
     structFields.push_back(ptrNameConst);
     structFields.push_back(skelAddr);
 
-    duettoFunctionMap.push_back(llvm::ConstantStruct::getAnon(structFields));
+    cheerpFunctionMap.push_back(llvm::ConstantStruct::getAnon(structFields));
   }
 }
 
 llvm::Function* CodeGenModule::GetUserCastIntrinsic(const CastExpr* CE, QualType SrcTy, QualType DestTy)
 {
-  if(!CE->isDuettoSafe())
-    getDiags().Report(CE->getLocStart(), diag::warn_duetto_unsafe_cast);
+  if(!CE->isCheerpSafe())
+    getDiags().Report(CE->getLocStart(), diag::warn_cheerp_unsafe_cast);
 
   llvm::Type* types[] = { getTypes().ConvertType(DestTy), getTypes().ConvertType(SrcTy) };
 
   return llvm::Intrinsic::getDeclaration(&getModule(),
-                                     llvm::Intrinsic::duetto_cast_user, types);
+                                     llvm::Intrinsic::cheerp_cast_user, types);
 }
 
 void CodeGenModule::EmitAliasDefinition(GlobalDecl GD) {

@@ -12,8 +12,8 @@ set(files
   avxintrin.h
   bmi2intrin.h
   bmiintrin.h
+  cheerpintrin.h
   cpuid.h
-  duettointrin.h
   emmintrin.h
   f16cintrin.h
   float.h

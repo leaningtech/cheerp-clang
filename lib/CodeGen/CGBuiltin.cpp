@@ -669,9 +669,9 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
       const CastExpr *DestCast = dyn_cast<CastExpr>(DestE);
       const CastExpr *SrcCast = dyn_cast<CastExpr>(SrcE);
       if (!DestCast || DestCast->getSubExpr()->getType()->isVoidPointerType())
-        CGM.getDiags().Report(DestE->getLocStart(), diag::err_duetto_memintrinsic_type_unknown);
+        CGM.getDiags().Report(DestE->getLocStart(), diag::err_cheerp_memintrinsic_type_unknown);
       else if (!SrcCast || SrcCast->getSubExpr()->getType()->isVoidPointerType())
-        CGM.getDiags().Report(SrcE->getLocStart(), diag::err_duetto_memintrinsic_type_unknown);
+        CGM.getDiags().Report(SrcE->getLocStart(), diag::err_cheerp_memintrinsic_type_unknown);
       else
       {
         // Discard the casts to void*
@@ -680,7 +680,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
         QualType DestType = DestE->getType()->getPointeeType().getCanonicalType().getUnqualifiedType();
         QualType SrcType = SrcE->getType()->getPointeeType().getCanonicalType().getUnqualifiedType();
         if (DestType != SrcType)
-          CGM.getDiags().Report(SrcE->getLocStart(), diag::err_duetto_memintrinsic_same_type);
+          CGM.getDiags().Report(SrcE->getLocStart(), diag::err_cheerp_memintrinsic_same_type);
         // Revert to the original arguments, unions are handled like on BA
         if (DestType->isUnionType())
         {
@@ -755,9 +755,9 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
       const CastExpr *DestCast = dyn_cast<CastExpr>(DestE);
       const CastExpr *SrcCast = dyn_cast<CastExpr>(SrcE);
       if (!DestCast || DestCast->getSubExpr()->getType()->isVoidPointerType())
-        CGM.getDiags().Report(DestE->getLocStart(), diag::err_duetto_memintrinsic_type_unknown);
+        CGM.getDiags().Report(DestE->getLocStart(), diag::err_cheerp_memintrinsic_type_unknown);
       else if (!SrcCast || SrcCast->getSubExpr()->getType()->isVoidPointerType())
-        CGM.getDiags().Report(SrcE->getLocStart(), diag::err_duetto_memintrinsic_type_unknown);
+        CGM.getDiags().Report(SrcE->getLocStart(), diag::err_cheerp_memintrinsic_type_unknown);
       else
       {
         // Discard the casts to void*
@@ -766,7 +766,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
         QualType DestType = DestE->getType()->getPointeeType().getCanonicalType().getUnqualifiedType();
         QualType SrcType = SrcE->getType()->getPointeeType().getCanonicalType().getUnqualifiedType();
         if (DestType != SrcType)
-          CGM.getDiags().Report(SrcE->getLocStart(), diag::err_duetto_memintrinsic_same_type);
+          CGM.getDiags().Report(SrcE->getLocStart(), diag::err_cheerp_memintrinsic_same_type);
         // Revert to the original arguments, unions are handled like on BA
         if (DestType->isUnionType())
         {
@@ -793,7 +793,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
       // There must be a cast from a valid type to void*
       const CastExpr *DestCast = dyn_cast<CastExpr>(DestE);
       if (!DestCast || DestCast->getSubExpr()->getType()->isVoidPointerType())
-        CGM.getDiags().Report(DestE->getLocStart(), diag::err_duetto_memintrinsic_type_unknown);
+        CGM.getDiags().Report(DestE->getLocStart(), diag::err_cheerp_memintrinsic_type_unknown);
       else
       {
         // Discard the cast to void*
@@ -1831,8 +1831,8 @@ Value *CodeGenFunction::EmitTargetBuiltinExpr(unsigned BuiltinID,
   case llvm::Triple::aarch64:
   case llvm::Triple::aarch64_be:
     return EmitAArch64BuiltinExpr(BuiltinID, E);
-  case llvm::Triple::duetto:
-    return EmitDuettoBuiltinExpr(BuiltinID, E);
+  case llvm::Triple::cheerp:
+    return EmitCheerpBuiltinExpr(BuiltinID, E);
   case llvm::Triple::x86:
   case llvm::Triple::x86_64:
     return EmitX86BuiltinExpr(BuiltinID, E);
@@ -5837,7 +5837,7 @@ Value *CodeGenFunction::EmitAArch64BuiltinExpr(unsigned BuiltinID,
   }
 }
 
-Value *CodeGenFunction::EmitDuettoBuiltinExpr(unsigned BuiltinID,
+Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
                                               const CallExpr *E) {
   //Emit the operands
   SmallVector<Value*, 4> Ops;
@@ -5845,16 +5845,16 @@ Value *CodeGenFunction::EmitDuettoBuiltinExpr(unsigned BuiltinID,
     Ops.push_back(EmitScalarExpr(E->getArg(i)));
   }
 
-  if (BuiltinID == Duetto::BI__builtin_duetto_pointer_base) {
-    Function *F = CGM.getIntrinsic(Intrinsic::duetto_pointer_base);
+  if (BuiltinID == Cheerp::BI__builtin_cheerp_pointer_base) {
+    Function *F = CGM.getIntrinsic(Intrinsic::cheerp_pointer_base);
     return Builder.CreateCall(F, Ops);
   }
-  else if (BuiltinID == Duetto::BI__builtin_duetto_pointer_offset) {
-    Function *F = CGM.getIntrinsic(Intrinsic::duetto_pointer_offset);
+  else if (BuiltinID == Cheerp::BI__builtin_cheerp_pointer_offset) {
+    Function *F = CGM.getIntrinsic(Intrinsic::cheerp_pointer_offset);
     return Builder.CreateCall(F, Ops);
   }
-  else if (BuiltinID == Duetto::BI__builtin_duetto_create_closure) {
-    Function *F = CGM.getIntrinsic(Intrinsic::duetto_create_closure);
+  else if (BuiltinID == Cheerp::BI__builtin_cheerp_create_closure) {
+    Function *F = CGM.getIntrinsic(Intrinsic::cheerp_create_closure);
     return Builder.CreateCall(F, Ops);
   }
   return 0;

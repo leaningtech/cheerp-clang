@@ -1023,7 +1023,7 @@ std::string CompilerInvocation::GetResourcesPath(const char *Argv0,
   return P.str();
 }
 
-static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args, LangOptions::DuettoSideTy duettoSide) {
+static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args, LangOptions::CheerpSideTy cheerpSide) {
   using namespace options;
   Opts.Sysroot = Args.getLastArgValue(OPT_isysroot, "/");
   Opts.Verbose = Args.hasArg(OPT_v);
@@ -1130,8 +1130,8 @@ static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args, Lang
       Group = frontend::ExternCSystem;
     Opts.AddPath((*I)->getValue(), Group, false, true);
   }
-  // Add duetto specific include directory for server side stuff
-  if (duettoSide == LangOptions::DUETTO_Server)
+  // Add cheerp specific include directory for server side stuff
+  if (cheerpSide == LangOptions::CHEERP_Server)
     Opts.AddPath(LLVM_PREFIX "/include/server", frontend::System, false, true);
   // Also add directory which is common to both client and server
   Opts.AddPath(LLVM_PREFIX "/include/common", frontend::System, false, true);
@@ -1351,19 +1351,19 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     }
   }
 
-  // Parse duetto options
-  if (const Arg *DuettoSide = Args.getLastArg(OPT_duetto_side_EQ))
+  // Parse cheerp options
+  if (const Arg *CheerpSide = Args.getLastArg(OPT_cheerp_side_EQ))
   {
-    LangOptions::DuettoSideTy s = llvm::StringSwitch<LangOptions::DuettoSideTy>(DuettoSide->getValue())
-    .Case("client", LangOptions::DUETTO_Client)
-    .Case("server", LangOptions::DUETTO_Server)
-    .Default(LangOptions::DUETTO_Invalid);
+    LangOptions::CheerpSideTy s = llvm::StringSwitch<LangOptions::CheerpSideTy>(CheerpSide->getValue())
+    .Case("client", LangOptions::CHEERP_Client)
+    .Case("server", LangOptions::CHEERP_Server)
+    .Default(LangOptions::CHEERP_Invalid);
 
-    Opts.setDuettoSide(s);
-    if (s == LangOptions::DUETTO_Invalid)
+    Opts.setCheerpSide(s);
+    if (s == LangOptions::CHEERP_Invalid)
     {
       Diags.Report(diag::err_drv_invalid_value)
-      << DuettoSide->getAsString(Args) << DuettoSide->getValue();
+      << CheerpSide->getAsString(Args) << CheerpSide->getValue();
     }
   }
 
@@ -1887,7 +1887,7 @@ bool CompilerInvocation::CreateFromArgs(CompilerInvocation &Res,
     if (Res.getFrontendOpts().ProgramAction == frontend::RewriteObjC)
       Res.getLangOpts()->ObjCExceptions = 1;
   }
-  ParseHeaderSearchArgs(Res.getHeaderSearchOpts(), *Args, Res.getLangOpts()->getDuettoSide());
+  ParseHeaderSearchArgs(Res.getHeaderSearchOpts(), *Args, Res.getLangOpts()->getCheerpSide());
   // FIXME: ParsePreprocessorArgs uses the FileManager to read the contents of
   // PCH file and find the original header name. Remove the need to do that in
   // ParsePreprocessorArgs and remove the FileManager 

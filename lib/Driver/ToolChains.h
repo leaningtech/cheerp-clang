@@ -788,11 +788,11 @@ public:
                            llvm::opt::ArgStringList &CmdArgs) const override;
 };
 
-class LLVM_LIBRARY_VISIBILITY Duetto : public ToolChain {
+class LLVM_LIBRARY_VISIBILITY Cheerp : public ToolChain {
 private:
-  mutable std::unique_ptr<tools::duetto::DuettoCompiler> DuettoCompiler;
+  mutable std::unique_ptr<tools::cheerp::CheerpCompiler> CheerpCompiler;
 public:
-  Duetto(const Driver &D, const llvm::Triple& Triple,
+  Cheerp(const Driver &D, const llvm::Triple& Triple,
          const llvm::opt::ArgList &Args);
 
   virtual bool IsUnwindTablesDefault() const;

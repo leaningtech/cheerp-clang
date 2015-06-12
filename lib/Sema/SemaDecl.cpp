@@ -7395,7 +7395,7 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
     }
   }
 
-  if (NewFD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Server)
+  if (NewFD->hasAttr<ServerAttr>() && getLangOpts().getCheerpSide() != LangOptions::CHEERP_Server)
   {
     QualType resultType=NewFD->getCallResultType();
     CanQualType canonicalResultType=Context.getCanonicalType(resultType);
@@ -10262,7 +10262,7 @@ Decl *Sema::ActOnStartOfFunctionDef(Scope *FnBodyScope, Decl *D) {
 
   // See if this is a redefinition. Bodies of server methods are discarted later
   if (!FD->isLateTemplateParsed() && 
-      !(FD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() == LangOptions::DUETTO_Client))
+      !(FD->hasAttr<ServerAttr>() && getLangOpts().getCheerpSide() == LangOptions::CHEERP_Client))
     CheckForFunctionRedefinition(FD);
 
   // Builtin functions cannot be defined.
@@ -10464,7 +10464,7 @@ static FunctionTemplateDecl* getTemplateFromName(Sema& S, const char* tName, con
   bool found = S.LookupName(lookup, S.getCurScope(), false);
   if(!found)
   {
-    S.Diag(srcLoc, diag::err_duetto_missing_special_definition) << tName;
+    S.Diag(srcLoc, diag::err_cheerp_missing_special_definition) << tName;
     return NULL;
   }
   return dyn_cast<FunctionTemplateDecl>(lookup.getRepresentativeDecl());
@@ -10568,7 +10568,7 @@ Decl *Sema::ActOnFinishFunctionBody(Decl *dcl, Stmt *Body,
   if (FD) {
     // If the function is a server one and we are on client side, skip the body
     // a client stub should have been already generated
-    if (!(FD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() == LangOptions::DUETTO_Client))
+    if (!(FD->hasAttr<ServerAttr>() && getLangOpts().getCheerpSide() == LangOptions::CHEERP_Client))
       FD->setBody(Body);
 
     if (getLangOpts().CPlusPlus14 && !FD->isInvalidDecl() && Body &&
@@ -10631,7 +10631,7 @@ Decl *Sema::ActOnFinishFunctionBody(Decl *dcl, Stmt *Body,
         computeNRVO(Body, getCurFunction());
     }
     
-    if (FD->hasAttr<ServerAttr>() && Body && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Client)
+    if (FD->hasAttr<ServerAttr>() && Body && getLangOpts().getCheerpSide() != LangOptions::CHEERP_Client)
     {
       QualType funcType=FD->getType();
       QualType funcPtrType=Context.getPointerType(funcType);

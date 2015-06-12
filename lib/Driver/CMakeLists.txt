@@ -9,7 +9,7 @@ add_clang_library(clangDriver
   CrossWindowsToolChain.cpp
   Driver.cpp
   DriverOptions.cpp
-  DuettoToolChain.cpp
+  CheerpToolChain.cpp
   Job.cpp
   Multilib.cpp
   MSVCToolChain.cpp

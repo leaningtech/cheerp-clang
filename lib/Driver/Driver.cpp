@@ -1277,13 +1277,13 @@ void Driver::BuildActions(const ToolChain &TC, DerivedArgList &Args,
   // Add a link action if necessary.
   if (!LinkerInputs.empty())
   {
-    // Duetto: We need an additional step for to generated JS
-    if (TC.getArch() == llvm::Triple::duetto)
+    // Cheerp: We need an additional step for to generated JS
+    if (TC.getArch() == llvm::Triple::cheerp)
     {
       Action* linkJob = new LinkJobAction(LinkerInputs, types::TY_LLVM_BC);
-      ActionList duettoCompilerList;
-      duettoCompilerList.push_back(linkJob);
-      Actions.push_back(new DuettoCompileJobAction(duettoCompilerList, types::TY_Image));
+      ActionList cheerpCompilerList;
+      cheerpCompilerList.push_back(linkJob);
+      Actions.push_back(new CheerpCompileJobAction(cheerpCompilerList, types::TY_Image));
     }
     else
       Actions.push_back(new LinkJobAction(LinkerInputs, types::TY_Image));
@@ -1365,7 +1365,7 @@ Driver::ConstructPhaseAction(const ArgList &Args, phases::ID Phase,
         Args.hasArg(options::OPT_S) ? types::TY_LTO_IR : types::TY_LTO_BC;
       return llvm::make_unique<BackendJobAction>(std::move(Input), Output);
     }
-    if (Args.hasArg(options::OPT_emit_llvm) || TC.getArch() == llvm::Triple::duetto) {
+    if (Args.hasArg(options::OPT_emit_llvm) || TC.getArch() == llvm::Triple::cheerp) {
       types::ID Output =
         Args.hasArg(options::OPT_S) ? types::TY_LLVM_IR : types::TY_LLVM_BC;
       return llvm::make_unique<BackendJobAction>(std::move(Input), Output);
@@ -2009,7 +2009,7 @@ static llvm::Triple computeTargetTriple(StringRef DefaultTargetTriple,
       Target.setArch(AT);
   }
 
-  if (Target.getArch() == llvm::Triple::duetto)
+  if (Target.getArch() == llvm::Triple::cheerp)
     Target.setOS(llvm::Triple::WebBrowser);
 
   return Target;
@@ -2083,7 +2083,7 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
       }
       break;
     case llvm::Triple::WebBrowser:
-      TC = new toolchains::Duetto(*this, Target, Args);
+      TC = new toolchains::Cheerp(*this, Target, Args);
       break;
     default:
       // TCE is an OSless target

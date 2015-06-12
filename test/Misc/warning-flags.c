@@ -56,6 +56,8 @@ CHECK-NEXT:   warn_call_to_pure_virtual_member_function_from_ctor_dtor
 CHECK-NEXT:   warn_call_wrong_number_of_arguments
 CHECK-NEXT:   warn_case_empty_range
 CHECK-NEXT:   warn_char_constant_too_large
+CHECK-NEXT:   warn_cheerp_inefficient_unions
+CHECK-NEXT:   warn_cheerp_unsafe_cast
 CHECK-NEXT:   warn_collection_expr_type
 CHECK-NEXT:   warn_conflicting_variadic
 CHECK-NEXT:   warn_conv_to_base_not_used
@@ -67,8 +69,6 @@ CHECK-NEXT:   warn_drv_assuming_mfloat_abi_is
 CHECK-NEXT:   warn_drv_clang_unsupported
 CHECK-NEXT:   warn_drv_objc_gc_unsupported
 CHECK-NEXT:   warn_drv_pch_not_first_include
-CHECK-NEXT:   warn_duetto_inefficient_unions
-CHECK-NEXT:   warn_duetto_unsafe_cast
 CHECK-NEXT:   warn_dup_category_def
 CHECK-NEXT:   warn_duplicate_protocol_def
 CHECK-NEXT:   warn_enum_value_overflow

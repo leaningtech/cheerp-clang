@@ -53,10 +53,10 @@ public:
     DsymutilJobClass,
     VerifyDebugInfoJobClass,
     VerifyPCHJobClass,
-    DuettoCompileJobClass,
+    CheerpCompileJobClass,
 
     JobClassFirst=PreprocessJobClass,
-    JobClassLast=DuettoCompileJobClass
+    JobClassLast=CheerpCompileJobClass
   };
 
   static const char *getClassName(ActionClass AC);
@@ -277,12 +277,12 @@ public:
   }
 };
 
-class DuettoCompileJobAction : public JobAction {
+class CheerpCompileJobAction : public JobAction {
   virtual void anchor();
 public:
-  DuettoCompileJobAction(ActionList &Inputs, types::ID Type);
+  CheerpCompileJobAction(ActionList &Inputs, types::ID Type);
   static bool classof(const Action *A) {
-    return A->getKind() == DuettoCompileJobClass;
+    return A->getKind() == CheerpCompileJobClass;
   }
 };
 

@@ -673,11 +673,11 @@ public:
 };
 }
 
-/// Duetto tools: llvm-link and llc
-namespace duetto {
-  class LLVM_LIBRARY_VISIBILITY Link : public Tool {
+/// Cheerp tools: llvm-link and llc
+namespace cheerp {
+  class LLVM_LIBRARY_VISIBILITY Link : public Tool  {
   public:
-    Link(const ToolChain &TC) : Tool("duetto::Link", "linker", TC) {}
+    Link(const ToolChain &TC) : Tool("cheerp::Link", "linker", TC) {}
 
     virtual bool hasIntegratedCPP() const { return false; }
     virtual bool isLinkJob() const { return true; }
@@ -689,9 +689,9 @@ namespace duetto {
                               const char *LinkingOutput) const;
   };
 
-  class LLVM_LIBRARY_VISIBILITY DuettoCompiler : public Tool {
+  class LLVM_LIBRARY_VISIBILITY CheerpCompiler : public Tool {
   public:
-    DuettoCompiler(const ToolChain &TC) : Tool("duetto::DuettoCompiler", "linker", TC) {}
+    CheerpCompiler(const ToolChain &TC) : Tool("cheerp::CheerpCompiler", "linker", TC) {}
 
     virtual bool hasIntegratedCPP() const { return false; }
 
@@ -701,7 +701,7 @@ namespace duetto {
                               const llvm::opt::ArgList &TCArgs,
                               const char *LinkingOutput) const;
   };
-} // end namespace duetto
+} // end namespace cheerp
 } // end namespace toolchains
 } // end namespace driver
 } // end namespace clang
