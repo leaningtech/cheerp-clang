@@ -767,7 +767,7 @@ RValue CodeGenFunction::EmitAtomicExpr(AtomicExpr *E) {
 
   bool Oversized = getContext().toBits(sizeChars) > MaxInlineWidthInBits;
   bool Misaligned = (Ptr.getAlignment() % sizeChars) != 0;
-  bool UseLibcall = Misaligned | Oversized;
+  bool UseLibcall = getTarget().isByteAddressable() && (Misaligned | Oversized);
 
   if (UseLibcall) {
     CGM.getDiags().Report(E->getBeginLoc(), diag::warn_atomic_op_misaligned)
