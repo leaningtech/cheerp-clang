@@ -667,7 +667,7 @@ RValue CodeGenFunction::EmitAtomicExpr(AtomicExpr *E) {
   std::tie(sizeChars, alignChars) = getContext().getTypeInfoInChars(AtomicTy);
   uint64_t Size = sizeChars.getQuantity();
   unsigned MaxInlineWidthInBits = getTarget().getMaxAtomicInlineWidth();
-  //Duetto: Force using intrinsics for atomic ops. They will be lowered
+  //Cheerp: Force using intrinsics for atomic ops. They will be lowered
   //to regular code early during optimization
   bool UseLibcall = getTarget().isByteAddressable() && (sizeChars != alignChars ||
                      getContext().toBits(sizeChars) > MaxInlineWidthInBits);

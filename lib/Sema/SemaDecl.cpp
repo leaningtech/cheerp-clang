@@ -8756,7 +8756,7 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
     }
   }
 
-  if (NewFD->hasAttr<ServerAttr>() && getLangOpts().getDuettoSide() != LangOptions::DUETTO_Server)
+  if (NewFD->hasAttr<ServerAttr>() && getLangOpts().getCheerpSide() != LangOptions::CHEERP_Server)
   {
     QualType resultType=NewFD->getCallResultType();
     CanQualType canonicalResultType=Context.getCanonicalType(resultType);
@@ -12302,7 +12302,7 @@ static FunctionTemplateDecl* getTemplateFromName(Sema& S, const char* tName, con
   bool found = S.LookupName(lookup, S.getCurScope(), false);
   if(!found)
   {
-    S.Diag(srcLoc, diag::err_duetto_missing_special_definition) << tName;
+    S.Diag(srcLoc, diag::err_cheerp_missing_special_definition) << tName;
     return NULL;
   }
   return dyn_cast<FunctionTemplateDecl>(lookup.getRepresentativeDecl());

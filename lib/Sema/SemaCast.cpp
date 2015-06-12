@@ -95,7 +95,7 @@ namespace {
                                             CK_Dependent, castExpr, nullptr,
                                             castExpr->getValueKind());
       }
-      //Duetto: Mark cast as safe for some builtins
+      //Cheerp: Mark cast as safe for some builtins
       if (CallExpr* CE = dyn_cast<CallExpr>(castExpr->getSubExpr()))
       {
         if (FunctionDecl* FDecl = CE->getDirectCallee())
@@ -105,7 +105,7 @@ namespace {
             // Casting a value returned from malloc it's ok
             if (builtin == Builtin::BImalloc ||
                 builtin == Builtin::BIcalloc)
-              castExpr->setDuettoSafe(true);
+              castExpr->setCheerpSafe(true);
           }
         }
       }

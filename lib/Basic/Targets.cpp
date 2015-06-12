@@ -115,8 +115,8 @@ TargetInfo *AllocateTarget(const llvm::Triple &Triple,
   default:
     return nullptr;
 
-  case llvm::Triple::duetto:
-    return new DuettoTargetInfo(Triple);
+  case llvm::Triple::cheerp:
+    return new CheerpTargetInfo(Triple);
 
   case llvm::Triple::xcore:
     return new XCoreTargetInfo(Triple, Opts);

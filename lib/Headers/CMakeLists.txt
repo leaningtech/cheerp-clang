@@ -24,6 +24,7 @@ set(files
   avxintrin.h
   bmi2intrin.h
   bmiintrin.h
+  cheerpintrin.h
   __clang_cuda_builtin_vars.h
   __clang_cuda_cmath.h
   __clang_cuda_complex_builtins.h
@@ -33,7 +34,6 @@ set(files
   clzerointrin.h
   cpuid.h
   clflushoptintrin.h
-  duettointrin.h
   emmintrin.h
   f16cintrin.h
   float.h
