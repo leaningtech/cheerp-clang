@@ -515,12 +515,12 @@ static Optional<GCOVOptions> getGCOVOptions(const CodeGenOptions &CodeGenOpts) {
   return Options;
 }
 
-static void addDuettoPasses(const PassManagerBuilder &Builder,
+static void addCheerpPasses(const PassManagerBuilder &Builder,
                                    PassManagerBase &PM) {
   //Run InstCombine first, to remove load/stores for the this argument
   PM.add(createInstructionCombiningPass());
-  PM.add(createDuettoNativeRewriterPass());
-  //Duetto is single threaded, convert atomic instructions to regular ones
+  PM.add(createCheerpNativeRewriterPass());
+  //Cheerp is single threaded, convert atomic instructions to regular ones
   PM.add(createLowerAtomicPass());
 }
 
@@ -537,9 +537,9 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
   // TLI with an unknown target otherwise.
   Triple TargetTriple(TheModule->getTargetTriple());
 
-  if (TargetTriple.getArch() == llvm::Triple::duetto)
+  if (TargetTriple.getArch() == llvm::Triple::cheerp)
     PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
-                           addDuettoPasses);
+                           addCheerpPasses);
 
   std::unique_ptr<TargetLibraryInfoImpl> TLII(
       createTLII(TargetTriple, CodeGenOpts));

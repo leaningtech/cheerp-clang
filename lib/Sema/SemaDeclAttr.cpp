@@ -6401,7 +6401,7 @@ static void handleStatic(Sema &S, Decl *D, const AttributeList &Attr)
   D->addAttr(::new (S.Context) StaticAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
   //This should be a function
   if (!isa<FunctionDecl>(D))
-    S.Diag(Attr.getLoc(), diag::err_duetto_attribute_not_on_function);
+    S.Diag(Attr.getLoc(), diag::err_cheerp_attribute_not_on_function);
 }
 
 static void handleNoInit(Sema &S, Decl* D, const AttributeList &Attr)
@@ -7118,6 +7118,7 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
     break;
   case ParsedAttr::AT_RenderScriptKernel:
     handleSimpleAttribute<RenderScriptKernelAttr>(S, D, AL);
+    break;
 
   // XRay attributes.
   case ParsedAttr::AT_XRayInstrument:
