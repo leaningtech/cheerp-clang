@@ -357,8 +357,14 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
     case BuiltinType::WChar_U:
     case BuiltinType::Char16:
     case BuiltinType::Char32:
-      ResultType = llvm::IntegerType::get(getLLVMContext(),
-                                 static_cast<unsigned>(Context.getTypeSize(T)));
+      if (cast<BuiltinType>(Ty)->isHighInt()) {
+        assert(Context.getTypeSize(T) == 64);
+        llvm::Type *EltTy = llvm::IntegerType::get(getLLVMContext(), 32);
+        ResultType = llvm::StructType::create("highint64", EltTy, EltTy, NULL);
+      } else {
+        ResultType = llvm::IntegerType::get(getLLVMContext(),
+                                   static_cast<unsigned>(Context.getTypeSize(T)));
+      }
       break;
 
     case BuiltinType::Half:
