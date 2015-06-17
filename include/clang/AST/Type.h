@@ -1257,6 +1257,8 @@ protected:
 
     /// The kind (BuiltinType::Kind) of builtin type this is.
     unsigned Kind : 8;
+
+    unsigned HighInt : 1;
   };
 
   class FunctionTypeBitfields {
@@ -1866,15 +1868,17 @@ public:
   };
 
 public:
-  BuiltinType(Kind K)
+  BuiltinType(Kind K, bool HighInt)
     : Type(Builtin, QualType(), /*Dependent=*/(K == Dependent),
            /*InstantiationDependent=*/(K == Dependent),
            /*VariablyModified=*/false,
            /*Unexpanded paramter pack=*/false) {
     BuiltinTypeBits.Kind = K;
+    BuiltinTypeBits.HighInt = HighInt;
   }
 
   Kind getKind() const { return static_cast<Kind>(BuiltinTypeBits.Kind); }
+  bool isHighInt() const { return static_cast<bool>(BuiltinTypeBits.HighInt); }
   StringRef getName(const PrintingPolicy &Policy) const;
   const char *getNameAsCString(const PrintingPolicy &Policy) const {
     // The StringRef is null-terminated.

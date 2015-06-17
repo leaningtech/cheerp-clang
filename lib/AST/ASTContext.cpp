@@ -910,7 +910,8 @@ TypeDecl *ASTContext::getFloat128StubType() const {
 }
 
 void ASTContext::InitBuiltinType(CanQualType &R, BuiltinType::Kind K) {
-  BuiltinType *Ty = new (*this, TypeAlignment) BuiltinType(K);
+  bool HighInt = ((K == BuiltinType::LongLong || K == BuiltinType::ULongLong) && !this->Target->isByteAddressable()) ? true : false;
+  BuiltinType *Ty = new (*this, TypeAlignment) BuiltinType(K, HighInt);
   R = CanQualType::CreateUnsafe(QualType(Ty, 0));
   Types.push_back(Ty);
 }
