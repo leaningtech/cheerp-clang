@@ -3183,6 +3183,12 @@ Value *ScalarExprEmitter::EmitCompare(const BinaryOperator *E,unsigned UICmpOpc,
         Builder.CreateICmp(llvm::ICmpInst::ICMP_EQ, lhsLow, rhsLow)
       );
       }
+    case BO_NE: {
+      return Builder.CreateOr(
+        Builder.CreateICmp(llvm::ICmpInst::ICMP_NE, lhsHigh, rhsHigh),
+        Builder.CreateICmp(llvm::ICmpInst::ICMP_NE, lhsLow, rhsLow)
+      );
+      }
     }
   }
 
