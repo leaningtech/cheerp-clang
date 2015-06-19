@@ -2490,6 +2490,17 @@ Value *ScalarExprEmitter::EmitDiv(const BinOpInfo &Ops) {
     }
     return Val;
   }
+  else if (CGF.IsHighInt(Ops.Ty)) {
+    // Handle it using a runtime call
+    llvm::Type* HighInt64PtrTy = CGF.ConvertType(Ops.Ty)->getPointerTo();
+    llvm::Type *argTypes[] = { HighInt64PtrTy, HighInt64PtrTy, HighInt64PtrTy };
+    llvm::FunctionType *runtimeFuncTy = llvm::FunctionType::get(CGF.VoidTy, argTypes, false);
+    llvm::Value *runtimeFunc = CGF.CGM.CreateRuntimeFunction(runtimeFuncTy, Ops.Ty->hasUnsignedIntegerRepresentation() ? "__udivti3" : "__divti3");
+    llvm::Value* result = CGF.CreateMemTemp(Ops.Ty, "div.result");
+    llvm::Value *runtimeArgs[] = { result, Ops.LHS, Ops.RHS };
+    CGF.EmitNounwindRuntimeCall(runtimeFunc, runtimeArgs);
+    return result;
+  }
   else if (Ops.Ty->hasUnsignedIntegerRepresentation())
     return Builder.CreateUDiv(Ops.LHS, Ops.RHS, "div");
   else
@@ -2506,6 +2517,17 @@ Value *ScalarExprEmitter::EmitRem(const BinOpInfo &Ops) {
       EmitUndefinedBehaviorIntegerDivAndRemCheck(Ops, Zero, false);
   }
 
+  if (CGF.IsHighInt(Ops.Ty)) {
+    // Handle it using a runtime call
+    llvm::Type* HighInt64PtrTy = CGF.ConvertType(Ops.Ty)->getPointerTo();
+    llvm::Type *argTypes[] = { HighInt64PtrTy, HighInt64PtrTy, HighInt64PtrTy };
+    llvm::FunctionType *runtimeFuncTy = llvm::FunctionType::get(CGF.VoidTy, argTypes, false);
+    llvm::Value *runtimeFunc = CGF.CGM.CreateRuntimeFunction(runtimeFuncTy, Ops.Ty->hasUnsignedIntegerRepresentation() ? "__umodti3" : "__modti3");
+    llvm::Value* result = CGF.CreateMemTemp(Ops.Ty, "mod.result");
+    llvm::Value *runtimeArgs[] = { result, Ops.LHS, Ops.RHS };
+    CGF.EmitNounwindRuntimeCall(runtimeFunc, runtimeArgs);
+    return result;
+  }
   if (Ops.Ty->hasUnsignedIntegerRepresentation())
     return Builder.CreateURem(Ops.LHS, Ops.RHS, "rem");
   else
