@@ -360,7 +360,10 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
       if (cast<BuiltinType>(Ty)->isHighInt()) {
         assert(Context.getTypeSize(T) == 64);
         llvm::Type *EltTy = llvm::IntegerType::get(getLLVMContext(), 32);
-        ResultType = llvm::StructType::create("highint64", EltTy, EltTy, NULL);
+        // We really want to use the same struct for signed and unsigned
+        ResultType = TheModule.getTypeByName("highint64");
+        if(!ResultType)
+          ResultType = llvm::StructType::create("highint64", EltTy, EltTy, NULL);
       } else {
         ResultType = llvm::IntegerType::get(getLLVMContext(),
                                    static_cast<unsigned>(Context.getTypeSize(T)));
