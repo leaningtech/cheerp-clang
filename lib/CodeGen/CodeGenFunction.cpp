@@ -683,7 +683,7 @@ void CodeGenFunction::StartFunction(GlobalDecl GD,
     if (!endsWithReturn(D))
       ++NumReturnExprs;
   } else if (CurFnInfo->getReturnInfo().getKind() == ABIArgInfo::Indirect &&
-             !hasScalarEvaluationKind(CurFnInfo->getReturnType())) {
+             (!hasScalarEvaluationKind(CurFnInfo->getReturnType()) || IsHighInt(CurFnInfo->getReturnType()))) {
     // Indirect aggregate return; emit returned value directly into sret slot.
     // This reduces code size, and affects correctness in C++.
     auto AI = CurFn->arg_begin();
