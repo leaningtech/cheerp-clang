@@ -23,7 +23,7 @@ GetAddrOfVTTVTable(CodeGenVTables &CGVT, CodeGenModule &CGM,
                    const CXXRecordDecl *MostDerivedClass,
                    const VTTVTable &VTable,
                    llvm::GlobalVariable::LinkageTypes Linkage,
-                   llvm::DenseMap<BaseSubobject, uint64_t> &AddressPoints) {
+                   llvm::DenseMap<BaseSubobject, std::pair<uint32_t,uint32_t>> &AddressPoints) {
   if (VTable.getBase() == MostDerivedClass) {
     assert(VTable.getBaseOffset().isZero() &&
            "Most derived class vtable must have a zero offset!");
@@ -70,7 +70,7 @@ CodeGenVTables::EmitVTTDefinition(llvm::GlobalVariable *VTT,
               i->VTableBase);
       assert(AddressPoint != 0 && "Did not find vtable address point!");
     } else {
-      AddressPoint = VTableAddressPoints[i->VTableIndex].lookup(i->VTableBase);
+      AddressPoint = VTableAddressPoints[i->VTableIndex].lookup(i->VTableBase).first;
       assert(AddressPoint != 0 && "Did not find ctor vtable address point!");
     }
 

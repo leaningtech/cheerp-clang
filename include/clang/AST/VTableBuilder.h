@@ -206,7 +206,7 @@ public:
   typedef const VTableComponent *vtable_component_iterator;
   typedef const VTableThunkTy *vtable_thunk_iterator;
 
-  typedef llvm::DenseMap<BaseSubobject, uint64_t> AddressPointsMapTy;
+  typedef llvm::DenseMap<BaseSubobject, std::pair<uint32_t, uint32_t>> AddressPointsMapTy;
 private:
   uint64_t NumVTableComponents;
   std::unique_ptr<VTableComponent[]> VTableComponents;
@@ -259,7 +259,7 @@ public:
     assert(AddressPoints.count(Base) &&
            "Did not find address point!");
 
-    uint64_t AddressPoint = AddressPoints.lookup(Base);
+    uint64_t AddressPoint = AddressPoints.lookup(Base).first;
     (void)IsMicrosoftABI;
 
     return AddressPoint;

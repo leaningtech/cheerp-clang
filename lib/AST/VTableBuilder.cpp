@@ -794,7 +794,7 @@ public:
   typedef llvm::DenseMap<const CXXRecordDecl *, CharUnits> 
     VBaseOffsetOffsetsMapTy;
   
-  typedef llvm::DenseMap<BaseSubobject, uint64_t> 
+  typedef llvm::DenseMap<BaseSubobject, std::pair<uint32_t,uint32_t>> 
     AddressPointsMapTy;
 
   typedef llvm::DenseMap<GlobalDecl, int64_t> MethodVTableIndicesTy;
@@ -1759,7 +1759,7 @@ void ItaniumVTableBuilder::LayoutPrimaryAndSecondaryVTables(
   while (true) {
     AddressPoints.insert(std::make_pair(
       BaseSubobject(RD, OffsetInLayoutClass),
-      AddressPoint));
+      std::make_pair(AddressPoint, currentMethodsCount)));
 
     const ASTRecordLayout &Layout = Context.getASTRecordLayout(RD);
     const CXXRecordDecl *PrimaryBase = Layout.getPrimaryBase();
@@ -1964,7 +1964,7 @@ void ItaniumVTableBuilder::dumpLayout(raw_ostream &Out) {
   for (AddressPointsMapTy::const_iterator I = AddressPoints.begin(), 
        E = AddressPoints.end(); I != E; ++I) {
     const BaseSubobject& Base = I->first;
-    uint64_t Index = I->second;
+    uint64_t Index = I->second.first;
     
     AddressPointsByIndex.insert(std::make_pair(Index, Base));
   }
