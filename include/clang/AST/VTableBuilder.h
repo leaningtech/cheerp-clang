@@ -253,11 +253,15 @@ private:
   /// Address points for all vtables.
   AddressPointsMapTy AddressPoints;
 
+  /// \brief Count of virtual methods for the primary vtable
+  uint32_t PrimaryVirtualMethodsCount;
+
 public:
   VTableLayout(ArrayRef<size_t> VTableIndices,
                ArrayRef<VTableComponent> VTableComponents,
                ArrayRef<VTableThunkTy> VTableThunks,
-               const AddressPointsMapTy &AddressPoints);
+               const AddressPointsMapTy &AddressPoints,
+               uint32_t PrimaryVirtualMethodsCount);
   ~VTableLayout();
 
   ArrayRef<VTableComponent> vtable_components() const {
@@ -302,6 +306,10 @@ public:
                            ? vtable_components().size()
                            : VTableIndices[i + 1];
     return nextIndex - thisIndex;
+  }
+
+  uint32_t getPrimaryVirtualMethodsCount() const {
+    return PrimaryVirtualMethodsCount;
   }
 };
 
