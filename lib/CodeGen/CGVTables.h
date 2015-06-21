@@ -28,6 +28,7 @@ namespace CodeGen {
   class CodeGenModule;
   class ConstantArrayBuilder;
   class ConstantStructBuilder;
+  class AggregateBuilderPublic;
 
 class CodeGenVTables {
   CodeGenModule &CGM;
@@ -61,7 +62,7 @@ class CodeGenVTables {
                                  ThunkInfo ThunkAdjustments,
                                  bool ForVTable);
 
-  void addVTableComponent(ConstantArrayBuilder &builder,
+  void addVTableComponent(AggregateBuilderPublic &builder,
                           const VTableLayout &layout, unsigned idx,
                           llvm::Constant *rtti,
                           unsigned &nextVTableThunkIndex);
