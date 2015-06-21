@@ -1343,7 +1343,7 @@ llvm::Value *ItaniumCXXABI::getVTableAddressPointInStructor(
                                 .getVTableLayout(VTableClass)
                                 .getAddressPoint(Base);
     VTableAddressPoint =
-        CGF.Builder.CreateConstInBoundsGEP2_64(VTable, 0, AddressPoint);
+        CGF.Builder.CreateConstInBoundsGEP2_32(VTable, 0, AddressPoint);
   }
 
   return VTableAddressPoint;
@@ -1383,14 +1383,29 @@ llvm::GlobalVariable *ItaniumCXXABI::getAddrOfVTable(const CXXRecordDecl *RD,
   StringRef Name = OutName.str();
 
   ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
-  llvm::ArrayType *ArrayType = llvm::ArrayType::get(
-       CGM.getTarget().isByteAddressable() ?
-           CGM.Int8PtrTy :
-           llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo(),
-       VTContext.getVTableLayout(RD).getNumVTableComponents());
+  llvm::Type* VTableType = NULL;
+  if(CGM.getTarget().isByteAddressable()) {
+    VTableType = llvm::ArrayType::get(CGM.Int8PtrTy, VTContext.getVTableLayout(RD).getNumVTableComponents());
+  } else {
+    // Create a type safe structure for vtables. The first field is an a pointer to RTTI info
+    // and the rests are function pointers
+    // TODO: When virtual bases are supported, the layout may be more complex, but it's fine as long as
+    // the vtable for derived classes is always only extending the vtable for base classes
+    // TODO: Now we generate an object of vtable objects, it would be better to generate different objects
+    llvm::SmallVector<llvm::Type*, 4> VTableWrapperTypes;
+    // We need to unify the address points
+    std::set<std::pair<uint32_t,uint32_t>> unifiedAddressPoints;
+    // TODO: We may do better here
+    for(auto it: VTContext.getVTableLayout(RD).getAddressPoints())
+      unifiedAddressPoints.insert(it.second);
+    for(auto it: unifiedAddressPoints) {
+      VTableWrapperTypes.push_back(CGM.getTypes().GetVTableType(it.second));
+    }
+    VTableType = llvm::StructType::get(CGM.getLLVMContext(), VTableWrapperTypes);
+  }
 
   VTable = CGM.CreateOrReplaceCXXRuntimeVariable(
-      Name, ArrayType, llvm::GlobalValue::ExternalLinkage);
+      Name, VTableType, llvm::GlobalValue::ExternalLinkage);
   VTable->setUnnamedAddr(true);
 
   if (RD->hasAttr<DLLImportAttr>())
@@ -1406,13 +1421,26 @@ llvm::Value *ItaniumCXXABI::getVirtualFunctionPointer(CodeGenFunction &CGF,
                                                       llvm::Value *This,
                                                       llvm::Type *Ty) {
   GD = GD.getCanonicalDecl();
-  Ty = Ty->getPointerTo()->getPointerTo();
-  llvm::Value *VTable = CGF.GetVTablePtr(This, Ty);
+  llvm::Value* VTable = NULL;
+  if(CGF.getTarget().isByteAddressable()) {
+    Ty = Ty->getPointerTo()->getPointerTo();
+    VTable = CGF.GetVTablePtr(This, Ty);
+  } else {
+    const CXXRecordDecl *RD = cast<CXXMethodDecl>(GD.getDecl())->getParent();
+    llvm::Type* VTableType = CGM.getTypes().GetVTableType(RD)->getPointerTo();
+    VTable = CGF.GetVTablePtr(This, VTableType);
+  }
 
   uint64_t VTableIndex = CGM.getItaniumVTableContext().getMethodVTableIndex(GD);
-  llvm::Value *VFuncPtr =
-      CGF.Builder.CreateConstInBoundsGEP1_64(VTable, VTableIndex, "vfn");
-  return CGF.Builder.CreateLoad(VFuncPtr);
+  llvm::Value *VFuncPtr = NULL;
+  if(CGF.getTarget().isByteAddressable()) {
+    VFuncPtr = CGF.Builder.CreateConstInBoundsGEP1_64(VTable, VTableIndex, "vfn");
+    return CGF.Builder.CreateLoad(VFuncPtr);
+  } else {
+    VFuncPtr = CGF.Builder.CreateConstInBoundsGEP2_32(VTable, 0, VTableIndex, "vfn");
+    VFuncPtr = CGF.Builder.CreateLoad(VFuncPtr);
+    return CGF.Builder.CreateBitCast(VFuncPtr, Ty->getPointerTo());
+  }
 }
 
 llvm::Value *ItaniumCXXABI::EmitVirtualDestructorCall(

@@ -548,6 +548,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     unsigned NumComponents, const VTableLayout::VTableThunkTy *VTableThunks,
     unsigned NumVTableThunks, llvm::Constant *RTTI) {
   SmallVector<llvm::Constant *, 64> Inits;
+  SmallVector<llvm::Constant *, 4> WrapperInits;
 
   llvm::Type *Int8PtrTy = CGM.getTarget().isByteAddressable() ?
     CGM.Int8PtrTy :
@@ -559,6 +560,12 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
   unsigned NextVTableThunkIndex = 0;
 
   llvm::Constant *PureVirtualFn = nullptr, *DeletedVirtualFn = nullptr;
+
+  std::set<std::pair<uint32_t,uint32_t>> unifiedAddressPoints;
+  for(auto it: getItaniumVTableContext().getVTableLayout(RD).getAddressPoints())
+      unifiedAddressPoints.insert(it.second);
+
+  auto it=unifiedAddressPoints.begin();
 
   for (unsigned I = 0; I != NumComponents; ++I) {
     VTableComponent Component = Components[I];
@@ -582,7 +589,10 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
       Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
       break;
     case VTableComponent::CK_RTTI:
-      Init = llvm::ConstantExpr::getBitCast(RTTI, Int8PtrTy);
+      if (CGM.getTarget().isByteAddressable())
+        Init = llvm::ConstantExpr::getBitCast(RTTI, Int8PtrTy);
+      else
+        Init = llvm::ConstantExpr::getBitCast(RTTI, CGM.Int8PtrTy);
       break;
     case VTableComponent::CK_FunctionPointer:
     case VTableComponent::CK_CompleteDtorPointer:
@@ -660,10 +670,21 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     };
     
     Inits.push_back(Init);
+    if (!CGM.getTarget().isByteAddressable() && Inits.size() == (it->second+1)) {
+      // Break this vtable here
+      llvm::Constant* VTable = llvm::ConstantStruct::getAnon(Inits);
+      WrapperInits.push_back(VTable);
+      Inits.clear();
+      ++it;
+    }
   }
   
-  llvm::ArrayType *ArrayType = llvm::ArrayType::get(Int8PtrTy, NumComponents);
-  return llvm::ConstantArray::get(ArrayType, Inits);
+  llvm::ArrayType *ArrayType = NULL;
+  if (CGM.getTarget().isByteAddressable()) {
+    ArrayType = llvm::ArrayType::get(Int8PtrTy, NumComponents);
+    return llvm::ConstantArray::get(ArrayType, Inits);
+  } else
+    return llvm::ConstantStruct::getAnon(WrapperInits);
 }
 
 llvm::GlobalVariable *
@@ -897,3 +918,29 @@ void CodeGenModule::EmitDeferredVTables() {
          "deferred extra v-tables during v-table emission?");
   DeferredVTables.clear();
 }
+
+llvm::Type* CodeGenTypes::GetVTableBaseType()
+{
+  llvm::Type* ResultType = CGM.getModule().getTypeByName("struct._ZN10__cxxabiv113__vtable_baseE");
+  if(!ResultType)
+    ResultType = llvm::StructType::create(CGM.getLLVMContext(), "struct._ZN10__cxxabiv113__vtable_baseE");
+  return ResultType;
+}
+
+llvm::Type* CodeGenTypes::GetVTableType(const CXXRecordDecl* RD)
+{
+  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
+  uint32_t virtualMethodsCount = VTContext.getVTableLayout(RD).getPrimaryVirtualMethodsCount();
+  return GetVTableType(virtualMethodsCount);
+}
+
+llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount)
+{
+  llvm::SmallVector<llvm::Type*, 16> VTableTypes;
+  llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
+  VTableTypes.push_back(CGM.Int8PtrTy);
+  for(uint32_t j=0;j<virtualMethodsCount;j++)
+    VTableTypes.push_back(FuncPtrTy);
+  return llvm::StructType::get(getLLVMContext(), VTableTypes);
+}
+
