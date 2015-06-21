@@ -840,6 +840,9 @@ private:
   /// AddressPoints - Address points for the vtable being built.
   AddressPointsMapTy AddressPoints;
 
+  /// PrimaryVirtualMethodsCount - The amount of virtual methods in the primary vtable of the class
+  uint32_t PrimaryVirtualMethodsCount;
+
   /// MethodInfo - Contains information about a method in a vtable.
   /// (Used for computing 'this' pointer adjustment thunks.
   struct MethodInfo {
@@ -1008,7 +1011,8 @@ public:
         MostDerivedClassOffset(MostDerivedClassOffset),
         MostDerivedClassIsVirtual(MostDerivedClassIsVirtual),
         LayoutClass(LayoutClass), Context(MostDerivedClass->getASTContext()),
-        Overriders(MostDerivedClass, MostDerivedClassOffset, LayoutClass) {
+        Overriders(MostDerivedClass, MostDerivedClassOffset, LayoutClass),
+        PrimaryVirtualMethodsCount(0) {
     assert(!Context.getTargetInfo().getCXXABI().isMicrosoft());
 
     LayoutVTable();
@@ -1035,6 +1039,10 @@ public:
 
   const AddressPointsMapTy &getAddressPoints() const {
     return AddressPoints;
+  }
+
+  uint32_t getPrimaryVirtualMethodsCount() const {
+    return PrimaryVirtualMethodsCount;
   }
 
   MethodVTableIndicesTy::const_iterator vtable_indices_begin() const {
@@ -1716,9 +1724,15 @@ void ItaniumVTableBuilder::LayoutPrimaryAndSecondaryVTables(
 
   // Now go through all virtual member functions and add them.
   PrimaryBasesSetVectorTy PrimaryBases;
+  uint32_t methodsStartOffset = Components.size();
   AddMethods(Base, OffsetInLayoutClass,
              Base.getBase(), OffsetInLayoutClass, 
              PrimaryBases);
+  uint32_t methodsEndOffset = Components.size();
+
+  uint32_t currentMethodsCount = methodsEndOffset - methodsStartOffset;
+  if(!PrimaryVirtualMethodsCount)
+    PrimaryVirtualMethodsCount = currentMethodsCount;
 
   const CXXRecordDecl *RD = Base.getBase();
   if (RD == MostDerivedClass) {
@@ -2266,12 +2280,14 @@ VTableLayout::VTableLayout(uint64_t NumVTableComponents,
                            uint64_t NumVTableThunks,
                            const VTableThunkTy *VTableThunks,
                            const AddressPointsMapTy &AddressPoints,
+                           uint32_t PrimaryVirtualMethodsCount,
                            bool IsMicrosoftABI)
   : NumVTableComponents(NumVTableComponents),
     VTableComponents(new VTableComponent[NumVTableComponents]),
     NumVTableThunks(NumVTableThunks),
     VTableThunks(new VTableThunkTy[NumVTableThunks]),
     AddressPoints(AddressPoints),
+    PrimaryVirtualMethodsCount(PrimaryVirtualMethodsCount),
     IsMicrosoftABI(IsMicrosoftABI) {
   std::copy(VTableComponents, VTableComponents+NumVTableComponents,
             this->VTableComponents.get());
@@ -2350,6 +2366,7 @@ static VTableLayout *CreateVTableLayout(const ItaniumVTableBuilder &Builder) {
                           VTableThunks.size(),
                           VTableThunks.data(),
                           Builder.getAddressPoints(),
+                          Builder.getPrimaryVirtualMethodsCount(),
                           /*IsMicrosoftABI=*/false);
 }
 
@@ -3543,7 +3560,7 @@ void MicrosoftVTableContext::computeVTableRelatedInformation(
         Builder.vtable_thunks_begin(), Builder.vtable_thunks_end());
     VFTableLayouts[id] = new VTableLayout(
         Builder.getNumVTableComponents(), Builder.vtable_component_begin(),
-        VTableThunks.size(), VTableThunks.data(), EmptyAddressPointsMap, true);
+        VTableThunks.size(), VTableThunks.data(), EmptyAddressPointsMap, -1, true);
     Thunks.insert(Builder.thunks_begin(), Builder.thunks_end());
 
     for (const auto &Loc : Builder.vtable_locations()) {

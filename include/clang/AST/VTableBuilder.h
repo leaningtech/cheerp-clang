@@ -218,6 +218,9 @@ private:
   /// \brief Address points for all vtables.
   AddressPointsMapTy AddressPoints;
 
+  /// \brief Count of virtual methods for the primary vtable
+  uint32_t PrimaryVirtualMethodsCount;
+
   bool IsMicrosoftABI;
 
 public:
@@ -226,6 +229,7 @@ public:
                uint64_t NumVTableThunks,
                const VTableThunkTy *VTableThunks,
                const AddressPointsMapTy &AddressPoints,
+               uint32_t PrimaryVirtualMethodsCount,
                bool IsMicrosoftABI);
   ~VTableLayout();
 
@@ -263,6 +267,10 @@ public:
 
   const AddressPointsMapTy &getAddressPoints() const {
     return AddressPoints;
+  }
+
+  uint32_t getPrimaryVirtualMethodsCount() const {
+    return PrimaryVirtualMethodsCount;
   }
 };
 
