@@ -3943,9 +3943,9 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                    false))
     CmdArgs.push_back("-fno-elide-constructors");
 
-  // -frtti is default.
-  if (!Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti) ||
-      KernelOrKext || getToolChain().getArch() == llvm::Triple::cheerp) {
+  // -frtti is default on everything but Cheerp.
+  if (!Args.hasFlag(options::OPT_frtti, options::OPT_fno_rtti, getToolChain().getArch() != llvm::Triple::cheerp) ||
+      KernelOrKext) {
     CmdArgs.push_back("-fno-rtti");
 
     // -fno-rtti cannot usefully be combined with -fsanitize=vptr.
