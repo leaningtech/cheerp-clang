@@ -2611,6 +2611,18 @@ void ItaniumRTTIBuilder::BuildVTablePointer(const Type *Ty) {
     break;
   }
 
+  if(!CGM.getTarget().isByteAddressable()) {
+    llvm::Type* WrapperTypes[] = {CGM.getTypes().GetVTableType(8)};
+    llvm::Constant *VTable = CGM.getModule().getOrInsertGlobal(VTableName, llvm::StructType::get(CGM.getLLVMContext(), WrapperTypes, false, NULL));
+    llvm::Constant *Zero = llvm::ConstantInt::get(CGM.Int32Ty, 0);
+    llvm::SmallVector<llvm::Constant*, 2> GepIndexes;
+    GepIndexes.push_back(Zero);
+    GepIndexes.push_back(Zero);
+    VTable = llvm::ConstantExpr::getInBoundsGetElementPtr(VTable, GepIndexes);
+    VTable = llvm::ConstantExpr::getBitCast(VTable, CGM.getTypes().GetVTableBaseType()->getPointerTo());
+    Fields.push_back(VTable);
+    return;
+  }
   llvm::Constant *VTable =
     CGM.getModule().getOrInsertGlobal(VTableName, llvm::ArrayType::get(CGM.Int8PtrTy, 0));
 
