@@ -836,6 +836,9 @@ private:
   /// AddressPoints - Address points for the vtable being built.
   AddressPointsMapTy AddressPoints;
 
+  /// AddressPointIndex - On Cheerp AddressPoints increase sequentially
+  uint32_t AddressPointIndex;
+
   /// PrimaryVirtualMethodsCount - The amount of virtual methods in the primary vtable of the class
   uint32_t PrimaryVirtualMethodsCount;
 
@@ -1014,7 +1017,7 @@ public:
         MostDerivedClassIsVirtual(MostDerivedClassIsVirtual),
         LayoutClass(LayoutClass), Context(MostDerivedClass->getASTContext()),
         Overriders(MostDerivedClass, MostDerivedClassOffset, LayoutClass),
-        PrimaryVirtualMethodsCount(0) {
+        AddressPointIndex(0),PrimaryVirtualMethodsCount(0) {
     assert(!Context.getTargetInfo().getCXXABI().isMicrosoft());
 
     LayoutVTable();
@@ -1680,8 +1683,10 @@ void ItaniumVTableBuilder::LayoutPrimaryAndSecondaryVTables(
     VBaseOffsetOffsets = Builder.getVBaseOffsetOffsets();
 
   // Add the offset to top.
-  CharUnits OffsetToTop = MostDerivedClassOffset - OffsetInLayoutClass;
-  Components.push_back(VTableComponent::MakeOffsetToTop(OffsetToTop));
+  if(Context.getTargetInfo().isByteAddressable()) {
+    CharUnits OffsetToTop = MostDerivedClassOffset - OffsetInLayoutClass;
+    Components.push_back(VTableComponent::MakeOffsetToTop(OffsetToTop));
+  }
 
   // Next, add the RTTI.
   Components.push_back(VTableComponent::MakeRTTI(MostDerivedClass));
@@ -1690,7 +1695,7 @@ void ItaniumVTableBuilder::LayoutPrimaryAndSecondaryVTables(
 
   // On Cheerp we want to start vtable pointer to start from 0 when possible
   if(!Context.getTargetInfo().isByteAddressable())
-    AddressPoint -= 2;
+    AddressPoint -= 1;
 
   // Now go through all virtual member functions and add them.
   PrimaryBasesSetVectorTy PrimaryBases;
@@ -1720,6 +1725,10 @@ void ItaniumVTableBuilder::LayoutPrimaryAndSecondaryVTables(
       }
     }
   }
+
+  // On Cheerp we want to start vtable pointer to start from 0 when possible
+  if(!Context.getTargetInfo().isByteAddressable())
+    AddressPoint = AddressPointIndex++;
 
   // Compute 'this' pointer adjustments.
   ComputeThisAdjustments();

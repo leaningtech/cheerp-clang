@@ -630,14 +630,15 @@ void CodeGenVTables::EmitThunks(GlobalDecl GD) {
 }
 
 void CodeGenVTables::addVTableComponent(
-    ConstantArrayBuilder &builder, const VTableLayout &layout,
+    AggregateBuilderPublic &builder, const VTableLayout &layout,
     unsigned idx, llvm::Constant *rtti, unsigned &nextVTableThunkIndex) {
   auto &component = layout.vtable_components()[idx];
 
   auto addOffsetConstant = [&](CharUnits offset) {
-    builder.add(llvm::ConstantExpr::getIntToPtr(
-        llvm::ConstantInt::get(CGM.PtrDiffTy, offset.getQuantity()),
-        CGM.Int8PtrTy));
+    llvm::ConstantInt* c = llvm::ConstantInt::get(CGM.PtrDiffTy, offset.getQuantity());
+    if(CGM.getTarget().isByteAddressable())
+      c = llvm::ConstantExpr::getIntToPtr(c, CGM.Int8PtrTy);
+    builder.add(c);
   };
 
   llvm::PointerType* elemType = CGM.getTarget().isByteAddressable() ? CGM.Int8PtrTy : llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
@@ -653,7 +654,7 @@ void CodeGenVTables::addVTableComponent(
     return addOffsetConstant(component.getOffsetToTop());
 
   case VTableComponent::CK_RTTI:
-    return builder.add(llvm::ConstantExpr::getBitCast(rtti, CGM.Int8PtrTy));
+    return builder.add(llvm::ConstantExpr::getBitCast(rtti, elemType));
 
   case VTableComponent::CK_FunctionPointer:
   case VTableComponent::CK_CompleteDtorPointer:
@@ -755,7 +756,13 @@ void CodeGenVTables::addVTableComponent(
 llvm::Type *CodeGenVTables::getVTableType(const VTableLayout &layout) {
   SmallVector<llvm::Type *, 4> tys;
   for (unsigned i = 0, e = layout.getNumVTables(); i != e; ++i) {
-    tys.push_back(llvm::ArrayType::get(CGM.getTarget().isByteAddressable() ? CGM.Int8PtrTy : llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo(), layout.getVTableSize(i)));
+    if(CGM.getTarget().isByteAddressable()) {
+      tys.push_back(llvm::ArrayType::get(CGM.Int8PtrTy, layout.getVTableSize(i)));
+    } else {
+      auto firstComp = layout.vtable_components().begin() + layout.getVTableOffset(i);
+      auto lastComp = firstComp + layout.getVTableSize(i);
+      tys.push_back(CGM.getTypes().GetVTableSubObjectType(CGM, firstComp, lastComp, 0));
+    }
   }
 
   return llvm::StructType::get(CGM.getLLVMContext(), tys);
@@ -765,6 +772,7 @@ void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
                                              const VTableLayout &layout,
                                              llvm::Constant *rtti) {
   unsigned nextVTableThunkIndex = 0;
+  if (CGM.getTarget().isByteAddressable()) {
   for (unsigned i = 0, e = layout.getNumVTables(); i != e; ++i) {
     auto vtableElem = builder.beginArray(CGM.Int8PtrTy);
     size_t thisIndex = layout.getVTableOffset(i);
@@ -773,6 +781,18 @@ void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
       addVTableComponent(vtableElem, layout, i, rtti, nextVTableThunkIndex);
     }
     vtableElem.finishAndAddTo(builder);
+  }
+  } else {
+    // This is very ugly, we need to duplicate the whole code since we need to pass a StructBuilder and not an ArrayBuilder
+    for (unsigned i = 0, e = layout.getNumVTables(); i != e; ++i) {
+      auto vtableElem = builder.beginStruct();
+      size_t thisIndex = layout.getVTableOffset(i);
+      size_t nextIndex = thisIndex + layout.getVTableSize(i);
+      for (unsigned i = thisIndex; i != nextIndex; ++i) {
+        addVTableComponent(vtableElem, layout, i, rtti, nextVTableThunkIndex);
+      }
+      vtableElem.finishAndAddTo(builder);
+    }
   }
 }
 
@@ -1125,3 +1145,29 @@ void CodeGenModule::EmitVTableTypeMetadata(llvm::GlobalVariable *VTable,
     }
   }
 }
+
+llvm::Type* CodeGenTypes::GetVTableBaseType()
+{
+  llvm::Type* ResultType = CGM.getModule().getTypeByName("struct._ZN10__cxxabiv113__vtable_baseE");
+  if(!ResultType)
+    ResultType = llvm::StructType::create(CGM.getLLVMContext(), "struct._ZN10__cxxabiv113__vtable_baseE");
+  return ResultType;
+}
+
+llvm::Type* CodeGenTypes::GetVTableType(const CXXRecordDecl* RD)
+{
+  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
+  uint32_t virtualMethodsCount = VTContext.getVTableLayout(RD).getPrimaryVirtualMethodsCount();
+  return GetVTableType(virtualMethodsCount);
+}
+
+llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount)
+{
+  llvm::SmallVector<llvm::Type*, 16> VTableTypes;
+  llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
+  VTableTypes.push_back(CGM.Int8PtrTy);
+  for(uint32_t j=0;j<virtualMethodsCount;j++)
+    VTableTypes.push_back(FuncPtrTy);
+  return llvm::StructType::get(getLLVMContext(), VTableTypes);
+}
+
