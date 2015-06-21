@@ -1867,7 +1867,7 @@ llvm::Value *CodeGenFunction::EmitDynamicCast(llvm::Value *Value,
 
   if (ShouldNullCheckSrcValue) {
     llvm::PHINode *PHI = Builder.CreatePHI(Value->getType(), 2);
-    PHI->addIncoming(Value, CastNotNull);
+    PHI->addIncoming(Value, cast<llvm::Instruction>(Value)->getParent());
     PHI->addIncoming(llvm::Constant::getNullValue(Value->getType()), CastNull);
 
     Value = PHI;
