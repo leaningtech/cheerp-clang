@@ -3019,9 +3019,11 @@ void ItaniumRTTIBuilder::BuildVMIClassTypeInfo(const CXXRecordDecl *RD) {
   //       __offset_shift = 8
   //     };
   //   };
+  llvm::SmallVector<llvm::Constant*, 8> basesFields;
   for (const auto &Base : RD->bases()) {
+    llvm::SmallVector<llvm::Constant*, 8> baseFields;
     // The __base_type member points to the RTTI for the base type.
-    Fields.push_back(ItaniumRTTIBuilder(CXXABI).BuildTypeInfo(Base.getType()));
+    baseFields.push_back(ItaniumRTTIBuilder(CXXABI).BuildTypeInfo(Base.getType()));
 
     const CXXRecordDecl *BaseDecl =
       cast<CXXRecordDecl>(Base.getType()->getAs<RecordType>()->getDecl());
@@ -3038,7 +3040,12 @@ void ItaniumRTTIBuilder::BuildVMIClassTypeInfo(const CXXRecordDecl *RD) {
         CGM.getItaniumVTableContext().getVirtualBaseOffsetOffset(RD, BaseDecl);
     else {
       const ASTRecordLayout &Layout = CGM.getContext().getASTRecordLayout(RD);
-      Offset = Layout.getBaseClassOffset(BaseDecl);
+      if(!CGM.getTarget().isByteAddressable() && Layout.getPrimaryBase() != BaseDecl && !BaseDecl->isEmpty()) {
+        const CGRecordLayout &CGLayout = CGM.getTypes().getCGRecordLayout(RD);
+        unsigned baseId = CGLayout.getNonVirtualBaseLLVMFieldNo(BaseDecl);
+        Offset = CharUnits::fromQuantity(CGLayout.getTotalOffsetToBase(baseId));
+      } else
+        Offset = Layout.getBaseClassOffset(BaseDecl);
     };
 
     OffsetFlags = uint64_t(Offset.getQuantity()) << 8;
@@ -3050,8 +3057,11 @@ void ItaniumRTTIBuilder::BuildVMIClassTypeInfo(const CXXRecordDecl *RD) {
     if (Base.getAccessSpecifier() == AS_public)
       OffsetFlags |= BCTI_Public;
 
-    Fields.push_back(llvm::ConstantInt::get(LongLTy, OffsetFlags));
+    baseFields.push_back(llvm::ConstantInt::get(LongLTy, OffsetFlags));
+    basesFields.push_back(llvm::ConstantStruct::getAnon(baseFields));
   }
+  llvm::ArrayType* basesArrayType = llvm::ArrayType::get(basesFields[0]->getType(), basesFields.size());
+  Fields.push_back(llvm::ConstantArray::get(basesArrayType, basesFields));
 }
 
 /// BuildPointerTypeInfo - Build an abi::__pointer_type_info struct,
