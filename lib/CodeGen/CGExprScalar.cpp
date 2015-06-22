@@ -274,6 +274,12 @@ public:
       if (result.isReference())
         return EmitLoadOfLValue(result.getReferenceLValue(CGF, E),
                                 E->getExprLoc());
+      if(CodeGenFunction::IsHighInt(E->getType())) {
+        llvm::APInt v = cast<llvm::ConstantInt>(result.getValue())->getValue();
+        llvm::Value *high = Builder.getInt(v.getHiBits(32).trunc(32));
+        llvm::Value *low = Builder.getInt(v.trunc(32));
+        return CGF.EmitHighInt(E->getType(), high, low);
+      }
       return result.getValue();
     }
     return EmitLoadOfLValue(E);
