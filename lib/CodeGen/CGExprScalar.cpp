@@ -1001,6 +1001,9 @@ EmitComplexToScalarConversion(CodeGenFunction::ComplexPairTy Src,
 }
 
 Value *ScalarExprEmitter::EmitNullValue(QualType Ty) {
+  if (CGF.IsHighInt(Ty)) {
+    return CGF.EmitHighInt(Ty, Builder.getInt32(0), Builder.getInt32(0));
+  }
   return CGF.EmitFromMemory(CGF.CGM.EmitNullConstant(Ty), Ty);
 }
 
