@@ -2556,6 +2556,9 @@ ScalarExprEmitter::EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
   bool isSubtraction = !isInc;
 
   if (const AtomicType *atomicTy = type->getAs<AtomicType>()) {
+    if (CGF.IsHighInt(type)) {
+      llvm_unreachable("int64_t does not support atomic type");
+    }
     type = atomicTy->getValueType();
     if (isInc && type->isBooleanType()) {
       llvm::Value *True = CGF.EmitToMemory(Builder.getTrue(), type);
@@ -2618,7 +2621,18 @@ ScalarExprEmitter::EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
   } else if (type->isIntegerType()) {
     // Note that signed integer inc/dec with width less than int can't
     // overflow because of promotion rules; we're just eliding a few steps here.
-    if (E->canOverflow() && type->isSignedIntegerOrEnumerationType()) {
+    if (CGF.IsHighInt(type)) {
+      llvm::Value* amt = Builder.getInt32(amount);
+      amt = CGF.EmitHighInt(type, Builder.getInt32(isInc ? 0 : 0xffffffff), amt);
+      BinOpInfo BinOp;
+      BinOp.LHS = value;
+      BinOp.RHS = amt;
+      BinOp.Ty = E->getType();
+      BinOp.Opcode = BO_Add;
+      BinOp.FPContractable = false;
+      BinOp.E = E;
+      value = EmitAdd(BinOp);
+    } else if (E->canOverflow() && type->isSignedIntegerOrEnumerationType()) {
       value = EmitIncDecConsiderOverflowBehavior(E, value, isInc);
     } else if (E->canOverflow() && type->isUnsignedIntegerType() &&
                CGF.SanOpts.has(SanitizerKind::UnsignedIntegerOverflow)) {
