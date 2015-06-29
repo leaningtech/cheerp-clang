@@ -1815,6 +1815,9 @@ ScalarExprEmitter::EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
   int amount = (isInc ? 1 : -1);
 
   if (const AtomicType *atomicTy = type->getAs<AtomicType>()) {
+    if (CGF.IsHighInt(type)) {
+      llvm_unreachable("int64_t does not support atomic type");
+    }
     type = atomicTy->getValueType();
     if (isInc && type->isBooleanType()) {
       llvm::Value *True = CGF.EmitToMemory(Builder.getTrue(), type);
@@ -1876,28 +1879,39 @@ ScalarExprEmitter::EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
 
   // Most common case by far: integer increment.
   } else if (type->isIntegerType()) {
+    llvm::Value *amt;
+    bool CanOverflow;
 
-    llvm::Value *amt = llvm::ConstantInt::get(value->getType(), amount, true);
+    if (CGF.IsHighInt(type)) {
+        amt = Builder.getInt32(amount);
+        amt = CGF.EmitHighInt(type, Builder.getInt32(isInc ? 0 : 0xffffffff), amt);
+        CanOverflow = true;
+    } else {
+        amt = llvm::ConstantInt::get(value->getType(), amount, true);
 
-    // Note that signed integer inc/dec with width less than int can't
-    // overflow because of promotion rules; we're just eliding a few steps here.
-    bool CanOverflow = value->getType()->getIntegerBitWidth() >=
-                       CGF.IntTy->getIntegerBitWidth();
-    if (CanOverflow && type->isSignedIntegerOrEnumerationType()) {
+        // Note that signed integer inc/dec with width less than int can't
+        // overflow because of promotion rules; we're just eliding a few steps here.
+        CanOverflow = value->getType()->getIntegerBitWidth() >=
+                        CGF.IntTy->getIntegerBitWidth();
+    }
+
+    BinOpInfo BinOp;
+    BinOp.LHS = value;
+    BinOp.RHS = amt;
+    BinOp.Ty = E->getType();
+    BinOp.Opcode = BO_Add;
+    BinOp.FPContractable = false;
+    BinOp.E = E;
+
+    if (CGF.IsHighInt(type)) {
+      value = EmitAdd(BinOp);
+    } else if (CanOverflow && type->isSignedIntegerOrEnumerationType()) {
       value = EmitAddConsiderOverflowBehavior(E, value, amt, isInc);
     } else if (CanOverflow && type->isUnsignedIntegerType() &&
                CGF.SanOpts.has(SanitizerKind::UnsignedIntegerOverflow)) {
-      BinOpInfo BinOp;
-      BinOp.LHS = value;
-      BinOp.RHS = llvm::ConstantInt::get(value->getType(), 1, false);
-      BinOp.Ty = E->getType();
-      BinOp.Opcode = isInc ? BO_Add : BO_Sub;
-      BinOp.FPContractable = false;
-      BinOp.E = E;
       value = EmitOverflowCheckedBinOp(BinOp);
     } else
       value = Builder.CreateAdd(value, amt, isInc ? "inc" : "dec");
-
   // Next most common: pointer increment.
   } else if (const PointerType *ptr = type->getAs<PointerType>()) {
     QualType type = ptr->getPointeeType();
