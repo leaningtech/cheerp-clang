@@ -195,6 +195,7 @@ struct CGRecordLowering {
   llvm::DenseMap<const CXXRecordDecl *, unsigned> NonVirtualBases;
   llvm::DenseMap<const CXXRecordDecl *, unsigned> VirtualBases;
   llvm::StructType* DirectBase;
+  const CGRecordLayout* DirectBaseLayout;
   bool IsZeroInitializable : 1;
   bool IsZeroInitializableAsBase : 1;
   bool Packed : 1;
@@ -215,7 +216,7 @@ CGRecordLowering::CGRecordLowering(CodeGenTypes &Types, const RecordDecl *D,    
   : Types(Types), Context(Types.getContext()), D(D),
     RD(dyn_cast<CXXRecordDecl>(D)),
     Layout(Types.getContext().getASTRecordLayout(D)),
-    DataLayout(Types.getDataLayout()), DirectBase(NULL), IsZeroInitializable(true),
+    DataLayout(Types.getDataLayout()), DirectBase(NULL), DirectBaseLayout(NULL), IsZeroInitializable(true),
     IsZeroInitializableAsBase(true), Packed(Packed),
     firstBaseElement(0xffffffff), totalNumberOfBases(1) {}
 
@@ -635,6 +636,8 @@ void CGRecordLowering::fillOutputFields() {
       llvm::StructType* ST = cast<llvm::StructType>(Member->Data);
       FieldTypes.insert(FieldTypes.end(), ST->element_begin(), ST->element_end());
       DirectBase = ST;
+      DirectBaseLayout = &Types.getCGRecordLayout(Member->RD);
+      totalNumberOfBases = DirectBaseLayout->totalNumberOfBases;
       continue;
     }
     if (Member->Data)
@@ -726,7 +729,7 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
   Ty->setBody(Builder.FieldTypes, Builder.Packed, Builder.DirectBase);
 
   CGRecordLayout *RL =
-    new CGRecordLayout(Ty, BaseTy, Builder.IsZeroInitializable,
+    new CGRecordLayout(Ty, BaseTy, Builder.DirectBaseLayout, Builder.IsZeroInitializable,
                         Builder.IsZeroInitializableAsBase);
 
   RL->NonVirtualBases.swap(Builder.NonVirtualBases);
