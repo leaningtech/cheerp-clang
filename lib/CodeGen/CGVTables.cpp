@@ -252,7 +252,7 @@ void CodeGenFunction::StartThunk(llvm::Function *Fn, GlobalDecl GD,
   // Build FunctionArgs.
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
   QualType ThisType = MD->getThisType();
-  const FunctionProtoType *FPT = MD->getType()->getAs<FunctionProtoType>();
+  const FunctionProtoType *FPT = OriginalMethod->getType()->getAs<FunctionProtoType>();
   QualType ResultType;
   if (IsUnprototyped)
     ResultType = CGM.getContext().VoidTy;
@@ -502,8 +502,13 @@ llvm::Constant *CodeGenVTables::maybeEmitThunk(GlobalDecl GD,
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
 
   // Override the non virtual offset in bytes with the topological offset on NBA targets
-  if(!byteAddressable)
-    TI.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentSource);
+  if(!byteAddressable) {
+    if(!TI.This.isEmpty())
+      TI.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, TI.This.AdjustmentTarget, TI.This.AdjustmentSource);
+    // Return adjustment will be handled with a "reverse" downcast with a negative offset
+    if(!TI.Return.isEmpty())
+      TI.Return.NonVirtual = ComputeTopologicalBaseOffset(CGM, TI.Return.AdjustmentSource, TI.Return.AdjustmentTarget);
+  }
  
   // First, get a declaration. Compute the mangled name. Don't worry about
   // getting the function prototype right, since we may only need this
@@ -714,7 +719,10 @@ void CodeGenVTables::addVTableComponent(
       if (!CGM.getTarget().isByteAddressable()) {
         // Override the non virtual offset in bytes with the topological offset
         // TODO: Really move topological offset logic in AST
-        thunkInfo.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, thunkInfo.This.AdjustmentTarget, thunkInfo.This.AdjustmentSource);
+        if(!thunkInfo.This.isEmpty())
+          thunkInfo.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, thunkInfo.This.AdjustmentTarget, thunkInfo.This.AdjustmentSource);
+        if(!thunkInfo.Return.isEmpty())
+          thunkInfo.Return.NonVirtual = ComputeTopologicalBaseOffset(CGM, thunkInfo.Return.AdjustmentSource, thunkInfo.Return.AdjustmentTarget);
       }
  
       nextVTableThunkIndex++;
