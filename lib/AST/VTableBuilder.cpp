@@ -1147,11 +1147,15 @@ void ItaniumVTableBuilder::ComputeThisAdjustments() {
       continue;
 
     // Add it.
-    VTableThunks[VTableIndex].This = ThisAdjustment;
+    ThunkInfo& Thunk = VTableThunks[VTableIndex];
+    Thunk.This = ThisAdjustment;
+    Thunk.Method = MD;
 
     if (isa<CXXDestructorDecl>(MD)) {
       // Add an adjustment for the deleting destructor as well.
-      VTableThunks[VTableIndex + 1].This = ThisAdjustment;
+      ThunkInfo& Thunk = VTableThunks[VTableIndex + 1];
+      Thunk.This = ThisAdjustment;
+      Thunk.Method = MD;
     }
   }
 
@@ -1278,7 +1282,6 @@ ThisAdjustment ItaniumVTableBuilder::ComputeThisAdjustment(
                                                       OverriderBaseSubobject);
   ThisAdjustment Adjustment(Context.getTargetInfo().isByteAddressable(), OverriderBaseSubobject.getBase(),
                           OverriddenBaseSubobject.getBase());
-  Adjustment.Method = MD;
 
   if (Offset.isEmpty())
     return Adjustment;
@@ -1552,8 +1555,8 @@ void ItaniumVTableBuilder::AddMethods(
               ComputeReturnAdjustment(ReturnAdjustmentOffset);
 
             // This is a virtual thunk for the most derived class, add it.
-            AddThunk(Overrider.Method,
-                     ThunkInfo(ThisAdjustment, ReturnAdjustment));
+            AddThunk(Overrider.Method, 
+                     ThunkInfo(ThisAdjustment, ReturnAdjustment, OverriddenMD));
           }
         }
 
