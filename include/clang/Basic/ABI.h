@@ -36,7 +36,6 @@ enum CXXDtorType {
 };
 
 class CXXRecordDecl;
-class CXXMethodDecl;
 
 /// \brief A return adjustment.
 struct ReturnAdjustment {
@@ -89,8 +88,7 @@ struct ReturnAdjustment {
         NonVirtual(0), AdjustmentTarget(byteAddressable?NULL:t),
         AdjustmentSource(byteAddressable?NULL:s) { }
   
-  bool isEmpty() const { return !NonVirtual && Virtual.isEmpty() &&
-            AdjustmentSource==AdjustmentTarget; }
+  bool isEmpty() const { return !NonVirtual && Virtual.isEmpty(); }
 
   friend bool operator==(const ReturnAdjustment &LHS, 
                          const ReturnAdjustment &RHS) {
@@ -162,14 +160,12 @@ struct ThisAdjustment {
   
   const CXXRecordDecl* AdjustmentTarget;
   const CXXRecordDecl* AdjustmentSource;
-  const CXXMethodDecl* Method;
 
   ThisAdjustment(bool byteAddressable, const CXXRecordDecl* t, const CXXRecordDecl* s) :
         NonVirtual(0), AdjustmentTarget(byteAddressable?NULL:t),
-        AdjustmentSource(byteAddressable?NULL:s), Method(0){ }
+        AdjustmentSource(byteAddressable?NULL:s) { }
 
-  bool isEmpty() const { return !NonVirtual && Virtual.isEmpty() &&
-            AdjustmentSource==AdjustmentTarget; }
+  bool isEmpty() const { return !NonVirtual && Virtual.isEmpty(); }
 
   friend bool operator==(const ThisAdjustment &LHS, 
                          const ThisAdjustment &RHS) {
@@ -214,7 +210,7 @@ struct ThunkInfo {
   ThunkInfo() : This(false,0,0), Return(false, 0, 0), Method(nullptr) { }
 
   ThunkInfo(const ThisAdjustment &This, const ReturnAdjustment &Return,
-            const CXXMethodDecl *Method = nullptr)
+            const CXXMethodDecl *Method)
       : This(This), Return(Return), Method(Method) {}
 
   friend bool operator==(const ThunkInfo &LHS, const ThunkInfo &RHS) {
