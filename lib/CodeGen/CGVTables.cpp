@@ -32,7 +32,7 @@ CodeGenVTables::CodeGenVTables(CodeGenModule &CGM)
 
 llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD,
                                               const ThunkInfo &Thunk) {
-  const CXXMethodDecl* OriginalMethod = Thunk.This.Method;
+  const CXXMethodDecl* OriginalMethod = Thunk.Method;
   const CXXMethodDecl *MD = cast<CXXMethodDecl>(GD.getDecl());
 
   // Compute the mangled name.
@@ -424,7 +424,7 @@ void CodeGenFunction::generateThunk(llvm::Function *Fn,
                                     const CGFunctionInfo &FnInfo,
                                     GlobalDecl GD, const ThunkInfo &Thunk) {
   const CXXMethodDecl* OriginalMethod = getTarget().isByteAddressable() ? cast<CXXMethodDecl>(GD.getDecl()) :
-                                                                          Thunk.This.Method;
+                                                                          Thunk.Method;
   StartThunk(Fn, GD, FnInfo, OriginalMethod);
   // Create a scope with an artificial location for the body of this function.
   auto AL = ApplyDebugLocation::CreateArtificial(*this);
@@ -440,7 +440,7 @@ void CodeGenFunction::generateThunk(llvm::Function *Fn,
 
 void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
                                bool ForVTable) {
-  const CXXMethodDecl* OriginalMethod = Thunk.This.Method;
+  const CXXMethodDecl* OriginalMethod = Thunk.Method;
   bool byteAddressable = CGM.getTarget().isByteAddressable();
   const CGFunctionInfo &FnInfo = CGM.getTypes().arrangeGlobalDeclaration(
                 byteAddressable?GD:GD.getWithDecl(OriginalMethod));
