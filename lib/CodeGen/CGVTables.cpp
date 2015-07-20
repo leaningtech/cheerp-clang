@@ -55,6 +55,17 @@ llvm::Constant *CodeGenModule::GetAddrOfThunk(GlobalDecl GD,
 
 static unsigned ComputeTopologicalBaseOffset(CodeGenModule &CGM,
                                           const CXXRecordDecl* AdjustmentTarget,
+                                          const CXXBasePath& AdjustmentPath) {
+  const CXXBasePath& p=AdjustmentPath;
+  llvm::SmallVector<const CXXBaseSpecifier*, 4> path;
+  for(unsigned i=0;i<p.size();i++)
+	path.push_back(p[i].Base);
+
+  return CGM.ComputeBaseIdOffset(AdjustmentTarget, path);
+}
+
+static unsigned ComputeTopologicalBaseOffset(CodeGenModule &CGM,
+                                          const CXXRecordDecl* AdjustmentTarget,
 					  const CXXRecordDecl* AdjustmentSource) {
   CXXBasePaths Paths(/*FindAmbiguities=*/true, /*RecordPaths=*/true,
                      /*DetectVirtual=*/false);
@@ -67,11 +78,7 @@ static unsigned ComputeTopologicalBaseOffset(CodeGenModule &CGM,
   CXXBasePaths::const_paths_iterator it=Paths.begin();
   const CXXBasePath& p=*it;
   assert((++it)==Paths.end());
-  llvm::SmallVector<const CXXBaseSpecifier*, 4> path;
-  for(unsigned i=0;i<p.size();i++)
-	path.push_back(p[i].Base);
-
-  return CGM.ComputeBaseIdOffset(AdjustmentTarget, path);
+  return ComputeTopologicalBaseOffset(CGM, AdjustmentTarget, p);
 }
 
 static void setThunkVisibility(CodeGenModule &CGM, const CXXMethodDecl *MD,
@@ -419,7 +426,7 @@ void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
   // Override the non virtual offset in bytes with the topological offset on NBA targets
   if(!byteAddressable) {
     if(!Thunk.This.isEmpty())
-      Thunk.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentSource);
+      Thunk.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentPath);
     // Return adjustment will be handled with a "reverse" downcast with a negative offset
     if(!Thunk.Return.isEmpty())
       Thunk.Return.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.Return.AdjustmentSource, Thunk.Return.AdjustmentTarget);
@@ -628,7 +635,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
             // Override the non virtual offset in bytes with the topological offset
             // TODO: Really move topological offset logic in AST
             if(!Thunk.This.isEmpty())
-              Thunk.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentSource);
+              Thunk.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentPath);
             if(!Thunk.Return.isEmpty())
               Thunk.Return.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.Return.AdjustmentSource, Thunk.Return.AdjustmentTarget);
           }
