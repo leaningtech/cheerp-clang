@@ -1350,26 +1350,71 @@ RValue CodeGenFunction::EmitLoadOfBitfieldLValue(LValue LV) {
   llvm::Type *ResLTy = ConvertType(LV.getType());
 
   llvm::Value *Ptr = LV.getBitFieldAddr();
-  llvm::Value *Val = Builder.CreateLoad(Ptr, LV.isVolatileQualified(),
-                                        "bf.load");
-  cast<llvm::LoadInst>(Val)->setAlignment(Info.StorageAlignment);
+  llvm::Value *Val;
+  if (IsHighInt(LV.getType()) && Info.StorageSize > 32) {
+    Val = Ptr;
+  } else {
+    Val = Builder.CreateLoad(Ptr, LV.isVolatileQualified(), "bf.load");
+    cast<llvm::LoadInst>(Val)->setAlignment(Info.StorageAlignment);
+  }
 
   if (Info.IsSigned) {
     assert(static_cast<unsigned>(Info.Offset + Info.Size) <= Info.StorageSize);
     unsigned HighBits = Info.StorageSize - Info.Offset - Info.Size;
-    if (HighBits)
-      Val = Builder.CreateShl(Val, HighBits, "bf.shl");
-    if (Info.Offset + HighBits)
-      Val = Builder.CreateAShr(Val, Info.Offset + HighBits, "bf.ashr");
+    if (IsHighInt(LV.getType()) && Info.StorageSize > 32) {
+      assert(!LV.getType()->hasUnsignedIntegerRepresentation());
+      if (HighBits)
+        Val = EmitHighIntShl(LV.getType(), Val, Builder.getInt32(HighBits));
+      if (Info.Offset + HighBits)
+        Val = EmitHighIntShr(LV.getType(), Val,
+                             Builder.getInt32(Info.Offset + HighBits));
+    } else {
+      if (HighBits)
+        Val = Builder.CreateShl(Val, HighBits, "bf.shl");
+      if (Info.Offset + HighBits)
+        Val = Builder.CreateAShr(Val, Info.Offset + HighBits, "bf.ashr");
+    }
   } else {
-    if (Info.Offset)
-      Val = Builder.CreateLShr(Val, Info.Offset, "bf.lshr");
-    if (static_cast<unsigned>(Info.Offset) + Info.Size < Info.StorageSize)
-      Val = Builder.CreateAnd(Val, llvm::APInt::getLowBitsSet(Info.StorageSize,
-                                                              Info.Size),
-                              "bf.clear");
+    if (Info.Offset) {
+      if (IsHighInt(LV.getType()) && Info.StorageSize > 32) {
+        assert(LV.getType()->hasUnsignedIntegerRepresentation());
+        Val = EmitHighIntShr(LV.getType(), Val, Builder.getInt32(Info.Offset));
+      } else {
+        Val = Builder.CreateLShr(Val, Info.Offset, "bf.lshr");
+      }
+    }
+
+    if (static_cast<unsigned>(Info.Offset) + Info.Size < Info.StorageSize) {
+      llvm::APInt mask;
+      if (IsHighInt(LV.getType()) && Info.StorageSize > 32) {
+        llvm::Value *high, *low;
+        if (Info.Size > 32) {
+          llvm::APInt mask = llvm::APInt::getLowBitsSet(32, Info.Size - 32);
+          high = EmitLoadHighBitsOfHighInt(Val);
+          high = Builder.CreateAnd(high, mask, "bf.clear");
+          low = EmitLoadLowBitsOfHighInt(Val);
+        } else {
+          llvm::APInt mask = llvm::APInt::getLowBitsSet(32, Info.Size);
+          high = Builder.getInt32(0);
+          low = EmitLoadLowBitsOfHighInt(Val);
+          low = Builder.CreateAnd(low, mask, "bf.clear");
+        }
+        Val = EmitHighInt(LV.getType(), high, low);
+      } else {
+        mask = llvm::APInt::getLowBitsSet(Info.StorageSize, Info.Size);
+        Val = Builder.CreateAnd(Val, mask, "bf.clear");
+      }
+    }
   }
-  Val = Builder.CreateIntCast(Val, ResLTy, Info.IsSigned, "bf.cast");
+
+  if (IsHighInt(LV.getType())) {
+    if (Info.StorageSize < 64) {
+      llvm::Value *Zero = llvm::ConstantInt::get(Int32Ty, 0);
+      Val = EmitHighInt(LV.getType(), Zero, Val);
+    }
+  } else {
+    Val = Builder.CreateIntCast(Val, ResLTy, Info.IsSigned, "bf.cast");
+  }
 
   return RValue::get(Val);
 }
@@ -1554,50 +1599,128 @@ void CodeGenFunction::EmitStoreThroughBitfieldLValue(RValue Src, LValue Dst,
   // Get the source value, truncated to the width of the bit-field.
   llvm::Value *SrcVal = Src.getScalarVal();
 
+  // When storing an highint value into a small bitfield we can drop the high bits
+  if (IsHighInt(Dst.getType()) && Info.StorageSize <= 32)
+    SrcVal = EmitLoadLowBitsOfHighInt(SrcVal);
+
   // Cast the source to the storage type and shift it into place.
-  SrcVal = Builder.CreateIntCast(SrcVal,
-                                 Ptr->getType()->getPointerElementType(),
-                                 /*IsSigned=*/false);
+  if (!IsHighInt(Dst.getType()) || Info.StorageSize <= 32) {
+    SrcVal = Builder.CreateIntCast(SrcVal,
+                                   Ptr->getType()->getPointerElementType(),
+                                   /*IsSigned=*/false);
+  }
   llvm::Value *MaskedVal = SrcVal;
 
   // See if there are other bits in the bitfield's storage we'll need to load
   // and mask together with source before storing.
   if (Info.StorageSize != Info.Size) {
     assert(Info.StorageSize > Info.Size && "Invalid bitfield size.");
-    llvm::Value *Val = Builder.CreateLoad(Ptr, Dst.isVolatileQualified(),
-                                          "bf.load");
-    cast<llvm::LoadInst>(Val)->setAlignment(Info.StorageAlignment);
+    llvm::Value *Val;
+    if (IsHighInt(Dst.getType()) && Info.StorageSize > 32) {
+      Val = Ptr;
+    } else {
+      Val = Builder.CreateLoad(Ptr, Dst.isVolatileQualified(), "bf.load");
+      cast<llvm::LoadInst>(Val)->setAlignment(Info.StorageAlignment);
+    }
 
     // Mask the source value as needed.
-    if (!hasBooleanRepresentation(Dst.getType()))
-      SrcVal = Builder.CreateAnd(SrcVal,
-                                 llvm::APInt::getLowBitsSet(Info.StorageSize,
-                                                            Info.Size),
-                                 "bf.value");
+    if (!hasBooleanRepresentation(Dst.getType())) {
+      if (IsHighInt(Dst.getType()) && Info.StorageSize > 32) {
+        llvm::Value *high, *low;
+        if (Info.Size > 32) {
+          llvm::APInt mask = llvm::APInt::getLowBitsSet(32,
+                                                        Info.Size - 32);
+          high = EmitLoadHighBitsOfHighInt(SrcVal);
+          high = Builder.CreateAnd(high, mask, "bf.value");
+          low = EmitLoadLowBitsOfHighInt(SrcVal);
+        } else {
+          llvm::APInt mask = llvm::APInt::getLowBitsSet(32, Info.Size);
+          high = Builder.getInt32(0);
+          low = EmitLoadLowBitsOfHighInt(SrcVal);
+          low = Builder.CreateAnd(low, mask, "bf.value");
+        }
+        SrcVal = EmitHighInt(Dst.getType(), high, low);
+      } else {
+        llvm::APInt mask = llvm::APInt::getLowBitsSet(Info.StorageSize,
+                                                      Info.Size);
+        SrcVal = Builder.CreateAnd(SrcVal, mask, "bf.value");
+      }
+    }
+
     MaskedVal = SrcVal;
-    if (Info.Offset)
-      SrcVal = Builder.CreateShl(SrcVal, Info.Offset, "bf.shl");
+    if (Info.Offset) {
+      if (IsHighInt(Dst.getType()) && Info.StorageSize > 32) {
+        SrcVal = EmitHighIntShl(Dst.getType(), SrcVal,
+                                Builder.getInt32(Info.Offset));
+      } else {
+        SrcVal = Builder.CreateShl(SrcVal, Info.Offset, "bf.shl");
+      }
+    }
 
-    // Mask out the original value.
-    Val = Builder.CreateAnd(Val,
-                            ~llvm::APInt::getBitsSet(Info.StorageSize,
-                                                     Info.Offset,
-                                                     Info.Offset + Info.Size),
-                            "bf.clear");
+    if (IsHighInt(Dst.getType()) && Info.StorageSize > 32) {
+      llvm::Value *highVal = EmitLoadHighBitsOfHighInt(Val);
+      llvm::Value *lowVal = EmitLoadLowBitsOfHighInt(Val);
+      llvm::Value *highSrcVal = EmitLoadHighBitsOfHighInt(SrcVal);
+      llvm::Value *lowSrcVal = EmitLoadLowBitsOfHighInt(SrcVal);
 
-    // Or together the unchanged values and the source value.
-    SrcVal = Builder.CreateOr(Val, SrcVal, "bf.set");
+      // Mask out the original value.
+      llvm::APInt highMask, lowMask;
+
+      if (Info.Offset >= 32) {
+        int length = Info.Size + Info.Offset - 32;
+        highMask = ~llvm::APInt::getBitsSet(32, Info.Offset - 32, length);
+        lowMask = llvm::APInt::getBitsSet(32, 0, 32);
+      } else {
+        int length = Info.Size + Info.Offset;
+        if (length > 32)
+          highMask = ~llvm::APInt::getBitsSet(32, 0, length - 32);
+        else
+          highMask = llvm::APInt::getBitsSet(32, 0, 32);
+
+        if (length > 32)
+          length = 32;
+        lowMask = ~llvm::APInt::getBitsSet(32, Info.Offset, length);
+      }
+
+      highVal = Builder.CreateAnd(highVal, highMask, "bf.clear");
+      lowVal = Builder.CreateAnd(lowVal, lowMask, "bf.clear");
+
+      // Or together the unchanged values and the source value.
+      highSrcVal = Builder.CreateOr(highVal, highSrcVal, "bf.set");
+      lowSrcVal = Builder.CreateOr(lowVal, lowSrcVal, "bf.set");
+
+      SrcVal = EmitHighInt(Dst.getType(), highSrcVal, lowSrcVal);
+    } else {
+      // Mask out the original value.
+      llvm::APInt mask = ~llvm::APInt::getBitsSet(Info.StorageSize,
+                                                  Info.Offset,
+                                                  Info.Offset + Info.Size);
+      Val = Builder.CreateAnd(Val, mask, "bf.clear");
+
+      // Or together the unchanged values and the source value.
+      SrcVal = Builder.CreateOr(Val, SrcVal, "bf.set");
+    }
   } else {
     assert(Info.Offset == 0);
   }
 
-  // Write the new value back out.
-  llvm::StoreInst *Store = Builder.CreateStore(SrcVal, Ptr,
-                                               Dst.isVolatileQualified());
-  Store->setAlignment(Info.StorageAlignment);
+  bool Volatile = Dst.isVolatileQualified();
+  if (!IsHighInt(Dst.getType()) || Info.StorageSize <= 32) {
+    // Write the new value back out.
+    llvm::StoreInst *Store = Builder.CreateStore(SrcVal, Ptr, Volatile);
+    Store->setAlignment(Info.StorageAlignment);
+  } else {
+    llvm::Value *highVal = EmitLoadHighBitsOfHighInt(SrcVal);
+    llvm::Value *lowVal = EmitLoadLowBitsOfHighInt(SrcVal);
+    llvm::Value *highLoc = Builder.CreateConstGEP2_32(Ptr, 0, 0);
+    llvm::Value *lowLoc = Builder.CreateConstGEP2_32(Ptr, 0, 1);
+    Builder.CreateStore(highVal, highLoc, Volatile);
+    Builder.CreateStore(lowVal, lowLoc, Volatile);
+  }
 
   // Return the new value of the bit-field, if requested.
   if (Result) {
+    assert(!IsHighInt(Dst.getType()) || Info.StorageSize <= 32);
     llvm::Value *ResultVal = MaskedVal;
 
     // Sign extend the value if needed.
@@ -2666,12 +2789,15 @@ LValue CodeGenFunction::EmitLValueForField(LValue base,
     if (Idx != 0 || !getTarget().isByteAddressable())
       // For structs, we GEP to the field that the record layout suggests.
       Addr = Builder.CreateStructGEP(Addr, Idx, field->getName());
-    // Get the access type.
-    llvm::Type *PtrTy = llvm::Type::getIntNPtrTy(
-      getLLVMContext(), Info.StorageSize,
-      CGM.getContext().getTargetAddressSpace(base.getType()));
-    if (Addr->getType() != PtrTy)
-      Addr = Builder.CreateBitCast(Addr, PtrTy);
+
+    if (getTarget().isByteAddressable()) {
+      // Get the access type.
+      llvm::Type *PtrTy = llvm::Type::getIntNPtrTy(
+        getLLVMContext(), Info.StorageSize,
+        CGM.getContext().getTargetAddressSpace(base.getType()));
+      if (Addr->getType() != PtrTy)
+        Addr = Builder.CreateBitCast(Addr, PtrTy);
+    }
 
     QualType fieldType =
       field->getType().withCVRQualifiers(base.getVRQualifiers());
