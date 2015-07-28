@@ -1375,11 +1375,19 @@ llvm::Value *ItaniumCXXABI::EmitTypeid(CodeGenFunction &CGF,
                                        llvm::Type *StdTypeInfoPtrTy) {
   auto *ClassDecl =
       cast<CXXRecordDecl>(SrcRecordTy->getAs<RecordType>()->getDecl());
-  llvm::Value *Value =
-      CGF.GetVTablePtr(ThisPtr, StdTypeInfoPtrTy->getPointerTo(), ClassDecl);
 
+  llvm::Value* Value = NULL;
+  if(CGF.getTarget().isByteAddressable()) {
+    Value = CGF.GetVTablePtr(ThisPtr, StdTypeInfoPtrTy->getPointerTo(), ClassDecl);
+  } else {
+    llvm::Type* VTableType = CGM.getTypes().GetVTableType(ClassDecl)->getPointerTo();
+    Value = CGF.GetVTablePtr(ThisPtr, VTableType);
+  }
   // Load the type info.
-  Value = CGF.Builder.CreateConstInBoundsGEP1_64(Value, -1ULL);
+  if(!CGF.getTarget().isByteAddressable())
+    Value = CGF.Builder.CreateStructGEP(Value, 0);
+  else
+    Value = CGF.Builder.CreateConstInBoundsGEP1_64(Value, -1ULL);
   return CGF.Builder.CreateAlignedLoad(Value, CGF.getPointerAlign());
 }
 
