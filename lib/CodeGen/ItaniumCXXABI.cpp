@@ -2784,7 +2784,9 @@ llvm::Constant *ItaniumRTTIBuilder::BuildTypeInfo(QualType Ty, bool Force) {
     TypeNameField =
         llvm::ConstantExpr::getIntToPtr(TypeNameField, CGM.Int8PtrTy);
   } else {
-    TypeNameField = llvm::ConstantExpr::getBitCast(TypeName, CGM.Int8PtrTy);
+    llvm::Constant *Zero = llvm::Constant::getNullValue(CGM.Int32Ty);
+    llvm::Constant *Zeros[] = { Zero, Zero };
+    TypeNameField = llvm::ConstantExpr::getGetElementPtr(TypeName, Zeros);
   }
   Fields.push_back(TypeNameField);
 
