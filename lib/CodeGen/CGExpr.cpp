@@ -2565,7 +2565,9 @@ LValue CodeGenFunction::EmitArraySubscriptExpr(const ArraySubscriptExpr *E,
   }
 
   // Extend or truncate the index type to 32 or 64-bits.
-  if (Idx->getType() != IntPtrTy)
+  if (IsHighInt(IdxTy))
+    Idx = EmitLoadLowBitsOfHighInt(Idx);
+  else if (Idx->getType() != IntPtrTy)
     Idx = Builder.CreateIntCast(Idx, IntPtrTy, IdxSigned, "idxprom");
 
   // We know that the pointer points to a type of the correct size, unless the
