@@ -674,6 +674,12 @@ StmtResult Sema::ActOnStartOfSwitchStmt(SourceLocation SwitchLoc,
   if (Cond.isInvalid())
     return StmtError();
 
+  QualType CondType = Cond->getType().getCanonicalType();
+  if(isa<BuiltinType>(CondType) && cast<BuiltinType>(CondType)->isHighInt()) {
+    Diag(SwitchLoc, diag::err_cheerp_switch_64bit);
+    return StmtError();
+  }
+
   getCurFunction()->setHasBranchIntoScope();
 
   SwitchStmt *SS = new (Context)
