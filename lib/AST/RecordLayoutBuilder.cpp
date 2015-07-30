@@ -1936,15 +1936,7 @@ void ItaniumRecordLayoutBuilder::LayoutField(const FieldDecl *D,
   // Reserve space for this field.
   uint64_t FieldSizeInBits = Context.toBits(FieldSize);
   if (IsUnion)
-  {
-    if (!Context.getTargetInfo().isByteAddressable())
-    {
-      //HACK: Set maximal alignment for unions
-      FieldSizeInBits += 63;
-      FieldSizeInBits &= ~63;
-    }
     setDataSize(std::max(getDataSizeInBits(), FieldSizeInBits));
-  }
   else
     setDataSize(FieldOffset + FieldSize);
 
