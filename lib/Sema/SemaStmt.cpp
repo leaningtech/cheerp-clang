@@ -648,6 +648,12 @@ Sema::ActOnStartOfSwitchStmt(SourceLocation SwitchLoc, Expr *Cond,
   if (CondResult.isInvalid()) return StmtError();
   Cond = CondResult.get();
 
+  QualType CondType = Cond->getType().getCanonicalType();
+  if(isa<BuiltinType>(CondType) && cast<BuiltinType>(CondType)->isHighInt()) {
+    Diag(SwitchLoc, diag::err_cheerp_switch_64bit);
+    return StmtError();
+  }
+
   if (!CondVar) {
     CondResult = ActOnFinishFullExpr(Cond, SwitchLoc);
     if (CondResult.isInvalid())
