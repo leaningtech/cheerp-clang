@@ -3757,6 +3757,9 @@ Value *ScalarExprEmitter::VisitVAArgExpr(VAArgExpr *VE) {
   llvm::Value *ArgValue = CGF.EmitVAListRef(VE->getSubExpr());
   llvm::Value *ArgPtr = CGF.EmitVAArg(ArgValue, VE->getType());
   llvm::Type *ArgTy = ConvertType(VE->getType());
+  // High ints are stored as pointer
+  if (CGF.IsHighInt(Ty))
+    ArgTy = ArgTy->getPointerTo();
 
   // If EmitVAArg fails, we fall back to the LLVM instruction.
   if (!ArgPtr)
