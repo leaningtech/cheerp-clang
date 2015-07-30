@@ -557,7 +557,7 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
     if (ValSTy->isLayoutIdentical(STy))
       STy = ValSTy;
     else if(!CGM.getTarget().isByteAddressable())
-      CGM.Error(RD->getLocation(), "Explicit braces on subobjects are needed");
+      CGM.Error(RD->getLocation(), "Constant initializer has the wrong type");
   }
 
   llvm::Constant *Result = llvm::ConstantStruct::get(STy, Elements);
