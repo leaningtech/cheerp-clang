@@ -1414,9 +1414,10 @@ llvm::Constant *ItaniumCXXABI::getVTableAddressPointForConstExpr(
   uint64_t AddressPoint = CGM.getItaniumVTableContext()
                               .getVTableLayout(VTableClass)
                               .getAddressPoint(Base);
+  llvm::Type* IndexType = CGM.getTarget().isByteAddressable() ? CGM.Int64Ty : CGM.Int32Ty;
   llvm::Value *Indices[] = {
-    llvm::ConstantInt::get(CGM.Int64Ty, 0),
-    llvm::ConstantInt::get(CGM.Int64Ty, AddressPoint)
+    llvm::ConstantInt::get(IndexType, 0),
+    llvm::ConstantInt::get(IndexType, AddressPoint)
   };
 
   return llvm::ConstantExpr::getInBoundsGetElementPtr(VTable, Indices);
