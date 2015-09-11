@@ -452,7 +452,11 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
           CGM.getCXXABI().getVTableAddressPointForConstExpr(
               BaseSubobject(CD, Offset), VTableClass);
       // Cast to the type of the VTable field in classes
-      llvm::Type* VTableType = llvm::FunctionType::get(CGM.Int32Ty, /*isVarArg=*/true)->getPointerTo()->getPointerTo();
+      llvm::Type *VTableType = NULL;
+      if (CGM.getTarget().isByteAddressable())
+        VTableType = llvm::FunctionType::get(CGM.Int32Ty, /*isVarArg=*/true)->getPointerTo()->getPointerTo();
+      else
+        VTableType = CGM.getTypes().GetVTableBaseType()->getPointerTo();
       AppendBytes(Offset, llvm::ConstantExpr::getBitCast(VTableAddressPoint, VTableType));
     }
 
