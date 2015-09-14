@@ -8415,6 +8415,7 @@ void cheerp::CheerpOptimizer::ConstructJob(Compilation &C, const JobAction &JA,
   ArgStringList CmdArgs;
 
   CmdArgs.push_back("-march=cheerp");
+  CmdArgs.push_back("-DelayAllocas");
   if(!Args.hasArg(options::OPT_cheerp_no_type_optimizer))
     CmdArgs.push_back("-TypeOptimizer");
   CmdArgs.push_back("-ReplaceNopCasts");
