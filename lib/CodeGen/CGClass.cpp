@@ -1784,7 +1784,7 @@ void CodeGenFunction::EmitCXXAggrConstructorCall(
   llvm::Value *numElements =
     emitArrayLength(arrayType, elementType, arrayBegin);
 
-  EmitCXXAggrConstructorCall(ctor, numElements, arrayBegin, E, zeroInitialize);
+  EmitCXXAggrConstructorCall(ctor, elementType, numElements, arrayBegin, E, zeroInitialize);
 }
 
 /// EmitCXXAggrConstructorCall - Emit a loop to call a particular
@@ -1797,6 +1797,7 @@ void CodeGenFunction::EmitCXXAggrConstructorCall(
 /// \param zeroInitialize true if each element should be
 ///   zero-initialized before it is constructed
 void CodeGenFunction::EmitCXXAggrConstructorCall(const CXXConstructorDecl *ctor,
+                                                 QualType elementType,
                                                  llvm::Value *numElements,
                                                  llvm::Value *arrayBegin,
                                                  const CXXConstructExpr *E,
@@ -1837,34 +1838,38 @@ void CodeGenFunction::EmitCXXAggrConstructorCall(const CXXConstructorDecl *ctor,
   cur->addIncoming(arrayBegin, entryBB);
 
   // Inside the loop body, emit the constructor call on the array element.
+  if(const ConstantArrayType* CAT = dyn_cast_or_null<ConstantArrayType>(getContext().getAsArrayType(elementType))) {
+    EmitCXXAggrConstructorCall(ctor, CAT, cur, E, zeroInitialize);
+  } else {
+    QualType type = getContext().getTypeDeclType(ctor->getParent());
+    assert(getContext().getCanonicalType(type.getUnqualifiedType()) == getContext().getCanonicalType(elementType.getUnqualifiedType()));
 
-  QualType type = getContext().getTypeDeclType(ctor->getParent());
-
-  // Zero initialize the storage, if requested.
-  if (zeroInitialize)
-    EmitNullInitialization(cur, type);
+    // Zero initialize the storage, if requested.
+    if (zeroInitialize)
+      EmitNullInitialization(cur, type);
   
-  // C++ [class.temporary]p4: 
-  // There are two contexts in which temporaries are destroyed at a different
-  // point than the end of the full-expression. The first context is when a
-  // default constructor is called to initialize an element of an array. 
-  // If the constructor has one or more default arguments, the destruction of 
-  // every temporary created in a default argument expression is sequenced 
-  // before the construction of the next array element, if any.
+    // C++ [class.temporary]p4: 
+    // There are two contexts in which temporaries are destroyed at a different
+    // point than the end of the full-expression. The first context is when a
+    // default constructor is called to initialize an element of an array. 
+    // If the constructor has one or more default arguments, the destruction of 
+    // every temporary created in a default argument expression is sequenced 
+    // before the construction of the next array element, if any.
   
-  {
-    RunCleanupsScope Scope(*this);
+    {
+      RunCleanupsScope Scope(*this);
 
-    // Evaluate the constructor and its arguments in a regular
-    // partial-destroy cleanup.
-    if (getLangOpts().Exceptions &&
-        !ctor->getParent()->hasTrivialDestructor()) {
-      Destroyer *destroyer = destroyCXXObject;
-      pushRegularPartialArrayCleanup(arrayBegin, cur, type, *destroyer);
+      // Evaluate the constructor and its arguments in a regular
+      // partial-destroy cleanup.
+      if (getLangOpts().Exceptions &&
+          !ctor->getParent()->hasTrivialDestructor()) {
+        Destroyer *destroyer = destroyCXXObject;
+        pushRegularPartialArrayCleanup(arrayBegin, cur, type, *destroyer);
+      }
+
+      EmitCXXConstructorCall(ctor, Ctor_Complete, /*ForVirtualBase=*/false,
+                             /*Delegating=*/false, cur, E);
     }
-
-    EmitCXXConstructorCall(ctor, Ctor_Complete, /*ForVirtualBase=*/false,
-                           /*Delegating=*/false, cur, E);
   }
 
   // Go to the next element.
