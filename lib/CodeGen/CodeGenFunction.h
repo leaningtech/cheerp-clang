@@ -2575,6 +2575,7 @@ public:
                                   bool ZeroInitialization = false);
 
   void EmitCXXAggrConstructorCall(const CXXConstructorDecl *D,
+                                  QualType elementType,
                                   llvm::Value *NumElements,
                                   Address ArrayPtr,
                                   const CXXConstructExpr *E,
