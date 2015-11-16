@@ -1284,7 +1284,8 @@ void Driver::BuildActions(const ToolChain &TC, DerivedArgList &Args,
       Action* linkJob = new LinkJobAction(LinkerInputs, types::TY_LLVM_BC);
       ActionList cheerpOptimizerList, cheerpCompilerList;
       // Check if we need to run link time optimization or not
-      if(Args.hasArg(options::OPT_cheerp_no_lto))
+      if (Args.hasArg(options::OPT_cheerp_no_lto) ||
+              Args.hasFlag(options::OPT_O0, options::OPT_O_Group, false))
         cheerpCompilerList.push_back(linkJob);
       else
       {
