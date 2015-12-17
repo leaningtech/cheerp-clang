@@ -1070,10 +1070,8 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
       CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
                                   llvm::Intrinsic::cheerp_deallocate);
     }
-    RV =
-      CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(retType, Args, FunctionType::ExtInfo(), RequiredArgs::All),
-                   CalleeAddr, ReturnValueSlot(), Args,
-                   Callee, &CallOrInvoke);
+    llvm::Value* SizeArg[] = { Args[0].RV.getScalarVal() };
+    RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, SizeArg));
   }
   else
   {
