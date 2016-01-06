@@ -6,10 +6,10 @@
 
 extern void abort (void);
 
-// CHECK: @.compoundliteral = internal global %struct.A { i32 1, i32 2 }
-// CHECK: @.compoundliteral1 = internal global %struct.A { i32 3, i32 4 }
-// CHECK: @.compoundliteral2 = internal global %struct.B { %struct.A* @.compoundliteral, %struct.A* @.compoundliteral1 }
-// CHECK: @.compoundliteral3 = internal global %struct.A { i32 5, i32 6 }
+// CHECK: @.compoundliteral = internal global %struct._Z1A { i32 1, i32 2 }
+// CHECK: @.compoundliteral1 = internal global %struct._Z1A { i32 3, i32 4 }
+// CHECK: @.compoundliteral2 = internal global %struct._Z1B { %struct._Z1A* @.compoundliteral, %struct._Z1A* @.compoundliteral1 }
+// CHECK: @.compoundliteral3 = internal global %struct._Z1A { i32 5, i32 6 }
 
 struct A { int i; int j; };
 struct B { struct A *a; struct A *b; };

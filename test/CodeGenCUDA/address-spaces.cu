@@ -19,7 +19,7 @@ struct MyStruct {
   int data2;
 };
 
-// CHECK: @_ZZ5func0vE1a = internal addrspace(3) global %struct.MyStruct zeroinitializer
+// CHECK: @_ZZ5func0vE1a = internal addrspace(3) global %struct._Z8MyStruct zeroinitializer
 // CHECK: @_ZZ5func1vE1a = internal addrspace(3) global float 0.000000e+00
 // CHECK: @_ZZ5func2vE1a = internal addrspace(3) global [256 x float] zeroinitializer
 // CHECK: @_ZZ5func3vE1a = internal addrspace(3) global float 0.000000e+00
@@ -56,7 +56,7 @@ __device__ void func0() {
   ap->data2 = 2;
 }
 // CHECK: define void @_Z5func0v()
-// CHECK: store %struct.MyStruct* addrspacecast (%struct.MyStruct addrspace(3)* @_ZZ5func0vE1a to %struct.MyStruct*), %struct.MyStruct** %ap
+// CHECK: store %struct._Z8MyStruct* addrspacecast (%struct._Z8MyStruct addrspace(3)* @_ZZ5func0vE1a to %struct._Z8MyStruct*), %struct._Z8MyStruct** %ap
 
 __device__ void callee(float *ap) {
   *ap = 1.0f;

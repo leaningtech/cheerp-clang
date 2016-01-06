@@ -108,7 +108,7 @@ struct T { ~T(); };
 // CHECK-LABEL: define void @_Z8tls_dtorv()
 void tls_dtor() {
   // CHECK: load i8* @_ZGVZ8tls_dtorvE1s
-  // CHECK: call void @_ZN1SC1Ev(%struct.S* @_ZZ8tls_dtorvE1s)
+  // CHECK: call void @_ZN1SC1Ev(%struct._Z1S* @_ZZ8tls_dtorvE1s)
   // CHECK: call i32 @__cxa_thread_atexit({{.*}}@_ZN1SD1Ev {{.*}} @_ZZ8tls_dtorvE1s{{.*}} @__dso_handle
   // CHECK: store i8 1, i8* @_ZGVZ8tls_dtorvE1s
   static thread_local S s;
@@ -120,7 +120,7 @@ void tls_dtor() {
   static thread_local T t;
 
   // CHECK: load i8* @_ZGVZ8tls_dtorvE1u
-  // CHECK: call void @_ZN1SC1Ev(%struct.S* @_ZGRZ8tls_dtorvE1u_)
+  // CHECK: call void @_ZN1SC1Ev(%struct._Z1S* @_ZGRZ8tls_dtorvE1u_)
   // CHECK: call i32 @__cxa_thread_atexit({{.*}}@_ZN1SD1Ev {{.*}} @_ZGRZ8tls_dtorvE1u_{{.*}} @__dso_handle
   // CHECK: store i8 1, i8* @_ZGVZ8tls_dtorvE1u
   static thread_local const S &u = S();

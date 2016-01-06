@@ -5,9 +5,9 @@
 // CHECK: @test5w = global { i32, [4 x i8] } { i32 2, [4 x i8] undef }
 // CHECK: @test5y = global { double } { double 7.300000e+0{{[0]*}}1 }
 
-// CHECK: @test6.x = private unnamed_addr constant %struct.SelectDest { i8 1, i8 2, i32 3, i32 0 }
+// CHECK: @test6.x = private unnamed_addr constant %struct._Z10SelectDest { i8 1, i8 2, i32 3, i32 0 }
 
-// CHECK: @test7 = global [2 x %struct.test7s] [%struct.test7s { i32 1, i32 2 }, %struct.test7s { i32 4, i32 0 }]
+// CHECK: @test7 = global [2 x %struct._Z6test7s] [%struct._Z6test7s { i32 1, i32 2 }, %struct._Z6test7s { i32 4, i32 0 }]
 
 void test1() {
   // This should codegen as a "@test1.x" global.

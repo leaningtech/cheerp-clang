@@ -2,22 +2,22 @@
 // RUN: FileCheck < %t %s
 
 // CHECK-LABEL: define void @f56(
-// CHECK: i8 signext %a0, %struct.s56_0* byval align 4 %a1,
-// CHECK: i64 %a2.coerce, %struct.s56_1* byval align 4,
-// CHECK: <1 x double> %a4, %struct.s56_2* byval align 4,
-// CHECK: <4 x i32> %a6, %struct.s56_3* byval align 4,
-// CHECK: <2 x double> %a8, %struct.s56_4* byval align 4,
-// CHECK: <8 x i32> %a10, %struct.s56_5* byval align 4,
-// CHECK: <4 x double> %a12, %struct.s56_6* byval align 4)
+// CHECK: i8 signext %a0, %struct._Z5s56_0* byval align 4 %a1,
+// CHECK: i64 %a2.coerce, %struct._Z5s56_1* byval align 4,
+// CHECK: <1 x double> %a4, %struct._Z5s56_2* byval align 4,
+// CHECK: <4 x i32> %a6, %struct._Z5s56_3* byval align 4,
+// CHECK: <2 x double> %a8, %struct._Z5s56_4* byval align 4,
+// CHECK: <8 x i32> %a10, %struct._Z5s56_5* byval align 4,
+// CHECK: <4 x double> %a12, %struct._Z5s56_6* byval align 4)
 
 // CHECK: call void (i32, ...)* @f56_0(i32 1,
-// CHECK: i32 %{{.*}}, %struct.s56_0* byval align 4 %{{[^ ]*}},
-// CHECK: i64 %{{[^ ]*}}, %struct.s56_1* byval align 4 %{{[^ ]*}},
-// CHECK: <1 x double> %{{[^ ]*}}, %struct.s56_2* byval align 4 %{{[^ ]*}},
-// CHECK: <4 x i32> %{{[^ ]*}}, %struct.s56_3* byval align 4 %{{[^ ]*}},
-// CHECK: <2 x double> %{{[^ ]*}}, %struct.s56_4* byval align 4 %{{[^ ]*}},
-// CHECK: <8 x i32> %{{[^ ]*}}, %struct.s56_5* byval align 4 %{{[^ ]*}},
-// CHECK: <4 x double> %{{[^ ]*}}, %struct.s56_6* byval align 4 %{{[^ ]*}})
+// CHECK: i32 %{{.*}}, %struct._Z5s56_0* byval align 4 %{{[^ ]*}},
+// CHECK: i64 %{{[^ ]*}}, %struct._Z5s56_1* byval align 4 %{{[^ ]*}},
+// CHECK: <1 x double> %{{[^ ]*}}, %struct._Z5s56_2* byval align 4 %{{[^ ]*}},
+// CHECK: <4 x i32> %{{[^ ]*}}, %struct._Z5s56_3* byval align 4 %{{[^ ]*}},
+// CHECK: <2 x double> %{{[^ ]*}}, %struct._Z5s56_4* byval align 4 %{{[^ ]*}},
+// CHECK: <8 x i32> %{{[^ ]*}}, %struct._Z5s56_5* byval align 4 %{{[^ ]*}},
+// CHECK: <4 x double> %{{[^ ]*}}, %struct._Z5s56_6* byval align 4 %{{[^ ]*}})
 // CHECK: }
 //
 // <rdar://problem/7964854> [i386] clang misaligns long double in structures

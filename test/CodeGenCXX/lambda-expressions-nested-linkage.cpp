@@ -1,8 +1,8 @@
 // RUN: %clang_cc1 -triple x86_64-apple-darwin10.0.0 -fblocks -emit-llvm -o - %s -fexceptions -std=c++11 | FileCheck %s
 
 // CHECK-LABEL: define void @_ZN19non_inline_function3fooEv()
-// CHECK-LABEL: define internal void @"_ZZN19non_inline_function3fooEvENK3$_0clEi"(%class.anon
-// CHECK-LABEL: define internal signext i8 @"_ZZZN19non_inline_function3fooEvENK3$_0clEiENKUlcE_clEc"(%class.anon
+// CHECK-LABEL: define internal void @"_ZZN19non_inline_function3fooEvENK3$_0clEi"(%"class._ZZN19non_inline_function
+// CHECK-LABEL: define internal signext i8 @"_ZZZN19non_inline_function3fooEvENK3$_0clEiENKUlcE_clEc"(%"class._ZZZN19non_inline_function
 namespace non_inline_function {
 void foo() {
   auto L = [](int a) {
@@ -43,8 +43,8 @@ inline int foo() {
 }
 int use = foo();
 }
-// CHECK: define linkonce_odr void @_ZNK32lambdas_in_NSDMIs_template_class1LIiEUliE_clEi(%class.anon
-// CHECK: define linkonce_odr i32 @_ZZNK32lambdas_in_NSDMIs_template_class1LIiEUliE_clEiENKUliE_clEi(%class.anon
+// CHECK: define linkonce_odr void @_ZNK32lambdas_in_NSDMIs_template_class1LIiEUliE_clEi(%class._ZN32lambdas_in_NSDMIs_template_class
+// CHECK: define linkonce_odr i32 @_ZZNK32lambdas_in_NSDMIs_template_class1LIiEUliE_clEiENKUliE_clEi(%class._ZZNK32lambdas_in_NSDMIs_template_class
 
-// CHECK: define linkonce_odr void @_ZNK12non_template1L1tMUliE_clEi(%class.anon
-// CHECK: define linkonce_odr i32 @_ZZNK12non_template1L1tMUliE_clEiENKUliE_clEi(%class.anon
+// CHECK: define linkonce_odr void @_ZNK12non_template1L1tMUliE_clEi(%class._ZN12non_template
+// CHECK: define linkonce_odr i32 @_ZZNK12non_template1L1tMUliE_clEiENKUliE_clEi(%class._ZZNK12non_template

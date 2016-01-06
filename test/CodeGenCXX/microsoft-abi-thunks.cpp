@@ -61,15 +61,15 @@ struct C : A, B {
 
 C::C() {}  // Emits vftable and forces thunk generation.
 
-// CODEGEN-LABEL: define linkonce_odr x86_thiscallcc i8* @"\01??_EC@@W3AEPAXI@Z"(%struct.C* %this, i32 %should_call_delete)
+// CODEGEN-LABEL: define linkonce_odr x86_thiscallcc i8* @"\01??_EC@@W3AEPAXI@Z"(%"struct.\01?C@@"* %this, i32 %should_call_delete)
 // CODEGEN:   getelementptr i8* {{.*}}, i32 -4
 // FIXME: should actually call _EC, not _GC.
 // CODEGEN:   call x86_thiscallcc i8* @"\01??_GC@@UAEPAXI@Z"
 // CODEGEN: ret
 
-// CODEGEN-LABEL: define linkonce_odr x86_thiscallcc void @"\01?public_f@C@@W3AEXXZ"(%struct.C*
+// CODEGEN-LABEL: define linkonce_odr x86_thiscallcc void @"\01?public_f@C@@W3AEXXZ"(%"struct.\01?C@@"*
 // CODEGEN:   getelementptr i8* {{.*}}, i32 -4
-// CODEGEN:   call x86_thiscallcc void @"\01?public_f@C@@UAEXXZ"(%struct.C*
+// CODEGEN:   call x86_thiscallcc void @"\01?public_f@C@@UAEXXZ"(%"struct.\01?C@@"*
 // CODEGEN: ret
 
 void zoo(C* obj) {
@@ -91,8 +91,8 @@ struct E : D {
 
 E::E() {}  // Emits vftable and forces thunk generation.
 
-// CODEGEN-LABEL: define weak_odr x86_thiscallcc %struct.C* @"\01?goo@E@@QAEPAUB@@XZ"
-// CODEGEN:   call x86_thiscallcc %struct.C* @"\01?goo@E@@UAEPAUC@@XZ"
+// CODEGEN-LABEL: define weak_odr x86_thiscallcc %"struct.\01?C@@"* @"\01?goo@E@@QAEPAUB@@XZ"
+// CODEGEN:   call x86_thiscallcc %"struct.\01?C@@"* @"\01?goo@E@@UAEPAUC@@XZ"
 // CODEGEN:   getelementptr inbounds i8* {{.*}}, i32 4
 // CODEGEN: ret
 
@@ -124,18 +124,18 @@ struct I : D {
 
 I::I() {}  // Emits vftable and forces thunk generation.
 
-// CODEGEN-LABEL: define weak_odr x86_thiscallcc %struct.{{[BF]}}* @"\01?goo@I@@QAEPAUB@@XZ"
-// CODEGEN: %[[ORIG_RET:.*]] = call x86_thiscallcc %struct.F* @"\01?goo@I@@UAEPAUF@@XZ"
-// CODEGEN: %[[ORIG_RET_i8:.*]] = bitcast %struct.F* %[[ORIG_RET]] to i8*
+// CODEGEN-LABEL: define weak_odr x86_thiscallcc %"struct.\01?{{[BF]}}@@"* @"\01?goo@I@@QAEPAUB@@XZ"
+// CODEGEN: %[[ORIG_RET:.*]] = call x86_thiscallcc %"struct.\01?F@@"* @"\01?goo@I@@UAEPAUF@@XZ"
+// CODEGEN: %[[ORIG_RET_i8:.*]] = bitcast %"struct.\01?F@@"* %[[ORIG_RET]] to i8*
 // CODEGEN: %[[VBPTR_i8:.*]] = getelementptr inbounds i8* %[[ORIG_RET_i8]], i32 4
 // CODEGEN: %[[VBPTR:.*]] = bitcast i8* %[[VBPTR_i8]] to i32**
 // CODEGEN: %[[VBTABLE:.*]] = load i32** %[[VBPTR]]
 // CODEGEN: %[[VBASE_OFFSET_PTR:.*]] = getelementptr inbounds i32* %[[VBTABLE]], i32 2
 // CODEGEN: %[[VBASE_OFFSET:.*]] = load i32* %[[VBASE_OFFSET_PTR]]
 // CODEGEN: %[[RES_i8:.*]] = getelementptr inbounds i8* %[[VBPTR_i8]], i32 %[[VBASE_OFFSET]]
-// CODEGEN: %[[RES:.*]] = bitcast i8* %[[RES_i8]] to %struct.F*
-// CODEGEN: phi %struct.F* {{.*}} %[[RES]]
-// CODEGEN: ret %struct.{{[BF]}}*
+// CODEGEN: %[[RES:.*]] = bitcast i8* %[[RES_i8]] to %"struct.\01?F@@"*
+// CODEGEN: phi %"struct.\01?F@@"* {{.*}} %[[RES]]
+// CODEGEN: ret %"struct.\01?{{[BF]}}@@"*
 
 namespace CrashOnThunksForAttributedType {
 // We used to crash on this because the type of foo is an AttributedType, not
@@ -160,5 +160,5 @@ struct E : D {
 E::E() {}
 E e;
 // Class with internal linkage has internal linkage thunks.
-// CODEGEN: define internal x86_thiscallcc %struct.C* @"\01?goo@E@?A@@QAEPAUB@@XZ"
+// CODEGEN: define internal x86_thiscallcc %"struct.\01?C@@"* @"\01?goo@E@?A@@QAEPAUB@@XZ"
 }

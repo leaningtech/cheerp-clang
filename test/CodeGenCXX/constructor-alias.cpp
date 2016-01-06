@@ -9,4 +9,4 @@ struct B {
 B::B() {
 }
 
-// CHECK: @_ZN1BC1Ev = alias void (%struct.B*)* @_ZN1BC2Ev
+// CHECK: @_ZN1BC1Ev = alias void (%struct._Z1B*)* @_ZN1BC2Ev

@@ -13,29 +13,29 @@ struct C { void *field; };
 struct D { ~D(); };
 
 // CHECK: @__dso_handle = external global i8
-// CHECK: @c = global %struct.C zeroinitializer, align 8
+// CHECK: @c = global %struct._Z1C zeroinitializer, align 8
 
 // It's okay if we ever implement the IR-generation optimization to remove this.
 // CHECK: @_ZN5test3L3varE = internal constant i8* getelementptr inbounds ([7 x i8]* @.str, i32 0, i32 0), align 8 
 
 // PR6205: The casts should not require global initializers
-// CHECK: @_ZN6PR59741cE = external global %"struct.PR5974::C"
-// CHECK: @_ZN6PR59741aE = global %"struct.PR5974::A"* getelementptr inbounds (%"struct.PR5974::C"* @_ZN6PR59741cE, i32 0, i32 0), align 8
-// CHECK: @_ZN6PR59741bE = global %"struct.PR5974::B"* getelementptr inbounds (%"struct.PR5974::C"* @_ZN6PR59741cE, i32 0, i32 1), align 8
+// CHECK: @_ZN6PR59741cE = external global %struct._ZN6PR59741CE
+// CHECK: @_ZN6PR59741aE = global %struct._ZN6PR59741AE* getelementptr inbounds (%struct._ZN6PR59741CE* @_ZN6PR59741cE, i32 0, i32 0), align 8
+// CHECK: @_ZN6PR59741bE = global %struct._ZN6PR59741BE* getelementptr inbounds (%struct._ZN6PR59741CE* @_ZN6PR59741cE, i32 0, i32 1), align 8
 
-// CHECK: call void @_ZN1AC1Ev(%struct.A* @a)
-// CHECK: call i32 @__cxa_atexit(void (i8*)* bitcast (void (%struct.A*)* @_ZN1AD1Ev to void (i8*)*), i8* bitcast (%struct.A* @a to i8*), i8* @__dso_handle)
+// CHECK: call void @_ZN1AC1Ev(%struct._Z1A* @a)
+// CHECK: call i32 @__cxa_atexit(void (i8*)* bitcast (void (%struct._Z1A*)* @_ZN1AD1Ev to void (i8*)*), i8* bitcast (%struct._Z1A* @a to i8*), i8* @__dso_handle)
 A a;
 
-// CHECK: call void @_ZN1BC1Ev(%struct.B* @b)
-// CHECK: call i32 @__cxa_atexit(void (i8*)* bitcast (void (%struct.B*)* @_ZN1BD1Ev to void (i8*)*), i8* bitcast (%struct.B* @b to i8*), i8* @__dso_handle)
+// CHECK: call void @_ZN1BC1Ev(%struct._Z1B* @b)
+// CHECK: call i32 @__cxa_atexit(void (i8*)* bitcast (void (%struct._Z1B*)* @_ZN1BD1Ev to void (i8*)*), i8* bitcast (%struct._Z1B* @b to i8*), i8* @__dso_handle)
 B b;
 
 // PR6205: this should not require a global initializer
-// CHECK-NOT: call void @_ZN1CC1Ev(%struct.C* @c)
+// CHECK-NOT: call void @_ZN1CC1Ev(%struct._Z1C* @c)
 C c;
 
-// CHECK: call i32 @__cxa_atexit(void (i8*)* bitcast (void (%struct.D*)* @_ZN1DD1Ev to void (i8*)*), i8* bitcast (%struct.D* @d to i8*), i8* @__dso_handle)
+// CHECK: call i32 @__cxa_atexit(void (i8*)* bitcast (void (%struct._Z1D*)* @_ZN1DD1Ev to void (i8*)*), i8* bitcast (%struct._Z1D* @d to i8*), i8* @__dso_handle)
 D d;
 
 // <rdar://problem/7458115>

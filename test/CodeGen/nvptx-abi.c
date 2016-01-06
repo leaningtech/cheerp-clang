@@ -6,7 +6,7 @@ typedef struct float4_s {
 } float4_t;
 
 float4_t my_function(void) {
-// CHECK-LABEL: define %struct.float4_s @my_function
+// CHECK-LABEL: define %struct._Z8float4_s @my_function
   float4_t t;
   return t;
 };
@@ -14,21 +14,21 @@ float4_t my_function(void) {
 float bar(void) {
   float4_t ret;
 // CHECK-LABEL: @bar
-// CHECK: call %struct.float4_s @my_function
+// CHECK: call %struct._Z8float4_s @my_function
   ret = my_function();
   return ret.x;
 }
 
 void foo(float4_t x) {
 // CHECK-LABEL: @foo
-// CHECK: %struct.float4_s* byval %x
+// CHECK: %struct._Z8float4_s* byval %x
 }
 
 void fooN(float4_t x, float4_t y, float4_t z) {
 // CHECK-LABEL: @fooN
-// CHECK: %struct.float4_s* byval %x
-// CHECK: %struct.float4_s* byval %y
-// CHECK: %struct.float4_s* byval %z
+// CHECK: %struct._Z8float4_s* byval %x
+// CHECK: %struct._Z8float4_s* byval %y
+// CHECK: %struct._Z8float4_s* byval %z
 }
 
 typedef struct nested_s {
@@ -39,5 +39,5 @@ typedef struct nested_s {
 
 void baz(nested_t x) {
 // CHECK-LABEL: @baz
-// CHECK: %struct.nested_s* byval %x)
+// CHECK: %struct._Z8nested_s* byval %x)
 }

@@ -280,13 +280,13 @@ struct Ops {
   void *v;
 };
 
-// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct.Ops* @_ZN3OpsplERKS_
+// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct._Z3Ops* @_ZN3OpsplERKS_
 Ops& Ops::operator+(const Ops&) { return *this; }
-// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct.Ops* @_ZN3OpsmiERKS_
+// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct._Z3Ops* @_ZN3OpsmiERKS_
 Ops& Ops::operator-(const Ops&) { return *this; }
-// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct.Ops* @_ZN3OpsanERKS_
+// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct._Z3Ops* @_ZN3OpsanERKS_
 Ops& Ops::operator&(const Ops&) { return *this; }
-// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct.Ops* @_ZN3OpsmlERKS_
+// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct._Z3Ops* @_ZN3OpsmlERKS_
 Ops& Ops::operator*(const Ops&) { return *this; }
 
 // PR5861
@@ -949,7 +949,7 @@ namespace test44 {
   void f() {
     obj.bar();
   }
-  // CHECK-LABEL: define linkonce_odr void @_ZN6test443foo3barEv(%"struct.test44::foo"* %this)
+  // CHECK-LABEL: define linkonce_odr void @_ZN6test443foo3barEv(%struct._ZN6test443fooE* %this)
 }
 
 namespace test45 {
@@ -969,7 +969,7 @@ namespace test46 {
   template <typename T>
   void f(struct T::s *) {}
   template void f<S>(S::s *);
-  // CHECK-LABEL: define weak_odr void @_ZN6test461fINS_1SEEEvPTsNT_1sE(%"struct.test46::S::s"*)
+  // CHECK-LABEL: define weak_odr void @_ZN6test461fINS_1SEEEvPTsNT_1sE(%struct._ZN6test461S1sE*)
 }
 
 namespace test47 {
@@ -979,7 +979,7 @@ namespace test47 {
   template <typename T>
   void f(class T::c *) {}
   template void f<S>(S::c *);
-  // CHECK-LABEL: define weak_odr void @_ZN6test471fINS_1SEEEvPTsNT_1cE(%"class.test47::S::c"*)
+  // CHECK-LABEL: define weak_odr void @_ZN6test471fINS_1SEEEvPTsNT_1cE(%class._ZN6test471S1cE*)
 }
 
 namespace test48 {
@@ -989,7 +989,7 @@ namespace test48 {
   template <typename T>
   void f(union T::u *) {}
   template void f<S>(S::u *);
-  // CHECK-LABEL: define weak_odr void @_ZN6test481fINS_1SEEEvPTuNT_1uE(%"union.test48::S::u"*)
+  // CHECK-LABEL: define weak_odr void @_ZN6test481fINS_1SEEEvPTuNT_1uE(%union._ZN6test481S1uE*)
 }
 
 namespace test49 {

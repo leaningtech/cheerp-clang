@@ -7,4 +7,4 @@ struct C2 { int a; virtual void C2M() {} };
 struct C3 : C0, C1, C2 {} a;
 
 // Check to see that both C1 and C2 get laid out before C0 does.
-// CHECK: %struct.C3 = type { %struct.C1, %struct.C2, %struct.C0 }
+// CHECK: %"struct.\01?C3@@" = type { %"struct.\01?C1@@", %"struct.\01?C2@@", %"struct.\01?C0@@" }

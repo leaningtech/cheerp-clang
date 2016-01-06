@@ -26,7 +26,7 @@ struct small {
   int *a, *b;
 };
 
-// CHECK-LABEL: define %struct.small @f_small(i32* %x.coerce0, i32* %x.coerce1)
+// CHECK-LABEL: define %struct._Z5small @f_small(i32* %x.coerce0, i32* %x.coerce1)
 struct small f_small(struct small x) {
   x.a += *x.b;
   x.b = 0;
@@ -39,7 +39,7 @@ struct medium {
   int *c, *d;
 };
 
-// CHECK-LABEL: define %struct.medium @f_medium(%struct.medium* %x)
+// CHECK-LABEL: define %struct._Z6medium @f_medium(%struct._Z6medium* %x)
 struct medium f_medium(struct medium x) {
   x.a += *x.b;
   x.b = 0;
@@ -53,7 +53,7 @@ struct large {
   int x;
 };
 
-// CHECK-LABEL: define void @f_large(%struct.large* noalias sret %agg.result, %struct.large* %x)
+// CHECK-LABEL: define void @f_large(%struct._Z5large* noalias sret %agg.result, %struct._Z5large* %x)
 struct large f_large(struct large x) {
   x.a += *x.b;
   x.b = 0;
@@ -77,7 +77,7 @@ struct mixed {
   float b;
 };
 
-// CHECK-LABEL: define inreg %struct.mixed @f_mixed(i32 inreg %x.coerce0, float inreg %x.coerce1)
+// CHECK-LABEL: define inreg %struct._Z5mixed @f_mixed(i32 inreg %x.coerce0, float inreg %x.coerce1)
 struct mixed f_mixed(struct mixed x) {
   x.a += 1;
   return x;
@@ -155,7 +155,7 @@ int f_variable(char *f, ...) {
 // CHECK: %[[CUR:[^ ]+]] = load i8** %ap
 // CHECK-DAG: %[[NXT:[^ ]+]] = getelementptr i8* %[[CUR]], i32 8
 // CHECK-DAG: store i8* %[[NXT]], i8** %ap
-// CHECK-DAG: %[[ADR:[^ ]+]] = bitcast i8* %[[CUR]] to %struct.tiny*
+// CHECK-DAG: %[[ADR:[^ ]+]] = bitcast i8* %[[CUR]] to %struct._Z4tiny*
 // CHECK: br
   case 't':
     s += va_arg(ap, struct tiny).a;
@@ -164,7 +164,7 @@ int f_variable(char *f, ...) {
 // CHECK: %[[CUR:[^ ]+]] = load i8** %ap
 // CHECK-DAG: %[[NXT:[^ ]+]] = getelementptr i8* %[[CUR]], i32 16
 // CHECK-DAG: store i8* %[[NXT]], i8** %ap
-// CHECK-DAG: %[[ADR:[^ ]+]] = bitcast i8* %[[CUR]] to %struct.small*
+// CHECK-DAG: %[[ADR:[^ ]+]] = bitcast i8* %[[CUR]] to %struct._Z5small*
 // CHECK: br
   case 's':
     s += *va_arg(ap, struct small).a;
@@ -173,8 +173,8 @@ int f_variable(char *f, ...) {
 // CHECK: %[[CUR:[^ ]+]] = load i8** %ap
 // CHECK-DAG: %[[NXT:[^ ]+]] = getelementptr i8* %[[CUR]], i32 8
 // CHECK-DAG: store i8* %[[NXT]], i8** %ap
-// CHECK-DAG: %[[IND:[^ ]+]] = bitcast i8* %[[CUR]] to %struct.medium**
-// CHECK-DAG: %[[ADR:[^ ]+]] = load %struct.medium** %[[IND]]
+// CHECK-DAG: %[[IND:[^ ]+]] = bitcast i8* %[[CUR]] to %struct._Z6medium**
+// CHECK-DAG: %[[ADR:[^ ]+]] = load %struct._Z6medium** %[[IND]]
 // CHECK: br
   case 'm':
     s += *va_arg(ap, struct medium).a;

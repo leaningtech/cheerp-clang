@@ -12,13 +12,13 @@ void vararg(...);
 void test(X x) {
   // CHECK-LABEL: define void @"\01?test@@YAXUX@@@Z"
 
-  // X86: %[[argmem:[^ ]*]] = alloca inalloca <{ %struct.X }>
-  // X86: call void (<{ %struct.X }>*, ...)* bitcast (void (...)* @"\01?vararg@@YAXZZ" to void (<{ %struct.X }>*, ...)*)(<{ %struct.X }>* inalloca %[[argmem]])
+  // X86: %[[argmem:[^ ]*]] = alloca inalloca <{ %"struct.\01?X@@" }>
+  // X86: call void (<{ %"struct.\01?X@@" }>*, ...)* bitcast (void (...)* @"\01?vararg@@YAXZZ" to void (<{ %"struct.\01?X@@" }>*, ...)*)(<{ %"struct.\01?X@@" }>* inalloca %[[argmem]])
 
-  // X64: alloca %struct.X
+  // X64: alloca %"struct.\01?X@@"
 
-  // X64: %[[agg:[^ ]*]] = alloca %struct.X
-  // X64: %[[valptr:[^ ]*]] = getelementptr %struct.X* %[[agg]], i32 0, i32 0
+  // X64: %[[agg:[^ ]*]] = alloca %"struct.\01?X@@"
+  // X64: %[[valptr:[^ ]*]] = getelementptr %"struct.\01?X@@"* %[[agg]], i32 0, i32 0
   // X64: %[[val:[^ ]*]] = load i32* %[[valptr]]
   // X64: call void (...)* @"\01?vararg@@YAXZZ"(i32 %[[val]])
 

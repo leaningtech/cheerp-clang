@@ -2,10 +2,10 @@
 
 struct X { };
 
-// CHECK: @x1 = global %struct.X zeroinitializer
-// CHECK: @x4 = global %struct.X zeroinitializer
-// CHECK: @x2 = external global %struct.X
-// CHECK: @x3 = external global %struct.X
+// CHECK: @x1 = global %struct._Z1X zeroinitializer
+// CHECK: @x4 = global %struct._Z1X zeroinitializer
+// CHECK: @x2 = external global %struct._Z1X
+// CHECK: @x3 = external global %struct._Z1X
 extern "C" {
   X x1;
 }

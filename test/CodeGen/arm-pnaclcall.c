@@ -20,7 +20,7 @@ union simple_union {
   char b;
 };
 // Unions should be passed as byval structs
-// CHECK-LABEL: define void @f50(%union.simple_union* byval %s)
+// CHECK-LABEL: define void @f50(%union._Z12simple_union* byval %s)
 void __attribute__((pnaclcall)) f50(union simple_union s) {}
 
 typedef struct {

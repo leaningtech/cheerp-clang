@@ -20,67 +20,67 @@ extern "C" void foo(void *);
 
 void call_left_no_override(ChildNoOverride *child) {
 // CHECK: define void @"\01?call_left_no_override
-// CHECK: %[[CHILD:.*]] = load %struct.ChildNoOverride
+// CHECK: %[[CHILD:.*]] = load %"struct.\01?ChildNoOverride@@"
 
   child->left();
 // Only need to cast 'this' to Left*.
-// CHECK: %[[LEFT:.*]] = bitcast %struct.ChildNoOverride* %[[CHILD]] to %struct.Left*
-// CHECK: %[[VFPTR:.*]] = getelementptr %struct.Left* %[[LEFT]], i32 0, i32 0
+// CHECK: %[[LEFT:.*]] = bitcast %"struct.\01?ChildNoOverride@@"* %[[CHILD]] to %"struct.\01?Left@@"*
+// CHECK: %[[VFPTR:.*]] = getelementptr %"struct.\01?Left@@"* %[[LEFT]], i32 0, i32 0
 // CHECK: %[[VFTABLE0:.*]] = load i32 (...)*** %[[VFPTR]]
-// CHECK: %[[VFTABLE:.*]] = bitcast i32 (...)** %[[VFTABLE0]] to void (%struct.Left*)**
-// CHECK: %[[VFUN:.*]] = getelementptr inbounds void (%struct.Left*)** %[[VFTABLE]], i64 0
-// CHECK: %[[VFUN_VALUE:.*]] = load void (%struct.Left*)** %[[VFUN]]
-// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](%struct.Left* %[[LEFT]])
+// CHECK: %[[VFTABLE:.*]] = bitcast i32 (...)** %[[VFTABLE0]] to void (%"struct.\01?Left@@"*)**
+// CHECK: %[[VFUN:.*]] = getelementptr inbounds void (%"struct.\01?Left@@"*)** %[[VFTABLE]], i64 0
+// CHECK: %[[VFUN_VALUE:.*]] = load void (%"struct.\01?Left@@"*)** %[[VFUN]]
+// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](%"struct.\01?Left@@"* %[[LEFT]])
 // CHECK: ret
 }
 
 void ChildOverride::left() {
-// CHECK: define x86_thiscallcc void @"\01?left@ChildOverride@@UAEXXZ"(%struct.ChildOverride* %[[THIS:.*]])
+// CHECK: define x86_thiscallcc void @"\01?left@ChildOverride@@UAEXXZ"(%"struct.\01?ChildOverride@@"* %[[THIS:.*]])
 //
 // No need to adjust 'this' as the ChildOverride's layout begins with Left.
-// CHECK: %[[THIS_ADDR:.*]] = alloca %struct.ChildOverride*, align 4
-// CHECK: store %struct.ChildOverride* %[[THIS]], %struct.ChildOverride** %[[THIS_ADDR]], align 4
+// CHECK: %[[THIS_ADDR:.*]] = alloca %"struct.\01?ChildOverride@@"*, align 4
+// CHECK: store %"struct.\01?ChildOverride@@"* %[[THIS]], %"struct.\01?ChildOverride@@"** %[[THIS_ADDR]], align 4
 
   foo(this);
-// CHECK: %[[THIS:.*]] = load %struct.ChildOverride** %[[THIS_ADDR]]
-// CHECK: %[[THIS_i8:.*]] = bitcast %struct.ChildOverride* %[[THIS]] to i8*
+// CHECK: %[[THIS:.*]] = load %"struct.\01?ChildOverride@@"** %[[THIS_ADDR]]
+// CHECK: %[[THIS_i8:.*]] = bitcast %"struct.\01?ChildOverride@@"* %[[THIS]] to i8*
 // CHECK: call void @foo(i8* %[[THIS_i8]])
 // CHECK: ret
 }
 
 void call_left_override(ChildOverride *child) {
 // CHECK: define void @"\01?call_left_override
-// CHECK: %[[CHILD:.*]] = load %struct.ChildOverride
+// CHECK: %[[CHILD:.*]] = load %"struct.\01?ChildOverride@@"
 
   child->left();
-// CHECK: %[[VFPTR:.*]] = getelementptr %struct.ChildOverride* %[[CHILD]], i32 0, i32 0
-// CHECK: %[[VFTABLE0:.*]] = load i32 (...)*** %[[VFPTR]]
-// CHECK: %[[VFTABLE:.*]] = bitcast i32 (...)** %[[VFTABLE0]] to void (%struct.ChildOverride*)**
-// CHECK: %[[VFUN:.*]] = getelementptr inbounds void (%struct.ChildOverride*)** %[[VFTABLE]], i64 0
-// CHECK: %[[VFUN_VALUE:.*]] = load void (%struct.ChildOverride*)** %[[VFUN]]
+// CHECK: %[[VFPTR:.*]] = getelementptr %"struct.\01?ChildOverride@@"* %[[CHILD]], i32 0, i32 0
+// CHECK: %[[VFTABLE:.*]] = bitcast {{.*}} %[[VFPTR]] to void (%"struct.\01?ChildOverride@@"*)***
+// CHECK: %[[VFTABLE0:.*]] = load void (%"struct.\01?ChildOverride@@"*)*** %[[VFTABLE]]
+// CHECK: %[[VFUN:.*]] = getelementptr inbounds void (%"struct.\01?ChildOverride@@"*)** %[[VFTABLE0]], i64 0
+// CHECK: %[[VFUN_VALUE:.*]] = load void (%"struct.\01?ChildOverride@@"*)** %[[VFUN]]
 //
-// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](%struct.ChildOverride* %[[CHILD]])
+// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](%"struct.\01?ChildOverride@@"* %[[CHILD]])
 // CHECK: ret
 }
 
 void call_right_no_override(ChildNoOverride *child) {
 // CHECK: define void @"\01?call_right_no_override
-// CHECK: %[[CHILD:.*]] = load %struct.ChildNoOverride
+// CHECK: %[[CHILD:.*]] = load %"struct.\01?ChildNoOverride@@"
 
   child->right();
 // When calling a right base's virtual method, one needs to adjust 'this' at
 // the caller site.
 //
-// CHECK: %[[CHILD_i8:.*]] = bitcast %struct.ChildNoOverride* %[[CHILD]] to i8*
+// CHECK: %[[CHILD_i8:.*]] = bitcast %"struct.\01?ChildNoOverride@@"* %[[CHILD]] to i8*
 // CHECK: %[[RIGHT_i8:.*]] = getelementptr inbounds i8* %[[CHILD_i8]], i32 4
-// CHECK: %[[RIGHT:.*]] = bitcast i8* %[[RIGHT_i8]] to %struct.Right*
+// CHECK: %[[RIGHT:.*]] = bitcast i8* %[[RIGHT_i8]] to %"struct.\01?Right@@"*
 //
-// CHECK: %[[VFPTR:.*]] = getelementptr %struct.Right* %[[RIGHT]], i32 0, i32 0
+// CHECK: %[[VFPTR:.*]] = getelementptr %"struct.\01?Right@@"* %[[RIGHT]], i32 0, i32 0
 // CHECK: %[[VFTABLE0:.*]] = load i32 (...)*** %[[VFPTR]]
-// CHECK: %[[VFTABLE:.*]] = bitcast i32 (...)** %[[VFTABLE0]] to void (%struct.Right*)**
-// CHECK: %[[VFUN:.*]] = getelementptr inbounds void (%struct.Right*)** %[[VFTABLE]], i64 0
-// CHECK: %[[VFUN_VALUE:.*]] = load void (%struct.Right*)** %[[VFUN]]
-// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](%struct.Right* %[[RIGHT]])
+// CHECK: %[[VFTABLE:.*]] = bitcast i32 (...)** %[[VFTABLE0]] to void (%"struct.\01?Right@@"*)**
+// CHECK: %[[VFUN:.*]] = getelementptr inbounds void (%"struct.\01?Right@@"*)** %[[VFTABLE]], i64 0
+// CHECK: %[[VFUN_VALUE:.*]] = load void (%"struct.\01?Right@@"*)** %[[VFUN]]
+// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](%"struct.\01?Right@@"* %[[RIGHT]])
 // CHECK: ret
 }
 
@@ -90,38 +90,42 @@ void ChildOverride::right() {
 // ChildOverride::right gets 'this' cast to Right* in ECX (i.e. this+4) so we
 // need to adjust 'this' before use.
 //
-// CHECK: %[[THIS_ADDR:.*]] = alloca %struct.ChildOverride*, align 4
+// CHECK: %[[THIS_ADDR:.*]] = alloca %"struct.\01?ChildOverride@@"*, align 4
 // CHECK: %[[THIS_i8:.*]] = getelementptr inbounds i8* %[[ECX:.*]], i32 -4
-// CHECK: %[[THIS:.*]] = bitcast i8* %[[THIS_i8]] to %struct.ChildOverride*
-// CHECK: store %struct.ChildOverride* %[[THIS]], %struct.ChildOverride** %[[THIS_ADDR]], align 4
+// CHECK: %[[THIS:.*]] = bitcast i8* %[[THIS_i8]] to %"struct.\01?ChildOverride@@"*
+// CHECK: store %"struct.\01?ChildOverride@@"* %[[THIS]], %"struct.\01?ChildOverride@@"** %[[THIS_ADDR]], align 4
 
   foo(this);
-// CHECK: %[[THIS:.*]] = load %struct.ChildOverride** %[[THIS_ADDR]]
-// CHECK: %[[THIS_PARAM:.*]] = bitcast %struct.ChildOverride* %[[THIS]] to i8*
+// CHECK: %[[THIS:.*]] = load %"struct.\01?ChildOverride@@"** %[[THIS_ADDR]]
+// CHECK: %[[THIS_PARAM:.*]] = bitcast %"struct.\01?ChildOverride@@"* %[[THIS]] to i8*
 // CHECK: call void @foo(i8* %[[THIS_PARAM]])
 // CHECK: ret
 }
 
 void call_right_override(ChildOverride *child) {
 // CHECK: define void @"\01?call_right_override
-// CHECK: %[[CHILD:.*]] = load %struct.ChildOverride
+// CHECK: %[[CHILD:.*]] = load %"struct.\01?ChildOverride@@"
 
   child->right();
 // When calling a right child's virtual method, one needs to adjust 'this' at
 // the caller site.
 //
-// CHECK: %[[CHILD_i8:.*]] = bitcast %struct.ChildOverride* %[[CHILD]] to i8*
+// CHECK: %[[CHILD_i8:.*]] = bitcast %"struct.\01?ChildOverride@@"* %[[CHILD]] to i8*
 //
 // CHECK: %[[VFPTR_i8:.*]] = getelementptr inbounds i8* %[[CHILD_i8]], i32 4
-// CHECK: %[[VFPTR:.*]] = bitcast i8* %[[VFPTR_i8]] to void (i8*)***
-// CHECK: %[[VFTABLE:.*]] = load void (i8*)*** %[[VFPTR]]
+// CHECK: %[[VFPTR:.*]] = bitcast {{.*}} %[[VFPTR_i8]] to
+// CHECK: %[[VFPTR_GEP:.*]] = getelementptr {{.*}} %[[VFPTR]]
+// CHECK: %[[VFPTR2:.*]] = bitcast {{.*}} %[[VFPTR_GEP]] to
+// CHECK: %[[VFTABLE:.*]] = load void (i8*)*** %[[VFPTR2]]
 // CHECK: %[[VFUN:.*]] = getelementptr inbounds void (i8*)** %[[VFTABLE]], i64 0
 // CHECK: %[[VFUN_VALUE:.*]] = load void (i8*)** %[[VFUN]]
 //
-// CHECK: %[[CHILD_i8:.*]] = bitcast %struct.ChildOverride* %[[CHILD]] to i8*
+// CHECK: %[[CHILD_i8:.*]] = bitcast %"struct.\01?ChildOverride@@"* %[[CHILD]] to i8*
 // CHECK: %[[RIGHT:.*]] = getelementptr inbounds i8* %[[CHILD_i8]], i32 4
+// CHECK: %[[RIGHT1:.*]] = bitcast {{.*}} %[[RIGHT]] to
+// CHECK: %[[RIGHT2:.*]] = bitcast {{.*}} %[[RIGHT1]] to
 //
-// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](i8* %[[RIGHT]])
+// CHECK: call x86_thiscallcc void %[[VFUN_VALUE]](i8* %[[RIGHT2]])
 // CHECK: ret
 }
 
@@ -132,14 +136,14 @@ struct GrandchildOverride : ChildOverride {
 void GrandchildOverride::right() {
 // CHECK: define x86_thiscallcc void @"\01?right@GrandchildOverride@@UAEXXZ"(i8*
 //
-// CHECK: %[[THIS_ADDR:.*]] = alloca %struct.GrandchildOverride*, align 4
+// CHECK: %[[THIS_ADDR:.*]] = alloca %"struct.\01?GrandchildOverride@@"*, align 4
 // CHECK: %[[THIS_i8:.*]] = getelementptr inbounds i8* %[[ECX:.*]], i32 -4
-// CHECK: %[[THIS:.*]] = bitcast i8* %[[THIS_i8]] to %struct.GrandchildOverride*
-// CHECK: store %struct.GrandchildOverride* %[[THIS]], %struct.GrandchildOverride** %[[THIS_ADDR]], align 4
+// CHECK: %[[THIS:.*]] = bitcast i8* %[[THIS_i8]] to %"struct.\01?GrandchildOverride@@"*
+// CHECK: store %"struct.\01?GrandchildOverride@@"* %[[THIS]], %"struct.\01?GrandchildOverride@@"** %[[THIS_ADDR]], align 4
 
   foo(this);
-// CHECK: %[[THIS:.*]] = load %struct.GrandchildOverride** %[[THIS_ADDR]]
-// CHECK: %[[THIS_PARAM:.*]] = bitcast %struct.GrandchildOverride* %[[THIS]] to i8*
+// CHECK: %[[THIS:.*]] = load %"struct.\01?GrandchildOverride@@"** %[[THIS_ADDR]]
+// CHECK: %[[THIS_PARAM:.*]] = bitcast %"struct.\01?GrandchildOverride@@"* %[[THIS]] to i8*
 // CHECK: call void @foo(i8* %[[THIS_PARAM]])
 // CHECK: ret
 }
@@ -164,10 +168,10 @@ void emit_ctors() {
 
   ChildOverride co;
   // CHECK: define {{.*}} @"\01??0ChildOverride@@QAE@XZ"
-  // CHECK:   %[[THIS:.*]] = load %struct.ChildOverride**
-  // CHECK:   %[[VFPTR:.*]] = bitcast %struct.ChildOverride* %[[THIS]] to i32 (...)***
+  // CHECK:   %[[THIS:.*]] = load %"struct.\01?ChildOverride@@"**
+  // CHECK:   %[[VFPTR:.*]] = bitcast %"struct.\01?ChildOverride@@"* %[[THIS]] to i32 (...)***
   // CHECK:   store i32 (...)** bitcast ([1 x i8*]* @"\01??_7ChildOverride@@6BLeft@@@" to i32 (...)**), i32 (...)*** %[[VFPTR]]
-  // CHECK:   %[[THIS_i8:.*]] = bitcast %struct.ChildOverride* %[[THIS]] to i8*
+  // CHECK:   %[[THIS_i8:.*]] = bitcast %"struct.\01?ChildOverride@@"* %[[THIS]] to i8*
   // CHECK:   %[[VFPTR_i8:.*]] = getelementptr inbounds i8* %[[THIS_i8]], i32 4
   // CHECK:   %[[VFPTR:.*]] = bitcast i8* %[[VFPTR_i8]] to i32 (...)***
   // CHECK:   store i32 (...)** bitcast ([1 x i8*]* @"\01??_7ChildOverride@@6BRight@@@" to i32 (...)**), i32 (...)*** %[[VFPTR]]
@@ -175,10 +179,10 @@ void emit_ctors() {
 
   GrandchildOverride gc;
   // CHECK: define {{.*}} @"\01??0GrandchildOverride@@QAE@XZ"
-  // CHECK:   %[[THIS:.*]] = load %struct.GrandchildOverride**
-  // CHECK:   %[[VFPTR:.*]] = bitcast %struct.GrandchildOverride* %[[THIS]] to i32 (...)***
+  // CHECK:   %[[THIS:.*]] = load %"struct.\01?GrandchildOverride@@"**
+  // CHECK:   %[[VFPTR:.*]] = bitcast %"struct.\01?GrandchildOverride@@"* %[[THIS]] to i32 (...)***
   // CHECK:   store i32 (...)** bitcast ([1 x i8*]* @"\01??_7GrandchildOverride@@6BLeft@@@" to i32 (...)**), i32 (...)*** %[[VFPTR]]
-  // CHECK:   %[[THIS_i8:.*]] = bitcast %struct.GrandchildOverride* %[[THIS]] to i8*
+  // CHECK:   %[[THIS_i8:.*]] = bitcast %"struct.\01?GrandchildOverride@@"* %[[THIS]] to i8*
   // CHECK:   %[[VFPTR_i8:.*]] = getelementptr inbounds i8* %[[THIS_i8]], i32 4
   // CHECK:   %[[VFPTR:.*]] = bitcast i8* %[[VFPTR_i8]] to i32 (...)***
   // CHECK:   store i32 (...)** bitcast ([1 x i8*]* @"\01??_7GrandchildOverride@@6BRight@@@" to i32 (...)**), i32 (...)*** %[[VFPTR]]
@@ -197,8 +201,8 @@ struct AsymmetricChild : LeftWithNonVirtualDtor, Right {
 void call_asymmetric_child_complete_dtor() {
   // CHECK-LABEL: define void @"\01?call_asymmetric_child_complete_dtor@@YAXXZ"
   AsymmetricChild obj;
-  // CHECK: call x86_thiscallcc %struct.AsymmetricChild* @"\01??0AsymmetricChild@@QAE@XZ"(%struct.AsymmetricChild* %[[OBJ:.*]])
+  // CHECK: call x86_thiscallcc %"struct.\01?AsymmetricChild@@"* @"\01??0AsymmetricChild@@QAE@XZ"(%"struct.\01?AsymmetricChild@@"* %[[OBJ:.*]])
   // CHECK-NOT: getelementptr
-  // CHECK: call x86_thiscallcc void @"\01??1AsymmetricChild@@UAE@XZ"(%struct.AsymmetricChild* %[[OBJ]])
+  // CHECK: call x86_thiscallcc void @"\01??1AsymmetricChild@@UAE@XZ"(%"struct.\01?AsymmetricChild@@"* %[[OBJ]])
   // CHECK: ret
 }

@@ -42,4 +42,4 @@ template struct ClassTemplate<&MostGeneral::h>;
 
 // Test that we mangle in the vbptr offset, which is 12 here.
 //
-// CHECK: define weak_odr x86_thiscallcc %struct.ClassTemplate* @"\01??0?$ClassTemplate@$J??_9MostGeneral@@$BA@AEA@M@3@@QAE@XZ"
+// CHECK: define weak_odr x86_thiscallcc %"struct.\01??$ClassTemplate@$J??_9MostGeneral@@$BA@AEA@M@3@@"* @"\01??0?$ClassTemplate@$J??_9MostGeneral@@$BA@AEA@M@3@@QAE@XZ"

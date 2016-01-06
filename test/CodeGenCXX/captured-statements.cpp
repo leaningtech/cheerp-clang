@@ -29,12 +29,12 @@ struct TestClass {
 void test1() {
   TestClass c;
   c.MemberFunc();
-  // CHECK-1: %[[Capture:struct\.anon[\.0-9]*]] = type { %struct.Foo*, %struct.TestClass* }
+  // CHECK-1: %[[Capture:struct\.[0-9A-Za-z_]*]] = type { %struct._Z3Foo*, %struct._Z9TestClass* }
 
   // CHECK-1: define {{.*}} void @_ZN9TestClass10MemberFuncEv
-  // CHECK-1:   alloca %struct.anon
+  // CHECK-1:   alloca %struct._ZZN9TestClass10MemberFuncEvEUt_
   // CHECK-1:   getelementptr inbounds %[[Capture]]* %{{[^,]*}}, i32 0, i32 0
-  // CHECK-1:   store %struct.Foo* %f, %struct.Foo**
+  // CHECK-1:   store %struct._Z3Foo* %f, %struct._Z3Foo**
   // CHECK-1:   getelementptr inbounds %[[Capture]]* %{{[^,]*}}, i32 0, i32 1
   // CHECK-1:   call void @[[HelperName:[A-Za-z0-9_]+]](%[[Capture]]*
   // CHECK-1:   call {{.*}}FooD1Ev
@@ -43,7 +43,7 @@ void test1() {
 
 // CHECK-1: define internal void @[[HelperName]]
 // CHECK-1:   getelementptr inbounds %[[Capture]]* {{[^,]*}}, i32 0, i32 1
-// CHECK-1:   getelementptr inbounds %struct.TestClass* {{[^,]*}}, i32 0, i32 0
+// CHECK-1:   getelementptr inbounds %struct._Z9TestClass* {{[^,]*}}, i32 0, i32 0
 // CHECK-1:   getelementptr inbounds %[[Capture]]* {{[^,]*}}, i32 0, i32 0
 
 void test2(int x) {
@@ -73,7 +73,7 @@ void test3(int x) {
     x = [=]() { return x + 1; } ();
   }
 
-  // CHECK-3: %[[Capture:struct\.anon[\.0-9]*]] = type { i32* }
+  // CHECK-3: %[[Capture:struct\.[0-9A-Za-z_]*]] = type { i32* }
 
   // CHECK-3-LABEL: define void @_Z5test3i
   // CHECK-3:   store i32*
@@ -138,7 +138,7 @@ void test_capture_var() {
 
   // CHECK-5: define {{.*}} void @_ZN3ValIfLi202EE3setEv
   // CHECK-5-NOT: }
-  // CHECK-5: store %class.Val*
+  // CHECK-5: store %class._Z3ValIfLi202EE*
   // CHECK-5: call void @__captured_stmt
   // CHECK-5-NEXT: ret void
   Val<float, 202> Obj;
@@ -146,7 +146,7 @@ void test_capture_var() {
 
   // CHECK-5: define {{.*}} void @_ZN3ValIfLi202EE3fooIdLi203EEEvT_
   // CHECK-5-NOT: }
-  // CHECK-5: store %class.Val*
+  // CHECK-5: store %class._Z3ValIfLi202EE*
   // CHECK-5: store double
   // CHECK-5: call void @__captured_stmt
   // CHECK-5-NEXT: ret void

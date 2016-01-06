@@ -19,10 +19,10 @@ int f() {
   // CHECK-NEXT: [[I:%[a-z0-9]+]] = getelementptr inbounds {{.*}}* [[LVALUE]], i32 0, i32 0
   // CHECK-NEXT: store i32 17, i32* [[I]]
   // CHECK-NEXT: [[X:%[a-z0-9]+]] = getelementptr inbounds {{.*}} [[LVALUE]], i32 0, i32 1
-  // CHECK-NEXT: call %struct.X* @_ZN1XC1EPKc({{.*}}[[X]]
+  // CHECK-NEXT: call %struct._Z1X* @_ZN1XC1EPKc({{.*}}[[X]]
   // CHECK-NEXT: [[I:%[a-z0-9]+]] = getelementptr inbounds {{.*}} [[LVALUE]], i32 0, i32 0
   // CHECK-NEXT: [[RESULT:%[a-z0-9]+]] = load i32*
-  // CHECK-NEXT: call %struct.Y* @_ZN1YD1Ev
+  // CHECK-NEXT: call %struct._Z1Y* @_ZN1YD1Ev
   // CHECK-NEXT: call void @llvm.lifetime.end
   // CHECK-NEXT: ret i32 [[RESULT]]
   return ((Y){17, "seventeen"}).i;
@@ -43,7 +43,7 @@ int g() {
 struct Z { int i[3]; };
 int *p = (Z){ {1, 2, 3} }.i;
 // CHECK: define {{.*}}__cxx_global_var_init()
-// CHECK: store i32* getelementptr inbounds (%struct.Z* @.compoundliteral, i32 0, i32 0, i32 0), i32** @p
+// CHECK: store i32* getelementptr inbounds (%struct._Z1Z* @.compoundliteral, i32 0, i32 0, i32 0), i32** @p
 
 
 int *PR21912_1 = (int []){};
@@ -56,4 +56,4 @@ union PR21912Ty {
 };
 union PR21912Ty *PR21912_2 = (union PR21912Ty[]){{.d = 2.0}, {.l = 3}};
 // CHECK-LABEL: define {{.*}}__cxx_global_var_init3()
-// CHECK: store %union.PR21912Ty* getelementptr inbounds ([2 x %union.PR21912Ty]* bitcast (<{ { double }, %union.PR21912Ty }>* @.compoundliteral4 to [2 x %union.PR21912Ty]*), i32 0, i32 0), %union.PR21912Ty** @PR21912_2
+// CHECK: store %union._Z9PR21912Ty* getelementptr inbounds ([2 x %union._Z9PR21912Ty]* bitcast (<{ { double }, %union._Z9PR21912Ty }>* @.compoundliteral4 to [2 x %union._Z9PR21912Ty]*), i32 0, i32 0), %union._Z9PR21912Ty** @PR21912_2

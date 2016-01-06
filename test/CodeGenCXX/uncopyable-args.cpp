@@ -11,7 +11,7 @@ void bar() {
   foo({});
 }
 // CHECK-LABEL: define void @_ZN7trivial3barEv()
-// CHECK: alloca %"struct.trivial::A"
+// CHECK: alloca %struct._ZN7trivial1AE
 // CHECK: load i8**
 // CHECK: call void @_ZN7trivial3fooENS_1AE(i8* %{{.*}})
 // CHECK-LABEL: declare void @_ZN7trivial3fooENS_1AE(i8*)
@@ -31,7 +31,7 @@ void bar() {
   foo({});
 }
 // CHECK-LABEL: define void @_ZN12default_ctor3barEv()
-// CHECK: alloca %"struct.default_ctor::A"
+// CHECK: alloca %struct._ZN12default_ctor1AE
 // CHECK: call void @_Z{{.*}}C1Ev(
 // CHECK: load i8**
 // CHECK: call void @_ZN12default_ctor3fooENS_1AE(i8* %{{.*}})
@@ -59,7 +59,7 @@ void bar() {
 // CHECK-DISABLED: call void @_ZN9move_ctor3fooENS_1AE(%"struct.move_ctor::A"* %{{.*}})
 // CHECK-DISABLED-LABEL: declare void @_ZN9move_ctor3fooENS_1AE(%"struct.move_ctor::A"*)
 
-// WIN64-LABEL: declare void @"\01?foo@move_ctor@@YAXUA@1@@Z"(%"struct.move_ctor::A"*)
+// WIN64-LABEL: declare void @"\01?foo@move_ctor@@YAXUA@1@@Z"(%"struct.\01?A@move_ctor@@"*)
 }
 
 namespace all_deleted {
@@ -80,7 +80,7 @@ void bar() {
 // CHECK-DISABLED: call void @_ZN11all_deleted3fooENS_1AE(%"struct.all_deleted::A"* %{{.*}})
 // CHECK-DISABLED-LABEL: declare void @_ZN11all_deleted3fooENS_1AE(%"struct.all_deleted::A"*)
 
-// WIN64-LABEL: declare void @"\01?foo@all_deleted@@YAXUA@1@@Z"(%"struct.all_deleted::A"*)
+// WIN64-LABEL: declare void @"\01?foo@all_deleted@@YAXUA@1@@Z"(%"struct.\01?A@all_deleted@@"*)
 }
 
 namespace implicitly_deleted {
@@ -100,7 +100,7 @@ void bar() {
 // CHECK-DISABLED: call void @_ZN18implicitly_deleted3fooENS_1AE(%"struct.implicitly_deleted::A"* %{{.*}})
 // CHECK-DISABLED-LABEL: declare void @_ZN18implicitly_deleted3fooENS_1AE(%"struct.implicitly_deleted::A"*)
 
-// WIN64-LABEL: declare void @"\01?foo@implicitly_deleted@@YAXUA@1@@Z"(%"struct.implicitly_deleted::A"*)
+// WIN64-LABEL: declare void @"\01?foo@implicitly_deleted@@YAXUA@1@@Z"(%"struct.\01?A@implicitly_deleted@@"*)
 }
 
 namespace one_deleted {
@@ -120,7 +120,7 @@ void bar() {
 // CHECK-DISABLED: call void @_ZN11one_deleted3fooENS_1AE(%"struct.one_deleted::A"* %{{.*}})
 // CHECK-DISABLED-LABEL: declare void @_ZN11one_deleted3fooENS_1AE(%"struct.one_deleted::A"*)
 
-// WIN64-LABEL: declare void @"\01?foo@one_deleted@@YAXUA@1@@Z"(%"struct.one_deleted::A"*)
+// WIN64-LABEL: declare void @"\01?foo@one_deleted@@YAXUA@1@@Z"(%"struct.\01?A@one_deleted@@"*)
 }
 
 namespace copy_defaulted {
@@ -160,7 +160,7 @@ void bar() {
 // CHECK: call void @_ZN14move_defaulted3fooENS_1AE(i8* %{{.*}})
 // CHECK-LABEL: declare void @_ZN14move_defaulted3fooENS_1AE(i8*)
 
-// WIN64-LABEL: declare void @"\01?foo@move_defaulted@@YAXUA@1@@Z"(%"struct.move_defaulted::A"*)
+// WIN64-LABEL: declare void @"\01?foo@move_defaulted@@YAXUA@1@@Z"(%"struct.\01?A@move_defaulted@@"*)
 }
 
 namespace trivial_defaulted {
@@ -202,5 +202,5 @@ void bar() {
 // CHECK-DISABLED: call void @_ZN14two_copy_ctors3fooENS_1BE(%"struct.two_copy_ctors::B"* %{{.*}})
 // CHECK-DISABLED-LABEL: declare void @_ZN14two_copy_ctors3fooENS_1BE(%"struct.two_copy_ctors::B"*)
 
-// WIN64-LABEL: declare void @"\01?foo@two_copy_ctors@@YAXUB@1@@Z"(%"struct.two_copy_ctors::B"*)
+// WIN64-LABEL: declare void @"\01?foo@two_copy_ctors@@YAXUB@1@@Z"(%"struct.\01?B@two_copy_ctors@@"*)
 }

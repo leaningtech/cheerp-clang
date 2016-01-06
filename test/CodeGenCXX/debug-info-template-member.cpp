@@ -65,7 +65,7 @@ inline void func() {
 
 outer<foo>::inner x;
 
-// CHECK:  !"0x34\00{{.*}}", {{.*}}, !"[[OUTER_FOO_INNER_ID]]", %"struct.outer<foo>::inner"* @x, {{.*}} ; [ DW_TAG_variable ] [x]
+// CHECK:  !"0x34\00{{.*}}", {{.*}}, !"[[OUTER_FOO_INNER_ID]]", %struct._ZN5outerI3fooE5innerE* @x, {{.*}} ; [ DW_TAG_variable ] [x]
 
 template <typename T>
 struct virt {

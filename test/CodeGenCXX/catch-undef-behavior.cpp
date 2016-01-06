@@ -357,16 +357,16 @@ class C : public A, public B // align=16
 // offset. The pointer before subtraction doesn't need to be aligned for
 // the destination type.
 
-// CHECK-LABEL: define void @_Z16downcast_pointerP1B(%class.B* %b)
+// CHECK-LABEL: define void @_Z16downcast_pointerP1B(%class._Z1B* %b)
 void downcast_pointer(B *b) {
   (void) static_cast<C*>(b);
   // Alignment check from EmitTypeCheck(TCK_DowncastPointer, ...)
   // CHECK: [[SUB:%[.a-z0-9]*]] = getelementptr i8* {{.*}}, i64 -16
-  // CHECK-NEXT: [[C:%[0-9]*]] = bitcast i8* [[SUB]] to %class.C*
+  // CHECK-NEXT: [[C:%[0-9]*]] = bitcast i8* [[SUB]] to %class._Z1C*
   // null check goes here
-  // CHECK: [[FROM_PHI:%[0-9]*]] = phi %class.C* [ [[C]], {{.*}} ], {{.*}}
+  // CHECK: [[FROM_PHI:%[0-9]*]] = phi %class._Z1C* [ [[C]], {{.*}} ], {{.*}}
   // Objectsize check goes here
-  // CHECK: [[C_INT:%[0-9]*]] = ptrtoint %class.C* [[FROM_PHI]] to i64
+  // CHECK: [[C_INT:%[0-9]*]] = ptrtoint %class._Z1C* [[FROM_PHI]] to i64
   // CHECK-NEXT: [[MASKED:%[0-9]*]] = and i64 [[C_INT]], 15
   // CHECK-NEXT: [[TEST:%[0-9]*]] = icmp eq i64 [[MASKED]], 0
   // AND the alignment test with the objectsize test.
@@ -374,14 +374,14 @@ void downcast_pointer(B *b) {
   // CHECK-NEXT: br i1 [[AND]]
 }
 
-// CHECK-LABEL: define void @_Z18downcast_referenceR1B(%class.B* dereferenceable({{[0-9]+}}) %b)
+// CHECK-LABEL: define void @_Z18downcast_referenceR1B(%class._Z1B* dereferenceable({{[0-9]+}}) %b)
 void downcast_reference(B &b) {
   (void) static_cast<C&>(b);
   // Alignment check from EmitTypeCheck(TCK_DowncastReference, ...)
   // CHECK:      [[SUB:%[.a-z0-9]*]] = getelementptr i8* {{.*}}, i64 -16
-  // CHECK-NEXT: [[C:%[0-9]*]] = bitcast i8* [[SUB]] to %class.C*
+  // CHECK-NEXT: [[C:%[0-9]*]] = bitcast i8* [[SUB]] to %class._Z1C*
   // Objectsize check goes here
-  // CHECK:      [[C_INT:%[0-9]*]] = ptrtoint %class.C* [[C]] to i64
+  // CHECK:      [[C_INT:%[0-9]*]] = ptrtoint %class._Z1C* [[C]] to i64
   // CHECK-NEXT: [[MASKED:%[0-9]*]] = and i64 [[C_INT]], 15
   // CHECK-NEXT: [[TEST:%[0-9]*]] = icmp eq i64 [[MASKED]], 0
   // AND the alignment test with the objectsize test.

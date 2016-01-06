@@ -28,7 +28,7 @@ int t3() {
   }
   return foo.b;
 // CHECK: t3
-// CHECK: call void asm sideeffect inteldialect "lea ebx, qword ptr $0\0A\09mov eax, [ebx].0\0A\09mov [ebx].4, ecx", "*m,~{eax},~{ebx},~{dirflag},~{fpsr},~{flags}"(%struct.t3_type* %{{.*}})
+// CHECK: call void asm sideeffect inteldialect "lea ebx, qword ptr $0\0A\09mov eax, [ebx].0\0A\09mov [ebx].4, ecx", "*m,~{eax},~{ebx},~{dirflag},~{fpsr},~{flags}"(%struct._Z7t3_type* %{{.*}})
 }
 
 int t4() {
@@ -44,5 +44,5 @@ int t4() {
   }
   return foo.b;
 // CHECK: t4
-// CHECK: call void asm sideeffect inteldialect "lea ebx, qword ptr $0\0A\09mov eax, [ebx].0\0A\09mov [ebx].4, ecx", "*m,~{eax},~{ebx},~{dirflag},~{fpsr},~{flags}"(%struct.t3_type* %{{.*}})
+// CHECK: call void asm sideeffect inteldialect "lea ebx, qword ptr $0\0A\09mov eax, [ebx].0\0A\09mov [ebx].4, ecx", "*m,~{eax},~{ebx},~{dirflag},~{fpsr},~{flags}"(%struct._Z7t3_type* %{{.*}})
 }

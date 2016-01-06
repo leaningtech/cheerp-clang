@@ -10,10 +10,10 @@ S::S() {
   iField = 1;
 };
 
-// CHECK: %struct.S* @_ZN1SC2Ev(%struct.S* returned %this)
+// CHECK: %struct._Z1S* @_ZN1SC2Ev(%struct._Z1S* returned %this)
 
-// CHECK: %struct.S* @_ZN1SC1Ev(%struct.S* returned %this)
-// CHECK: [[THISADDR:%[a-zA-z0-9.]+]] = alloca %struct.S*
-// CHECK: store %struct.S* %this, %struct.S** [[THISADDR]]
-// CHECK: [[THIS1:%.*]] = load %struct.S** [[THISADDR]]
-// CHECK: ret %struct.S* [[THIS1]]
+// CHECK: %struct._Z1S* @_ZN1SC1Ev(%struct._Z1S* returned %this)
+// CHECK: [[THISADDR:%[a-zA-z0-9.]+]] = alloca %struct._Z1S*
+// CHECK: store %struct._Z1S* %this, %struct._Z1S** [[THISADDR]]
+// CHECK: [[THIS1:%.*]] = load %struct._Z1S** [[THISADDR]]
+// CHECK: ret %struct._Z1S* [[THIS1]]

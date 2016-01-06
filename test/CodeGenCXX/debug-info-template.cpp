@@ -26,7 +26,7 @@
 // use it (GCC doesn't emit a value for pointers to member functions either - so
 // it's not clear what, if any, format would be acceptable to GDB)
 //
-// CHECK: [[TCARG5]] = !{!"0x30\00b\00{{.*}}", {{[^,]+}}, [[MEMFUNPTR:![0-9]*]], %memberptr { i64 ptrtoint (void (%struct.foo*)* @_ZN3foo1fEv to i64), i64 0 }, {{.*}} ; [ DW_TAG_template_value_parameter ]
+// CHECK: [[TCARG5]] = !{!"0x30\00b\00{{.*}}", {{[^,]+}}, [[MEMFUNPTR:![0-9]*]], %memberptr { i64 ptrtoint (void (%struct._Z3foo*)* @_ZN3foo1fEv to i64), i64 0 }, {{.*}} ; [ DW_TAG_template_value_parameter ]
 // CHECK: [[MEMFUNPTR]] = {{.*}}, [[FTYPE:![0-9]*]], !"_ZTS3foo"} ; [ DW_TAG_ptr_to_member_type ]
 // CHECK: [[FTYPE]] = {{.*}}, [[FARGS:![0-9]*]], null, null, null} ; [ DW_TAG_subroutine_type ]
 // CHECK: [[FARGS]] = !{null, [[FARG1:![0-9]*]]}
@@ -83,14 +83,14 @@
 
 // CHECK: [[PTOARGS:![0-9]*]], !"{{.*}}"} ; [ DW_TAG_structure_type ] [PaddingAtEndTemplate<&PaddedObj>]
 // CHECK: [[PTOARGS]] = !{[[PTOARG1:![0-9]*]]}
-// CHECK: [[PTOARG1]] = !{!"0x30\00\000\000", null, [[CONST_PADDINGATEND_PTR:![0-9]*]], %struct.PaddingAtEnd* @PaddedObj, null} ; [ DW_TAG_template_value_parameter ]
+// CHECK: [[PTOARG1]] = !{!"0x30\00\000\000", null, [[CONST_PADDINGATEND_PTR:![0-9]*]], %struct._Z12PaddingAtEnd* @PaddedObj, null} ; [ DW_TAG_template_value_parameter ]
 // CHECK: [[CONST_PADDINGATEND_PTR]] = {{.*}} ; [ DW_TAG_pointer_type ] [line 0, size 64, align 64, offset 0] [from _ZTS12PaddingAtEnd]
 
-// CHECK: !"[[TCNESTED]]", %"struct.TC<unsigned int, 2, &glb, &foo::e, &foo::f, &foo::g, 1, 2, 3>::nested"* @tci, null} ; [ DW_TAG_variable ] [tci]
+// CHECK: !"[[TCNESTED]]", %struct._ZN2TCIjLj2EXadL_Z3glbEEXadL_ZN3foo1eEEEXadL_ZNS0_1fEvEEXadL_ZNS0_1gEvEEJLi1ELi2ELi3EEE6nestedE* @tci, null} ; [ DW_TAG_variable ] [tci]
 
-// CHECK: !"[[TCNT]]", %struct.TC* @tcn, null} ; [ DW_TAG_variable ] [tcn]
+// CHECK: !"[[TCNT]]", %struct._Z2TCIiLin3ELPKi0ELM3fooi0ELMS2_FvvE0ELPFvvE0EJEE* @tcn, null} ; [ DW_TAG_variable ] [tcn]
 
-// CHECK: !"[[NNT]]", %struct.NN* @nn, null} ; [ DW_TAG_variable ] [nn]
+// CHECK: !"[[NNT]]", %struct._Z2NNI9tmpl_implLZ3glbELZ3glbEE* @nn, null} ; [ DW_TAG_variable ] [nn]
 struct foo {
   char pad[8]; // make the member pointer to 'e' a bit more interesting (nonzero)
   int e;

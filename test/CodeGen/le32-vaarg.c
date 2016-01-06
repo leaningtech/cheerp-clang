@@ -18,11 +18,11 @@ void get_struct(va_list *args) {
   dest = va_arg(*args, struct Foo);
 }
 // CHECK: define void @get_struct
-// CHECK: [[RESULT:%[a-z_0-9]+]] = va_arg {{.*}}, %struct.Foo{{$}}
-// CHECK: store %struct.Foo [[RESULT]], %struct.Foo* @dest
+// CHECK: [[RESULT:%[a-z_0-9]+]] = va_arg {{.*}}, %struct._Z3Foo{{$}}
+// CHECK: store %struct._Z3Foo [[RESULT]], %struct._Z3Foo* @dest
 
 void skip_struct(va_list *args) {
   va_arg(*args, struct Foo);
 }
 // CHECK: define void @skip_struct
-// CHECK: va_arg {{.*}}, %struct.Foo{{$}}
+// CHECK: va_arg {{.*}}, %struct._Z3Foo{{$}}

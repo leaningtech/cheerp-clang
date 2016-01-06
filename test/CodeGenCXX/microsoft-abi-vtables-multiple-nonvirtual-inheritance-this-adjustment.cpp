@@ -159,9 +159,11 @@ void ffun(C &c) {
   // BITCODE: load
   // BITCODE: bitcast
   // BITCODE: bitcast
-  // BITCODE: [[THIS1:%.+]] = bitcast %"struct.test4::C"* {{.*}} to i8*
+  // BITCODE: [[THIS1:%.+]] = bitcast %"struct.\01?C@test4@@"* {{.*}} to i8*
   // BITCODE: [[THIS2:%.+]] = getelementptr inbounds i8* [[THIS1]], i32 4
-  // BITCODE-NEXT: call x86_thiscallcc {{.*}}(i8* [[THIS2]])
+  // BITCODE: [[THIS3:%.+]] = bitcast {{.*}} [[THIS2]] to
+  // BITCODE: [[THIS4:%.+]] = bitcast {{.*}} [[THIS3]] to
+  // BITCODE-NEXT: call x86_thiscallcc {{.*}}(i8* [[THIS4]])
   c.bar();
 }
 
@@ -170,9 +172,11 @@ void fop(C &c) {
   // BITCODE: load
   // BITCODE: bitcast
   // BITCODE: bitcast
-  // BITCODE: [[THIS1:%.+]] = bitcast %"struct.test4::C"* {{.*}} to i8*
+  // BITCODE: [[THIS1:%.+]] = bitcast %"struct.\01?C@test4@@"* {{.*}} to i8*
   // BITCODE: [[THIS2:%.+]] = getelementptr inbounds i8* [[THIS1]], i32 4
-  // BITCODE-NEXT: call x86_thiscallcc {{.*}}(i8* [[THIS2]])
+  // BITCODE: [[THIS3:%.+]] = bitcast {{.*}} [[THIS2]] to
+  // BITCODE: [[THIS4:%.+]] = bitcast {{.*}} [[THIS3]] to
+  // BITCODE-NEXT: call x86_thiscallcc {{.*}}(i8* [[THIS4]])
   -c;
 }
 

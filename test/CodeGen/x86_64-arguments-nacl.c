@@ -61,14 +61,14 @@ void f12_1(struct s12 a0) {}
 
 // Check that sret parameter is accounted for when checking available integer
 // registers.
-// CHECK: define void @f13(%struct.s13_0* noalias sret %agg.result, i32 %a, i32 %b, i32 %c, i32 %d, {{.*}}* byval align 8 %e, i32 %f)
+// CHECK: define void @f13(%struct._Z5s13_0* noalias sret %agg.result, i32 %a, i32 %b, i32 %c, i32 %d, {{.*}}* byval align 8 %e, i32 %f)
 
 struct s13_0 { long long f0[3]; };
 struct s13_1 { long long f0[2]; };
 struct s13_0 f13(int a, int b, int c, int d,
                  struct s13_1 e, int f) { while (1) {} }
 
-// CHECK-LABEL: define void @f20(%struct.s20* byval align 32 %x)
+// CHECK-LABEL: define void @f20(%struct._Z3s20* byval align 32 %x)
 struct __attribute__((aligned(32))) s20 {
   int x;
   int y;
@@ -107,7 +107,7 @@ union simple_union {
   char b;
 };
 // Unions should be passed as byval structs
-// CHECK-LABEL: define void @f50(%union.simple_union* byval %s)
+// CHECK-LABEL: define void @f50(%union._Z12simple_union* byval %s)
 void __attribute__((pnaclcall)) f50(union simple_union s) {}
 
 typedef struct {

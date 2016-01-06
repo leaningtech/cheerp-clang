@@ -350,7 +350,7 @@ namespace VirtualMembers {
   struct nsMemoryImpl {
     virtual void f();
   };
-  // CHECK: @_ZN14VirtualMembersL13sGlobalMemoryE = internal global %"struct.VirtualMembers::nsMemoryImpl" { i32 (...)** bitcast (i8** getelementptr inbounds ([3 x i8*]* @_ZTVN14VirtualMembers12nsMemoryImplE, i64 0, i64 2) to i32 (...)**) }
+  // CHECK: @_ZN14VirtualMembersL13sGlobalMemoryE = internal global %struct._ZN14VirtualMembers12nsMemoryImplE { i32 (...)** bitcast (i8** getelementptr inbounds ([3 x i8*]* @_ZTVN14VirtualMembers12nsMemoryImplE, i64 0, i64 2) to i32 (...)**) }
   static nsMemoryImpl sGlobalMemory;
 }
 
@@ -532,13 +532,13 @@ namespace InitFromConst {
     // CHECK: call void @_ZN13InitFromConst7consumeIdEEvT_(double 4.300000e+00)
     consume(d);
 
-    // CHECK: call void @_ZN13InitFromConst7consumeIRKNS_1SEEEvT_(%"struct.InitFromConst::S"* dereferenceable({{[0-9]+}}) @_ZN13InitFromConstL1sE)
+    // CHECK: call void @_ZN13InitFromConst7consumeIRKNS_1SEEEvT_(%struct._ZN13InitFromConst1SE* dereferenceable({{[0-9]+}}) @_ZN13InitFromConstL1sE)
     consume<const S&>(s);
 
-    // CHECK: call void @_ZN13InitFromConst7consumeIRKNS_1SEEEvT_(%"struct.InitFromConst::S"* dereferenceable({{[0-9]+}}) @_ZN13InitFromConstL1sE)
+    // CHECK: call void @_ZN13InitFromConst7consumeIRKNS_1SEEEvT_(%struct._ZN13InitFromConst1SE* dereferenceable({{[0-9]+}}) @_ZN13InitFromConstL1sE)
     consume<const S&>(r);
 
-    // CHECK: call void @_ZN13InitFromConst7consumeIPKNS_1SEEEvT_(%"struct.InitFromConst::S"* @_ZN13InitFromConstL1sE)
+    // CHECK: call void @_ZN13InitFromConst7consumeIPKNS_1SEEEvT_(%struct._ZN13InitFromConst1SE* @_ZN13InitFromConstL1sE)
     consume(p);
 
     // CHECK: call void @_ZN13InitFromConst7consumeIMNS_1SEiEEvT_(i64 0)

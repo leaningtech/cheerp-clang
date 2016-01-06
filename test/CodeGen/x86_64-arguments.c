@@ -43,8 +43,8 @@ void f7(e7 a0) {
 
 // Test merging/passing of upper eightbyte with X87 class.
 //
-// CHECK-LABEL: define void @f8_1(%union.u8* noalias sret %agg.result)
-// CHECK-LABEL: define void @f8_2(%union.u8* byval align 16 %a0)
+// CHECK-LABEL: define void @f8_1(%union._Z2u8* noalias sret %agg.result)
+// CHECK-LABEL: define void @f8_2(%union._Z2u8* byval align 16 %a0)
 union u8 {
   long double a;
   int b;
@@ -59,7 +59,7 @@ struct s9 { int a; int b; int : 0; } f9(void) { while (1) {} }
 struct s10 { int a; int b; int : 0; };
 void f10(struct s10 a0) {}
 
-// CHECK-LABEL: define void @f11(%union.anon* noalias sret %agg.result)
+// CHECK-LABEL: define void @f11(%"union._Z3$_0"* noalias sret %agg.result)
 union { long double a; float b; } f11() { while (1) {} }
 
 // CHECK-LABEL: define i32 @f12_0()
@@ -70,7 +70,7 @@ void f12_1(struct s12 a0) {}
 
 // Check that sret parameter is accounted for when checking available integer
 // registers.
-// CHECK: define void @f13(%struct.s13_0* noalias sret %agg.result, i32 %a, i32 %b, i32 %c, i32 %d, {{.*}}* byval align 8 %e, i32 %f)
+// CHECK: define void @f13(%struct._Z5s13_0* noalias sret %agg.result, i32 %a, i32 %b, i32 %c, i32 %d, {{.*}}* byval align 8 %e, i32 %f)
 
 struct s13_0 { long long f0[3]; };
 struct s13_1 { long long f0[2]; };
@@ -100,13 +100,13 @@ void f18(int a, struct f18_s0 f18_arg1) { while (1) {} }
 
 // Check byval alignment.
 
-// CHECK-LABEL: define void @f19(%struct.s19* byval align 16 %x)
+// CHECK-LABEL: define void @f19(%struct._Z3s19* byval align 16 %x)
 struct s19 {
   long double a;
 };
 void f19(struct s19 x) {}
 
-// CHECK-LABEL: define void @f20(%struct.s20* byval align 32 %x)
+// CHECK-LABEL: define void @f20(%struct._Z3s20* byval align 32 %x)
 struct __attribute__((aligned(32))) s20 {
   int x;
   int y;
@@ -148,7 +148,7 @@ struct f24s { long a; int b; };
 struct f23S f24(struct f23S *X, struct f24s *P2) {
   return *X;
   
-  // CHECK: define { i64, i32 } @f24(%struct.f23S* %X, %struct.f24s* %P2)
+  // CHECK: define { i64, i32 } @f24(%struct._Z4f23S* %X, %struct._Z4f24s* %P2)
 }
 
 // rdar://8248065
@@ -170,7 +170,7 @@ struct foo26 {
 };
 
 struct foo26 f26(struct foo26 *P) {
-  // CHECK: define { i32*, float* } @f26(%struct.foo26* %P)
+  // CHECK: define { i32*, float* } @f26(%struct._Z5foo26* %P)
   return *P;
 }
 
@@ -245,7 +245,7 @@ typedef unsigned long v1i64_2 __attribute__((__vector_size__(8)));
 v1i64_2 f35(v1i64_2 arg) { return arg+arg; }
 
 // rdar://9122143
-// CHECK: declare void @func(%struct._str* byval align 16)
+// CHECK: declare void @func(%struct._Z4_str* byval align 16)
 typedef struct _str {
   union {
     long double a;
@@ -283,7 +283,7 @@ void f39() { f38(x38); f37(x37); }
 // The two next tests make sure that the struct below is passed
 // in the same way regardless of avx being used
 
-// CHECK: declare void @func40(%struct.t128* byval align 16)
+// CHECK: declare void @func40(%struct._Z4t128* byval align 16)
 typedef float __m128 __attribute__ ((__vector_size__ (16)));
 typedef struct t128 {
   __m128 m;
@@ -295,7 +295,7 @@ void func41(two128 s) {
   func40(s);
 }
 
-// CHECK: declare void @func42(%struct.t128_2* byval align 16)
+// CHECK: declare void @func42(%struct._Z6t128_2* byval align 16)
 typedef struct xxx {
   __m128 array[2];
 } Atwo128;

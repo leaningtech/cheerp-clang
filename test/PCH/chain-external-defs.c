@@ -37,8 +37,8 @@ int incomplete_array2[17];
 // AC-NOT: @incomplete_array3 = common global [1 x i32]
 int incomplete_array3[];
 
-// S: @s = common global %struct.S
-// S-NOT: @s = common global %struct.S
+// S: @s = common global %struct._Z1S
+// S-NOT: @s = common global %struct._Z1S
 struct S {
   int x, y;
 };

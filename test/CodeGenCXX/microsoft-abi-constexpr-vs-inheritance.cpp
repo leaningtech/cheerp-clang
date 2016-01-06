@@ -7,7 +7,7 @@ struct A {
 };
 
 A a(42);
-// CHECK: @"\01?a@@3UA@@A" = global %struct.A { i32 (...)** bitcast ([1 x i8*]* @"\01??_7A@@6B@" to i32 (...)**), i32 42 }, align 4
+// CHECK: @"\01?a@@3UA@@A" = global %"struct.\01?A@@" { i32 (...)** bitcast ([1 x i8*]* @"\01??_7A@@6B@" to i32 (...)**), i32 42 }, align 4
 
 struct B {
   constexpr B(int y) : y(y) {}

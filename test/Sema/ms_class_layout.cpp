@@ -167,7 +167,7 @@ int main() {
 // CHECK-NEXT: sizeof=16, align=8
 // CHECK-NEXT: nvsize=16, nvalign=8
 
-// CHECK: %class.D = type { i32 (...)**, double }
+// CHECK: %"class.\01?D@@" = type { i32 (...)**, double }
 
 // CHECK:       0 | class B
 // CHECK-NEXT:  0 |   (B vftable pointer)
@@ -176,7 +176,7 @@ int main() {
 // CHECK-NEXT: sizeof=8, align=4
 // CHECK-NEXT: nvsize=8, nvalign=4
 
-// CHECK: %class.B = type { i32 (...)**, i32 }
+// CHECK: %"class.\01?B@@" = type { i32 (...)**, i32 }
 
 // CHECK:       0 | class A
 // CHECK-NEXT:  0 |   class B (primary base)
@@ -210,10 +210,10 @@ int main() {
 // CHECK-NEXT: sizeof=80, align=8
 // CHECK-NEXT: nvsize=64, nvalign=8
 
-// CHECK: %class.A = type { %class.B, i32, i8 }
+// CHECK: %"class.\01?A@@" = type { %"class.\01?B@@", i32, i8 }
 
-// CHECK: %class.C = type { %class.D, %class.B, i32*, double, i32, double, i32, [4 x i8], %class.A }
-// CHECK: %class.C.base = type { %class.D, %class.B, i32*, double, i32, double, i32 }
+// CHECK: %"class.\01?C@@" = type { %"class.\01?D@@", %"class.\01?B@@", i32*, double, i32, double, i32, [4 x i8], %"class.\01?A@@" }
+// CHECK: %"class.\01?C@@.base" = type { %"class.\01?D@@", %"class.\01?B@@", i32*, double, i32, double, i32 }
 
 // CHECK:       0 | struct BaseStruct
 // CHECK-NEXT:  0 |   double v0
@@ -243,7 +243,7 @@ int main() {
 // CHECK: sizeof=96, align=8
 // CHECK-NEXT: nvsize=96, nvalign=8
 
-// CHECK: %struct.BaseStruct = type { double, float, %class.C }
+// CHECK: %"struct.\01?BaseStruct@@" = type { double, float, %"class.\01?C@@" }
 
 // CHECK:       0 | struct DerivedStruct
 // CHECK-NEXT:  0 |   struct BaseStruct (base)
@@ -274,7 +274,8 @@ int main() {
 // CHECK-NEXT: sizeof=104, align=8
 // CHECK-NEXT: nvsize=104, nvalign=8
 
-// CHECK: %struct.DerivedStruct = type { %struct.BaseStruct, i32 }
+// CHECK: %"struct.\01?DerivedStruct@@" = type { %"struct.\01?BaseStruct@@", i32 }
+
 
 // CHECK:      0 | struct G
 // CHECK-NEXT: 0 |   int g_field
@@ -291,7 +292,7 @@ int main() {
 // CHECK-NEXT: sizeof=24, align=8
 // CHECK-NEXT: nvsize=8, nvalign=8
 
-// CHECK: %struct.H = type { %struct.G, i32*, %class.D }
+// CHECK: %"struct.\01?H@@" = type { %"struct.\01?G@@", i32*, %"class.\01?D@@" }
 
 // CHECK:       0 | struct I
 // CHECK-NEXT:  0 |   (I vftable pointer)
@@ -303,8 +304,8 @@ int main() {
 // CHECK-NEXT: sizeof=40, align=8
 // CHECK-NEXT: nvsize=24, nvalign=8
 
-// CHECK: %struct.I = type { i32 (...)**, [4 x i8], i32*, double, %class.D }
-// CHECK: %struct.I.base = type { i32 (...)**, [4 x i8], i32*, double }
+// CHECK: %"struct.\01?I@@" = type { i32 (...)**, [4 x i8], i32*, double, %"class.\01?D@@" }
+// CHECK: %"struct.\01?I@@.base" = type { i32 (...)**, [4 x i8], i32*, double }
 
 // CHECK:       0 | struct L
 // CHECK-NEXT:  0 |   int l
@@ -323,8 +324,8 @@ int main() {
 // CHECK-NEXT:  8 |     int k
 // CHECK-NEXT: sizeof=12, align=4
 
-//CHECK: %struct.M = type { i32*, i32, %struct.K }
-//CHECK: %struct.M.base = type { i32*, i32 }
+//CHECK: %"struct.\01?M@@" = type { i32*, i32, %"struct.\01?K@@" }
+//CHECK: %"struct.\01?M@@.base" = type { i32*, i32 }
 
 // CHECK:       0 | struct N
 // CHECK-NEXT:  0 |   (N vftable pointer)
@@ -338,7 +339,7 @@ int main() {
 // CHECK-NEXT: sizeof=20, align=4
 // CHECK-NEXT: nvsize=16, nvalign=4
 
-//CHECK: %struct.N = type { i32 (...)**, %struct.L, %struct.M.base, %struct.K }
+//CHECK: %"struct.\01?N@@" = type { i32 (...)**, %"struct.\01?L@@", %"struct.\01?M@@.base", %"struct.\01?K@@" }
 
 // CHECK:       0 | struct O
 // CHECK-NEXT:  0 |   (O vftable pointer)
@@ -354,8 +355,8 @@ int main() {
 // CHECK-NEXT:    | [sizeof=40, align=8
 // CHECK-NEXT:    |  nvsize=24, nvalign=8]
 
-// CHECK: struct.O = type { i32 (...)**, [4 x i8], %struct.H.base, %struct.G, %class.D }
-// CHECK: struct.O.base = type { i32 (...)**, [4 x i8], %struct.H.base, %struct.G, [4 x i8] }
+// CHECK: "struct.\01?O@@" = type { i32 (...)**, [4 x i8], %"struct.\01?H@@.base", %"struct.\01?G@@", %"class.\01?D@@" }
+// CHECK: "struct.\01?O@@.base" = type { i32 (...)**, [4 x i8], %"struct.\01?H@@.base", %"struct.\01?G@@", [4 x i8] }
 
 
 // CHECK:       0 | struct P
@@ -370,13 +371,13 @@ int main() {
 // CHECK-NEXT: sizeof=20, align=4
 // CHECK-NEXT: nvsize=12, nvalign=4
 
-//CHECK: %struct.P = type { %struct.M.base, i32, %struct.K, %struct.L }
+//CHECK: %"struct.\01?P@@" = type { %"struct.\01?M@@.base", i32, %"struct.\01?K@@", %"struct.\01?L@@" }
 
 // CHECK:       0 | struct R (empty)
 // CHECK-NEXT:  sizeof=1, align=1
 // CHECK-NEXT:  nvsize=0, nvalign=1
 
-//CHECK: %struct.R = type { i8 }
+//CHECK: %"struct.\01?R@@" = type { i8 }
 
 // CHECK:       0 | struct f
 // CHECK-NEXT:  0 |   (f vftable pointer)
@@ -427,11 +428,11 @@ int main() {
 // CHECK-NEXT: sizeof=48, align=4
 // CHECK-NEXT: nvsize=12, nvalign=4
 
-// CHECK: %struct.f = type { i32 (...)** }
-// CHECK: %struct.s = type { i32 (...)**, i32*, i32, i32, %struct.f }
-// CHECK: %class.IA = type { i32 (...)** }
-// CHECK: %class.ICh = type { i32 (...)**, i32*, i32, %class.IA }
-// CHECK: %struct.sd = type { i32*, i32, i8, i32, %struct.f, %struct.s.base, i32, %class.IA, %class.ICh.base }
+// CHECK: %"struct.\01?f@@" = type { i32 (...)** }
+// CHECK: %"struct.\01?s@@" = type { i32 (...)**, i32*, i32, i32, %"struct.\01?f@@" }
+// CHECK: %"class.\01?IA@@" = type { i32 (...)** }
+// CHECK: %"class.\01?ICh@@" = type { i32 (...)**, i32*, i32, %"class.\01?IA@@" }
+// CHECK: %"struct.\01?sd@@" = type { i32*, i32, i8, i32, %"struct.\01?f@@", %"struct.\01?s@@.base", i32, %"class.\01?IA@@", %"class.\01?ICh@@.base" }
 
 // CHECK:       0 | struct AV
 // CHECK-NEXT:  0 |   (AV vftable pointer)
@@ -455,10 +456,10 @@ int main() {
 // CHECK-NEXT: sizeof=12, align=4
 // CHECK-NEXT: nvsize=4, nvalign=4
 
-// CHECK: %struct.AV = type { i32 (...)** }
-// CHECK: %struct.BV = type { %struct.AV }
-// CHECK: %struct.CV = type { i32*, i32, %struct.BV }
-// CHECK: %struct.CV.base = type { i32* }
+// CHECK: %"struct.\01?AV@@" = type { i32 (...)** }
+// CHECK: %"struct.\01?BV@@" = type { %"struct.\01?AV@@" }
+// CHECK: %"struct.\01?CV@@" = type { i32*, i32, %"struct.\01?BV@@" }
+// CHECK: %"struct.\01?CV@@.base" = type { i32* }
 
 // CHECK:       0 | struct DV
 // CHECK-NEXT:  0 |   struct BV (primary base)
@@ -467,7 +468,7 @@ int main() {
 // CHECK-NEXT: sizeof=4, align=4
 // CHECK-NEXT: nvsize=4, nvalign=4
 
-// CHECK: %struct.DV = type { %struct.BV }
+// CHECK: %"struct.\01?DV@@" = type { %"struct.\01?BV@@" }
 
 // CHECK:       0 | struct EV
 // CHECK-NEXT:  0 |   struct DV (primary base)
@@ -483,8 +484,8 @@ int main() {
 // CHECK-NEXT: sizeof=16, align=4
 // CHECK-NEXT: nvsize=8, nvalign=4
 
-// CHECK: %struct.EV = type { %struct.DV, %struct.CV.base, i32, %struct.BV }
-// CHECK: %struct.EV.base = type { %struct.DV, %struct.CV.base }
+// CHECK: %"struct.\01?EV@@" = type { %"struct.\01?DV@@", %"struct.\01?CV@@.base", i32, %"struct.\01?BV@@" }
+// CHECK: %"struct.\01?EV@@.base" = type { %"struct.\01?DV@@", %"struct.\01?CV@@.base" }
 
 // Overriding a method means that all the vbases containing that
 // method need a vtordisp.  Note: this code will cause an error in cl.exe.

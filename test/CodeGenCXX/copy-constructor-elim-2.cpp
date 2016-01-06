@@ -21,7 +21,7 @@ namespace no_elide_base {
     Derived(const Other &O);
   };
 
-  // CHECK: define {{.*}} @_ZN13no_elide_base7DerivedC1ERKNS_5OtherE(%"struct.no_elide_base::Derived"* returned %this, %"struct.no_elide_base::Other"* dereferenceable({{[0-9]+}}) %O) unnamed_addr
+  // CHECK: define {{.*}} @_ZN13no_elide_base7DerivedC1ERKNS_5OtherE(%struct._ZN13no_elide_base7DerivedE* returned %this, %struct._ZN13no_elide_base5OtherE* dereferenceable({{[0-9]+}}) %O) unnamed_addr
   Derived::Derived(const Other &O) 
     // CHECK: call {{.*}} @_ZNK13no_elide_base5OthercvNS_4BaseEEv
     // CHECK: call {{.*}} @_ZN13no_elide_base4BaseC2ERKS0_
@@ -66,7 +66,7 @@ namespace PR12139 {
   // CHECK-LABEL: define i32 @_ZN7PR121394testEv
   int test() {
     // CHECK: call void @_ZN7PR121391A5makeAEv
-    // CHECK-NEXT: call %"struct.PR12139::A"* @_ZN7PR121391AC1ERKS0_i
+    // CHECK-NEXT: call %struct._ZN7PR121391AE* @_ZN7PR121391AC1ERKS0_i
     A a(A::makeA(), 3);
     // CHECK-NEXT: getelementptr inbounds
     // CHECK-NEXT: load

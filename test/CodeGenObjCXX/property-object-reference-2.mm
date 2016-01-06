@@ -30,30 +30,30 @@ struct TCPPObject
 @end
 
 // CHECK-LABEL: define internal void @__copy_helper_atomic_property_(
-// CHECK: [[TWO:%.*]] = load %struct.TCPPObject** [[ADDR:%.*]], align 8
-// CHECK: [[THREE:%.*]] = load %struct.TCPPObject** [[ADDR1:%.*]], align 8
+// CHECK: [[TWO:%.*]] = load %struct._Z10TCPPObject** [[ADDR:%.*]], align 8
+// CHECK: [[THREE:%.*]] = load %struct._Z10TCPPObject** [[ADDR1:%.*]], align 8
 // CHECK: [[CALL:%.*]] = call i32 @_Z7DEFAULTv()
-// CHECK:  call void @_ZN10TCPPObjectC1ERKS_i(%struct.TCPPObject* [[TWO]], %struct.TCPPObject* dereferenceable({{[0-9]+}}) [[THREE]], i32 [[CALL]])
+// CHECK:  call void @_ZN10TCPPObjectC1ERKS_i(%struct._Z10TCPPObject* [[TWO]], %struct._Z10TCPPObject* dereferenceable({{[0-9]+}}) [[THREE]], i32 [[CALL]])
 // CHECK:  ret void
 
 // CHECK: define internal void @"\01-[MyDocument MyProperty]"(
-// CHECK: [[ONE:%.*]] = bitcast i8* [[ADDPTR:%.*]] to %struct.TCPPObject*
-// CHECK: [[TWO:%.*]] = bitcast %struct.TCPPObject* [[ONE]] to i8*
-// CHECK: [[THREE:%.*]] = bitcast %struct.TCPPObject* [[AGGRESULT:%.*]] to i8*
-// CHECK: call void @objc_copyCppObjectAtomic(i8* [[THREE]], i8* [[TWO]], i8* bitcast (void (%struct.TCPPObject*, %struct.TCPPObject*)* @__copy_helper_atomic_property_ to i8*))
+// CHECK: [[ONE:%.*]] = bitcast i8* [[ADDPTR:%.*]] to %struct._Z10TCPPObject*
+// CHECK: [[TWO:%.*]] = bitcast %struct._Z10TCPPObject* [[ONE]] to i8*
+// CHECK: [[THREE:%.*]] = bitcast %struct._Z10TCPPObject* [[AGGRESULT:%.*]] to i8*
+// CHECK: call void @objc_copyCppObjectAtomic(i8* [[THREE]], i8* [[TWO]], i8* bitcast (void (%struct._Z10TCPPObject*, %struct._Z10TCPPObject*)* @__copy_helper_atomic_property_ to i8*))
 // CHECK: ret void
 
 // CHECK-LABEL: define internal void @__assign_helper_atomic_property_(
-// CHECK: [[TWO:%.*]] = load %struct.TCPPObject** [[ADDR:%.*]], align 8
-// CHECK: [[THREE:%.*]] = load %struct.TCPPObject** [[ADDR1:%.*]], align 8
-// CHECK: [[CALL:%.*]] = call dereferenceable({{[0-9]+}}) %struct.TCPPObject* @_ZN10TCPPObjectaSERKS_(%struct.TCPPObject* [[TWO]], %struct.TCPPObject* dereferenceable({{[0-9]+}}) [[THREE]])
+// CHECK: [[TWO:%.*]] = load %struct._Z10TCPPObject** [[ADDR:%.*]], align 8
+// CHECK: [[THREE:%.*]] = load %struct._Z10TCPPObject** [[ADDR1:%.*]], align 8
+// CHECK: [[CALL:%.*]] = call dereferenceable({{[0-9]+}}) %struct._Z10TCPPObject* @_ZN10TCPPObjectaSERKS_(%struct._Z10TCPPObject* [[TWO]], %struct._Z10TCPPObject* dereferenceable({{[0-9]+}}) [[THREE]])
 // CHECK:  ret void
 
 // CHECK: define internal void @"\01-[MyDocument setMyProperty:]"(
-// CHECK: [[ONE:%.*]] = bitcast i8* [[ADDRPTR:%.*]] to %struct.TCPPObject*
-// CHECK: [[TWO:%.*]] = bitcast %struct.TCPPObject* [[ONE]] to i8*
-// CHECK: [[THREE:%.*]] = bitcast %struct.TCPPObject* [[MYPROPERTY:%.*]] to i8*
-// CHECK: call void @objc_copyCppObjectAtomic(i8* [[TWO]], i8* [[THREE]], i8* bitcast (void (%struct.TCPPObject*, %struct.TCPPObject*)* @__assign_helper_atomic_property_ to i8*))
+// CHECK: [[ONE:%.*]] = bitcast i8* [[ADDRPTR:%.*]] to %struct._Z10TCPPObject*
+// CHECK: [[TWO:%.*]] = bitcast %struct._Z10TCPPObject* [[ONE]] to i8*
+// CHECK: [[THREE:%.*]] = bitcast %struct._Z10TCPPObject* [[MYPROPERTY:%.*]] to i8*
+// CHECK: call void @objc_copyCppObjectAtomic(i8* [[TWO]], i8* [[THREE]], i8* bitcast (void (%struct._Z10TCPPObject*, %struct._Z10TCPPObject*)* @__assign_helper_atomic_property_ to i8*))
 // CHECK: ret void
 
 // CHECK-GNUSTEP: objc_getCppObjectAtomic

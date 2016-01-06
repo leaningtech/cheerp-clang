@@ -7,12 +7,12 @@ struct B : Spacer, A { };
 
 B &getB();
 
-// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct.A* @_Z4getAv()
-// CHECK: call dereferenceable({{[0-9]+}}) %struct.B* @_Z4getBv()
-// CHECK-NEXT: bitcast %struct.B*
+// CHECK-LABEL: define dereferenceable({{[0-9]+}}) %struct._Z1A* @_Z4getAv()
+// CHECK: call dereferenceable({{[0-9]+}}) %struct._Z1B* @_Z4getBv()
+// CHECK-NEXT: bitcast %struct._Z1B*
 // CHECK-NEXT: getelementptr inbounds i8*
-// CHECK-NEXT: bitcast i8* {{.*}} to %struct.A*
-// CHECK-NEXT: ret %struct.A*
+// CHECK-NEXT: bitcast i8* {{.*}} to %struct._Z1A*
+// CHECK-NEXT: ret %struct._Z1A*
 A &&getA() { return static_cast<A&&>(getB()); }
 
 int &getIntLValue();

@@ -3,5 +3,5 @@
 struct A { virtual void a(); };
 A x(A& y) { return y; }
 
-// CHECK: define linkonce_odr {{.*}} @_ZN1AC1ERKS_(%struct.A* {{.*}}%this, %struct.A* dereferenceable({{[0-9]+}})) unnamed_addr
-// CHECK: store i32 (...)** bitcast (i8** getelementptr inbounds ([3 x i8*]* @_ZTV1A, i64 0, i64 2) to i32 (...)**)
+// CHECK: define linkonce_odr {{.*}} @_ZN1AC1ERKS_(%struct._Z1A* {{.*}}%this, %struct._Z1A* dereferenceable({{[0-9]+}})) unnamed_addr
+// CHECK: store i32 (...)** bitcast (i8** getelementptr inbounds ([3 x i8*]* @_ZTV1A, i32 0, i32 2) to i32 (...)**)

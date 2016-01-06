@@ -553,11 +553,11 @@ struct __declspec(dllimport) T {
   // MO1-DAG: @"\01?b@T@@2HA" = external dllimport global i32
 
   T& operator=(T&) = default;
-  // MO1-DAG: define available_externally dllimport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.T* @"\01??4T@@QAEAAU0@AAU0@@Z"
+  // MO1-DAG: define available_externally dllimport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?T@@"* @"\01??4T@@QAEAAU0@AAU0@@Z"
 
   T& operator=(T&&) = default;
   // Note: Don't mark inline move operators dllimport because current MSVC versions don't export them.
-  // MO1-DAG: define linkonce_odr x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.T* @"\01??4T@@QAEAAU0@$$QAU0@@Z"
+  // MO1-DAG: define linkonce_odr x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?T@@"* @"\01??4T@@QAEAAU0@$$QAU0@@Z"
 };
 USEMEMFUNC(T, a)
 USEVAR(T::b)
@@ -572,8 +572,8 @@ USEMEMFUNC(V, foo)
 struct __declspec(dllimport) W { virtual void foo() {} };
 USECLASS(W)
 // vftable:
-// MO1-DAG: @"\01??_7W@@6B@" = available_externally dllimport unnamed_addr constant [1 x i8*] [i8* bitcast (void (%struct.W*)* @"\01?foo@W@@UAEXXZ" to i8*)]
-// GO1-DAG: @_ZTV1W = available_externally dllimport unnamed_addr constant [3 x i8*] [i8* null, i8* null, i8* bitcast (void (%struct.W*)* @_ZN1W3fooEv to i8*)]
+// MO1-DAG: @"\01??_7W@@6B@" = available_externally dllimport unnamed_addr constant [1 x i8*] [i8* bitcast (void (%"struct.\01?W@@"*)* @"\01?foo@W@@UAEXXZ" to i8*)]
+// GO1-DAG: @_ZTV1W = available_externally dllimport unnamed_addr constant [3 x i8*] [i8* null, i8* null, i8* bitcast (void (%struct._Z1W*)* @_ZN1W3fooEv to i8*)]
 
 struct __declspec(dllimport) KeyFuncClass {
   constexpr KeyFuncClass() {}
@@ -650,7 +650,7 @@ namespace PR19933 {
   template <typename T> struct A { static NonPOD x; };
   template <typename T> NonPOD A<T>::x;
   template struct __declspec(dllimport) A<int>;
-  // MSC-DAG: @"\01?x@?$A@H@PR19933@@2UNonPOD@2@A" = available_externally dllimport global %"struct.PR19933::NonPOD" zeroinitializer
+  // MSC-DAG: @"\01?x@?$A@H@PR19933@@2UNonPOD@2@A" = available_externally dllimport global %"struct.\01?NonPOD@PR19933@@" zeroinitializer
 
   int f();
   template <typename T> struct B { static int x; };

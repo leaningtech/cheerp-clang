@@ -1,10 +1,10 @@
 // RUN: %clang_cc1 -fms-extensions -emit-llvm %s -o - -mconstructor-aliases -triple=i386-pc-win32 | FileCheck %s
 
 // CHECK: @llvm.global_ctors = appending global [5 x { i32, void ()*, i8* }] [
-// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Eselectany1@@YAXXZ", i8* bitcast (%struct.S* @"\01?selectany1@@3US@@A" to i8*) },
-// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Eselectany2@@YAXXZ", i8* bitcast (%struct.S* @"\01?selectany2@@3US@@A" to i8*) },
-// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Es@?$ExportedTemplate@H@@2US@@A@YAXXZ", i8* bitcast (%struct.S* @"\01?s@?$ExportedTemplate@H@@2US@@A" to i8*) },
-// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Efoo@?$B@H@@2VA@@A@YAXXZ", i8* bitcast (%class.A* @"\01?foo@?$B@H@@2VA@@A" to i8*) },
+// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Eselectany1@@YAXXZ", i8* bitcast (%"struct.\01?S@@"* @"\01?selectany1@@3US@@A" to i8*) },
+// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Eselectany2@@YAXXZ", i8* bitcast (%"struct.\01?S@@"* @"\01?selectany2@@3US@@A" to i8*) },
+// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Es@?$ExportedTemplate@H@@2US@@A@YAXXZ", i8* bitcast (%"struct.\01?S@@"* @"\01?s@?$ExportedTemplate@H@@2US@@A" to i8*) },
+// CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @"\01??__Efoo@?$B@H@@2VA@@A@YAXXZ", i8* bitcast (%"class.\01?A@@"* @"\01?foo@?$B@H@@2VA@@A" to i8*) },
 // CHECK: { i32, void ()*, i8* } { i32 65535, void ()* @_GLOBAL__sub_I_microsoft_abi_static_initializers.cpp, i8* null }
 // CHECK: ]
 
@@ -16,7 +16,7 @@ struct S {
 S s;
 
 // CHECK: define internal void @"\01??__Es@@YAXXZ"()
-// CHECK: call x86_thiscallcc %struct.S* @"\01??0S@@QAE@XZ"
+// CHECK: call x86_thiscallcc %"struct.\01?S@@"* @"\01??0S@@QAE@XZ"
 // CHECK: call i32 @atexit(void ()* @"\01??__Fs@@YAXXZ")
 // CHECK: ret void
 
@@ -30,11 +30,11 @@ __declspec(selectany) S selectany1;
 __declspec(selectany) S selectany2;
 // CHECK: define linkonce_odr void @"\01??__Eselectany1@@YAXXZ"()
 // CHECK-NOT: @"\01??_Bselectany1
-// CHECK: call x86_thiscallcc %struct.S* @"\01??0S@@QAE@XZ"
+// CHECK: call x86_thiscallcc %"struct.\01?S@@"* @"\01??0S@@QAE@XZ"
 // CHECK: ret void
 // CHECK: define linkonce_odr void @"\01??__Eselectany2@@YAXXZ"()
 // CHECK-NOT: @"\01??_Bselectany2
-// CHECK: call x86_thiscallcc %struct.S* @"\01??0S@@QAE@XZ"
+// CHECK: call x86_thiscallcc %"struct.\01?S@@"* @"\01??0S@@QAE@XZ"
 // CHECK: ret void
 
 // The implicitly instantiated static data member should have initializer
@@ -133,7 +133,7 @@ inline S &UnreachableStatic() {
   return s;
 }
 
-// CHECK-LABEL: define linkonce_odr dereferenceable({{[0-9]+}}) %struct.S* @"\01?UnreachableStatic@@YAAAUS@@XZ"()
+// CHECK-LABEL: define linkonce_odr dereferenceable({{[0-9]+}}) %"struct.\01?S@@"* @"\01?UnreachableStatic@@YAAAUS@@XZ"()
 // CHECK: and i32 {{.*}}, 2
 // CHECK: or i32 {{.*}}, 2
 // CHECK: ret
@@ -143,7 +143,7 @@ inline S &getS() {
   return TheS;
 }
 
-// CHECK-LABEL: define linkonce_odr dereferenceable({{[0-9]+}}) %struct.S* @"\01?getS@@YAAAUS@@XZ"
+// CHECK-LABEL: define linkonce_odr dereferenceable({{[0-9]+}}) %"struct.\01?S@@"* @"\01?getS@@YAAAUS@@XZ"
 // CHECK: load i32* @"\01??_B?1??getS@@YAAAUS@@XZ@51"
 // CHECK: and i32 {{.*}}, 1
 // CHECK: icmp ne i32 {{.*}}, 0
@@ -151,11 +151,11 @@ inline S &getS() {
 //   init:
 // CHECK: or i32 {{.*}}, 1
 // CHECK: store i32 {{.*}}, i32* @"\01??_B?1??getS@@YAAAUS@@XZ@51"
-// CHECK: call x86_thiscallcc %struct.S* @"\01??0S@@QAE@XZ"(%struct.S* @"\01?TheS@?1??getS@@YAAAUS@@XZ@4U2@A")
+// CHECK: call x86_thiscallcc %"struct.\01?S@@"* @"\01??0S@@QAE@XZ"(%"struct.\01?S@@"* @"\01?TheS@?1??getS@@YAAAUS@@XZ@4U2@A")
 // CHECK: call i32 @atexit(void ()* @"\01??__FTheS@?1??getS@@YAAAUS@@XZ@YAXXZ")
 // CHECK: br label
 //   init.end:
-// CHECK: ret %struct.S* @"\01?TheS@?1??getS@@YAAAUS@@XZ@4U2@A"
+// CHECK: ret %"struct.\01?S@@"* @"\01?TheS@?1??getS@@YAAAUS@@XZ@4U2@A"
 
 inline int enum_in_function() {
   // CHECK-LABEL: define linkonce_odr i32 @"\01?enum_in_function@@YAHXZ"()
@@ -234,11 +234,11 @@ void force_usage() {
 // CHECK: define linkonce_odr void @"\01??__Efoo@?$B@H@@2VA@@A@YAXXZ"()
 // CHECK-NOT: and
 // CHECK-NOT: ?_Bfoo@
-// CHECK: call x86_thiscallcc %class.A* @"\01??0A@@QAE@XZ"
+// CHECK: call x86_thiscallcc %"class.\01?A@@"* @"\01??0A@@QAE@XZ"
 // CHECK: call i32 @atexit(void ()* @"\01??__Ffoo@?$B@H@@2VA@@A@YAXXZ")
 // CHECK: ret void
 
-// CHECK: define linkonce_odr x86_thiscallcc %class.A* @"\01??0A@@QAE@XZ"
+// CHECK: define linkonce_odr x86_thiscallcc %"class.\01?A@@"* @"\01??0A@@QAE@XZ"
 
 // CHECK: define linkonce_odr x86_thiscallcc void @"\01??1A@@QAE@XZ"
 

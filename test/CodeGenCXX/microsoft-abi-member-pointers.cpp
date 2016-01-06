@@ -300,7 +300,7 @@ int loadDataMemberPointerVirtual(Virtual *o, int Virtual::*memptr) {
 // A two-field data memptr on x64 gets coerced to i64 and is passed in a
 // register or memory.
 // X64-LABEL: define i32 @"\01?loadDataMemberPointerVirtual@@YAHPEAUVirtual@@PEQ1@H@Z"
-// X64:             (%struct.Virtual* %o, i64 %memptr.coerce)
+// X64:             (%"struct.\01?Virtual@@"* %o, i64 %memptr.coerce)
 }
 
 int loadDataMemberPointerUnspecified(Unspecified *o, int Unspecified::*memptr) {
@@ -344,8 +344,8 @@ void callMemberPointerSingle(Single *o, void (Single::*memptr)()) {
 // CHECK: }
 
 // X64-LABEL: define void @"\01?callMemberPointerSingle@@
-// X64:           (%struct.Single* %o, i8* %memptr)
-// X64:   bitcast i8* %{{[^ ]*}} to void (%struct.Single*)*
+// X64:           (%"struct.\01?Single@@"* %o, i8* %memptr)
+// X64:   bitcast i8* %{{[^ ]*}} to void (%"struct.\01?Single@@"*)*
 // X64:   ret void
 }
 
@@ -596,9 +596,9 @@ struct A {
 int *load_data(A *a, int A::*mp) {
   return &(a->*mp);
 // CHECK-LABEL: define i32* @"\01?load_data@Test3@@YAPAHPAUA@1@PQ21@H@Z"{{.*}}  {
-// CHECK:    %[[a:.*]] = load %"struct.Test3::A"** %{{.*}}, align 4
+// CHECK:    %[[a:.*]] = load %"struct.\01?A@Test3@@"** %{{.*}}, align 4
 // CHECK:    %[[mp:.*]] = load i32* %{{.*}}, align 4
-// CHECK:    %[[a_i8:.*]] = bitcast %"struct.Test3::A"* %[[a]] to i8*
+// CHECK:    %[[a_i8:.*]] = bitcast %"struct.\01?A@Test3@@"* %[[a]] to i8*
 // CHECK:    getelementptr inbounds i8* %[[a_i8]], i32 %[[mp]]
 // CHECK: }
 }
@@ -615,14 +615,14 @@ void (C::*getmp())() {
   return &C::g;
 }
 // CHECK-LABEL: define i64 @"\01?getmp@Test4@@YAP8C@1@AEXXZXZ"()
-// CHECK: store { i8*, i32 } { i8* bitcast (void (%"struct.Test4::C"*, ...)* @"\01??_9C@Test4@@$BA@AE" to i8*), i32 4 }, { i8*, i32 }* %{{.*}}
+// CHECK: store { i8*, i32 } { i8* bitcast (void (%"struct.\01?C@Test4@@"*, ...)* @"\01??_9C@Test4@@$BA@AE" to i8*), i32 4 }, { i8*, i32 }* %{{.*}}
 //
 
-// CHECK-LABEL: define linkonce_odr x86_thiscallcc void @"\01??_9C@Test4@@$BA@AE"(%"struct.Test4::C"* %this, ...)
-// CHECK:  load i32 (...)*** %{{.*}}
-// CHECK:  getelementptr inbounds void (%"struct.Test4::C"*, ...)** %{{.*}}, i64 0
+// CHECK-LABEL: define linkonce_odr x86_thiscallcc void @"\01??_9C@Test4@@$BA@AE"(%"struct.\01?C@Test4@@"* %this, ...)
+// CHECK:  load void (%"struct.\01?C@Test4@@"*, ...)*** %{{.*}}
+// CHECK:  getelementptr inbounds void (%"struct.\01?C@Test4@@"*, ...)** %{{.*}}, i64 0
 // CHECK-NOT:  getelementptr
-// CHECK:  musttail call x86_thiscallcc void (%"struct.Test4::C"*, ...)* %
+// CHECK:  musttail call x86_thiscallcc void (%"struct.\01?C@Test4@@"*, ...)* %
 
 }
 
@@ -634,7 +634,7 @@ struct A {
 struct B : public A {};
 void test() { void (B::*a)() = &B::f; }
 // CHECK-LABEL: define void @"\01?test@pr20007@@YAXXZ"
-// CHECK: store i8* bitcast (void (%"struct.pr20007::A"*)* @"\01?f@A@pr20007@@QAEXXZ" to i8*)
+// CHECK: store i8* bitcast (void (%"struct.\01?A@pr20007@@"*)* @"\01?f@A@pr20007@@QAEXXZ" to i8*)
 }
 
 namespace pr20007_kw {
@@ -646,7 +646,7 @@ struct __single_inheritance B;
 struct B : public A {};
 void test() { void (B::*a)() = &B::f; }
 // CHECK-LABEL: define void @"\01?test@pr20007_kw@@YAXXZ"
-// CHECK: store i8* bitcast (void (%"struct.pr20007_kw::A"*)* @"\01?f@A@pr20007_kw@@QAEXXZ" to i8*)
+// CHECK: store i8* bitcast (void (%"struct.\01?A@pr20007_kw@@"*)* @"\01?f@A@pr20007_kw@@QAEXXZ" to i8*)
 }
 
 namespace pr20007_pragma {

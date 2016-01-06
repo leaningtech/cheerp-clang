@@ -26,8 +26,8 @@ void test0() {
   const MyStruct& currentMyStruct = myClass.foo;   
 }
 
-// CHECK: [[C:%.*]] = call dereferenceable({{[0-9]+}}) %struct.MyStruct* bitcast (i8* (i8*, i8*, ...)* @objc_msgSend
-// CHECK:   store %struct.MyStruct* [[C]], %struct.MyStruct** [[D:%.*]]
+// CHECK: [[C:%.*]] = call dereferenceable({{[0-9]+}}) %struct._Z8MyStruct* bitcast (i8* (i8*, i8*, ...)* @objc_msgSend
+// CHECK:   store %struct._Z8MyStruct* [[C]], %struct._Z8MyStruct** [[D:%.*]]
 
 namespace test1 {
   struct A { A(); A(const A&); A&operator=(const A&); ~A(); };

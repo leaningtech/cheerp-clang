@@ -10,7 +10,7 @@ struct f1 return_f1(void) { while (1); }
 
 void receive_f1(struct f1 a0) { }
 
-// CHECK: define void @receive_f1(%struct.f1* byval align 4 %a0)
+// CHECK: define void @receive_f1(%struct._Z2f1* byval align 4 %a0)
 
 struct f2 {
   float f;
@@ -23,7 +23,7 @@ struct f2 return_f2(void) { while (1); }
 
 void receive_f2(struct f2 a0) { }
 
-// CHECK: define void @receive_f2(%struct.f2* byval align 4 %a0)
+// CHECK: define void @receive_f2(%struct._Z2f2* byval align 4 %a0)
 
 struct f4 {
   float f;
@@ -34,9 +34,9 @@ struct f4 {
 
 struct f4 return_f4(void) { while (1); }
 
-// CHECK: define void @return_f4(%struct.f4* noalias sret %agg.result)
+// CHECK: define void @return_f4(%struct._Z2f4* noalias sret %agg.result)
 
 void receive_f4(struct f4 a0) { }
 
-// CHECK: define void @receive_f4(%struct.f4* byval align 4 %a0)
+// CHECK: define void @receive_f4(%struct._Z2f4* byval align 4 %a0)
 

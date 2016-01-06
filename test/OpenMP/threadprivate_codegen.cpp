@@ -117,7 +117,7 @@ struct S5 {
 // CHECK-DAG:  [[ST_INT_ST]].cache. = common global i8** null
 // CHECK-DAG:  [[ST_FLOAT_ST:@.+]] = linkonce_odr global float 2.300000e+01
 // CHECK-DAG:  [[ST_FLOAT_ST]].cache. = common global i8** null
-// CHECK-DAG:  [[ST_S4_ST:@.+]] = linkonce_odr global %struct.S4 zeroinitializer
+// CHECK-DAG:  [[ST_S4_ST:@.+]] = linkonce_odr global %struct._Z2S4 zeroinitializer
 // CHECK-DAG:  [[ST_S4_ST]].cache. = common global i8** null
 // CHECK-NOT:  .cache. = common global i8** null
 // There is no cache for gs2 - it is not threadprivate. Check that there is only
@@ -131,7 +131,7 @@ struct S5 {
 // CHECK-DEBUG-DAG: [[GS3:@.+]] = external global [[S5]]
 // CHECK-DEBUG-DAG: [[ST_INT_ST:@.+]] = linkonce_odr global i32 23
 // CHECK-DEBUG-DAG: [[ST_FLOAT_ST:@.+]] = linkonce_odr global float 2.300000e+01
-// CHECK-DEBUG-DAG: [[ST_S4_ST:@.+]] = linkonce_odr global %struct.S4 zeroinitializer
+// CHECK-DEBUG-DAG: [[ST_S4_ST:@.+]] = linkonce_odr global %struct._Z2S4 zeroinitializer
 // CHECK-DEBUG-DAG: [[LOC1:@.*]] = private unnamed_addr constant [{{[0-9]+}} x i8] c";{{.*}}threadprivate_codegen.cpp;;162;9;;\00"
 // CHECK-DEBUG-DAG: [[LOC2:@.*]] = private unnamed_addr constant [{{[0-9]+}} x i8] c";{{.*}}threadprivate_codegen.cpp;;216;9;;\00"
 // CHECK-DEBUG-DAG: [[LOC3:@.*]] = private unnamed_addr constant [{{[0-9]+}} x i8] c";{{.*}}threadprivate_codegen.cpp;;303;19;;\00"

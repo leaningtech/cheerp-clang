@@ -4,7 +4,7 @@
 // simple return expressions.
 
 // CHECK: define {{.*}}foo
-// CHECK: call void @_ZN1CD1Ev(%class.C* {{.*}}), !dbg ![[CLEANUP:[0-9]+]]
+// CHECK: call void @_ZN1CD1Ev(%class._Z1C* {{.*}}), !dbg ![[CLEANUP:[0-9]+]]
 // CHECK: ret i32 0, !dbg ![[RET:[0-9]+]]
 
 // CHECK: define {{.*}}bar

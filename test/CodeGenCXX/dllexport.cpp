@@ -70,8 +70,8 @@ __declspec(dllexport) extern int GlobalRedecl2;
 // GNU-DAG: @_ZN2ns14ExternalGlobalE      = dllexport global i32 0, align 4
 namespace ns { __declspec(dllexport) int ExternalGlobal; }
 
-// MSC-DAG: @"\01?ExternalAutoTypeGlobal@@3UExternal@@A" = dllexport global %struct.External zeroinitializer, align 4
-// GNU-DAG: @ExternalAutoTypeGlobal                      = dllexport global %struct.External zeroinitializer, align 4
+// MSC-DAG: @"\01?ExternalAutoTypeGlobal@@3UExternal@@A" = dllexport global %"struct.\01?External@@" zeroinitializer, align 4
+// GNU-DAG: @ExternalAutoTypeGlobal                      = dllexport global %struct._Z8External zeroinitializer, align 4
 __declspec(dllexport) auto ExternalAutoTypeGlobal = External();
 
 int f();
@@ -145,8 +145,8 @@ INSTVAR(VarTmplRedecl2<ExplicitInst_Exported>)
 namespace ns { template<typename T> __declspec(dllexport) int ExternalVarTmpl = 1; }
 INSTVAR(ns::ExternalVarTmpl<ExplicitInst_Exported>)
 
-// MSC-DAG: @"\01??$ExternalAutoTypeVarTmpl@UExplicitInst_Exported@@@@3UExternal@@A" = weak_odr dllexport global %struct.External zeroinitializer, comdat, align 4
-// GNU-DAG: @_Z23ExternalAutoTypeVarTmplI21ExplicitInst_ExportedE                    = weak_odr dllexport global %struct.External zeroinitializer, comdat, align 4
+// MSC-DAG: @"\01??$ExternalAutoTypeVarTmpl@UExplicitInst_Exported@@@@3UExternal@@A" = weak_odr dllexport global %"struct.\01?External@@" zeroinitializer, comdat, align 4
+// GNU-DAG: @_Z23ExternalAutoTypeVarTmplI21ExplicitInst_ExportedE                    = weak_odr dllexport global %struct._Z8External zeroinitializer, comdat, align 4
 template<typename T> __declspec(dllexport) auto ExternalAutoTypeVarTmpl = External();
 template External ExternalAutoTypeVarTmpl<ExplicitInst_Exported>;
 
@@ -487,11 +487,11 @@ struct S {
 
 struct __declspec(dllexport) T {
   // Copy assignment operator:
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.T* @"\01??4T@@QAEAAU0@ABU0@@Z"
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?T@@"* @"\01??4T@@QAEAAU0@ABU0@@Z"
 
   // Explicitly defaulted copy constructur:
   T(const T&) = default;
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.T* @"\01??0T@@QAE@ABU0@@Z"
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?T@@"* @"\01??0T@@QAE@ABU0@@Z"
 
   void a() {}
   // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?a@T@@QAEXXZ"
@@ -509,17 +509,17 @@ int T::c;
 template <typename T> struct __declspec(dllexport) U { void foo() {} };
 struct __declspec(dllexport) V : public U<int> { };
 // U<int>'s assignment operator is emitted.
-// M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.U* @"\01??4?$U@H@@QAEAAU0@ABU0@@Z"
+// M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01??$U@H@@"* @"\01??4?$U@H@@QAEAAU0@ABU0@@Z"
 
 struct __declspec(dllexport) W { virtual void foo() {} };
 // Default ctor:
-// M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.W* @"\01??0W@@QAE@XZ"
+// M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?W@@"* @"\01??0W@@QAE@XZ"
 // Copy ctor:
-// M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.W* @"\01??0W@@QAE@ABU0@@Z"
+// M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?W@@"* @"\01??0W@@QAE@ABU0@@Z"
 // vftable:
-// M32-DAG: [[W_VTABLE:@.*]] = private unnamed_addr constant [2 x i8*] [i8* bitcast (%rtti.CompleteObjectLocator* @"\01??_R4W@@6B@" to i8*), i8* bitcast (void (%struct.W*)* @"\01?foo@W@@UAEXXZ" to i8*)], comdat($"\01??_7W@@6B@")
+// M32-DAG: [[W_VTABLE:@.*]] = private unnamed_addr constant [2 x i8*] [i8* bitcast (%rtti.CompleteObjectLocator* @"\01??_R4W@@6B@" to i8*), i8* bitcast (void (%"struct.\01?W@@"*)* @"\01?foo@W@@UAEXXZ" to i8*)], comdat($"\01??_7W@@6B@")
 // M32-DAG: @"\01??_7W@@6B@" = dllexport unnamed_addr alias getelementptr inbounds ([2 x i8*]* [[W_VTABLE]], i32 0, i32 1)
-// G32-DAG: @_ZTV1W = weak_odr dllexport unnamed_addr constant [3 x i8*] [i8* null, i8* bitcast ({ i8**, i8* }* @_ZTI1W to i8*), i8* bitcast (void (%struct.W*)* @_ZN1W3fooEv to i8*)]
+// G32-DAG: @_ZTV1W = weak_odr dllexport unnamed_addr constant [3 x i8*] [i8* null, i8* bitcast ({ i8**, i8* }* @_ZTI1W to i8*), i8* bitcast (void (%struct._Z1W*)* @_ZN1W3fooEv to i8*)]
 
 struct __declspec(dllexport) X : public virtual W {};
 // vbtable:
@@ -527,7 +527,7 @@ struct __declspec(dllexport) X : public virtual W {};
 
 struct __declspec(dllexport) Y {
   // Move assignment operator:
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.Y* @"\01??4Y@@QAEAAU0@$$QAU0@@Z"
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?Y@@"* @"\01??4Y@@QAEAAU0@$$QAU0@@Z"
 
   int x;
 };
@@ -552,7 +552,7 @@ namespace UseDtorAlias {
 
 struct __declspec(dllexport) DefaultedCtorsDtors {
   DefaultedCtorsDtors() = default;
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.DefaultedCtorsDtors* @"\01??0DefaultedCtorsDtors@@QAE@XZ"
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?DefaultedCtorsDtors@@"* @"\01??0DefaultedCtorsDtors@@QAE@XZ"
   ~DefaultedCtorsDtors() = default;
   // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??1DefaultedCtorsDtors@@QAE@XZ"
 };
@@ -618,13 +618,13 @@ struct __declspec(dllexport) ExportedDerivedClass : NonExportedBaseClass {};
 // Do not assert about generating code for constexpr functions twice during explicit instantiation (PR21718).
 template <typename T> struct ExplicitInstConstexprMembers {
   // Copy assignment operator
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable(1) %struct.ExplicitInstConstexprMembers* @"\01??4?$ExplicitInstConstexprMembers@X@@QAEAAU0@ABU0@@Z"
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable(1) %"struct.\01??$ExplicitInstConstexprMembers@X@@"* @"\01??4?$ExplicitInstConstexprMembers@X@@QAEAAU0@ABU0@@Z"
 
   constexpr ExplicitInstConstexprMembers() {}
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.ExplicitInstConstexprMembers* @"\01??0?$ExplicitInstConstexprMembers@X@@QAE@XZ"
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01??$ExplicitInstConstexprMembers@X@@"* @"\01??0?$ExplicitInstConstexprMembers@X@@QAE@XZ"
 
   ExplicitInstConstexprMembers(const ExplicitInstConstexprMembers&) = default;
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.ExplicitInstConstexprMembers* @"\01??0?$ExplicitInstConstexprMembers@X@@QAE@ABU0@@Z"
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01??$ExplicitInstConstexprMembers@X@@"* @"\01??0?$ExplicitInstConstexprMembers@X@@QAE@ABU0@@Z"
 
   constexpr int f() const { return 42; }
   // M32-DAG: define weak_odr dllexport x86_thiscallcc i32 @"\01?f@?$ExplicitInstConstexprMembers@X@@QBEHXZ"

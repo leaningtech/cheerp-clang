@@ -18,7 +18,7 @@ This test serves two purposes:
 
 The list of warnings below should NEVER grow.  It should gradually shrink to 0.
 
-CHECK: Warnings without flags (98):
+CHECK: Warnings without flags (99):
 CHECK-NEXT:   ext_excess_initializers
 CHECK-NEXT:   ext_excess_initializers_in_char_array_initializer
 CHECK-NEXT:   ext_expected_semi_decl_list
@@ -56,6 +56,7 @@ CHECK-NEXT:   warn_call_to_pure_virtual_member_function_from_ctor_dtor
 CHECK-NEXT:   warn_call_wrong_number_of_arguments
 CHECK-NEXT:   warn_case_empty_range
 CHECK-NEXT:   warn_char_constant_too_large
+CHECK-NEXT:   warn_cheerp_deprecated_attribute
 CHECK-NEXT:   warn_cheerp_inefficient_unions
 CHECK-NEXT:   warn_cheerp_unsafe_cast
 CHECK-NEXT:   warn_collection_expr_type

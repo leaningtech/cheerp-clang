@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 // RUN: %clang -std=gnu++98 -target i686-cygwin -emit-llvm -g -S %s -o - | FileCheck %s
 // RUN: %clang -std=gnu++98 -target armv7l-unknown-linux-gnueabihf -emit-llvm -g -S %s -o - | FileCheck %s
 
-// CHECK: invoke {{.+}} @_ZN1BD1Ev(%class.B* %b)
+// CHECK: invoke {{.+}} @_ZN1BD1Ev(%class._Z1B* %b)
 // CHECK-NEXT: unwind label %{{.+}}, !dbg ![[EXCEPTLOC:.*]]
 // CHECK: store i32 0, i32* %{{.+}}, !dbg ![[RETLOC:.*]]
 // CHECK: DW_TAG_structure_type ] [foo]

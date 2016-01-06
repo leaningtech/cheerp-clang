@@ -24,22 +24,22 @@ extern "C" void free(void* p);
 struct ExportMembers {
   struct Nested;
 
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?normalDef@ExportMembers@@QAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define          dllexport                void @"\01?normalDef@ExportMembers@@QEAAXXZ"(%struct.ExportMembers* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInclass@ExportMembers@@QAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?normalInclass@ExportMembers@@QEAAXXZ"(%struct.ExportMembers* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDef@ExportMembers@@QAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDef@ExportMembers@@QEAAXXZ"(%struct.ExportMembers* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDecl@ExportMembers@@QAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDecl@ExportMembers@@QEAAXXZ"(%struct.ExportMembers* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers9normalDefEv(%struct.ExportMembers* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers9normalDefEv(%struct.ExportMembers* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers13normalInclassEv(%struct.ExportMembers* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers13normalInclassEv(%struct.ExportMembers* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers15normalInlineDefEv(%struct.ExportMembers* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers15normalInlineDefEv(%struct.ExportMembers* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers16normalInlineDeclEv(%struct.ExportMembers* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers16normalInlineDeclEv(%struct.ExportMembers* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?normalDef@ExportMembers@@QAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?normalDef@ExportMembers@@QEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInclass@ExportMembers@@QAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?normalInclass@ExportMembers@@QEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDef@ExportMembers@@QAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDef@ExportMembers@@QEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDecl@ExportMembers@@QAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDecl@ExportMembers@@QEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers9normalDefEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers9normalDefEv(%struct._Z13ExportMembers* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers13normalInclassEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers13normalInclassEv(%struct._Z13ExportMembers* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers15normalInlineDefEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers15normalInlineDefEv(%struct._Z13ExportMembers* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers16normalInlineDeclEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers16normalInlineDeclEv(%struct._Z13ExportMembers* %this)
   // M32-DAG: define linkonce_odr       x86_thiscallcc void @"\01?referencedNonExportedInClass@ExportMembers@@QAEXXZ"
   __declspec(dllexport)                void normalDef();
   __declspec(dllexport)                void normalInclass() { referencedNonExportedInClass(); }
@@ -47,22 +47,22 @@ struct ExportMembers {
   __declspec(dllexport)         inline void normalInlineDecl();
                                        void referencedNonExportedInClass() {}
 
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?virtualDef@ExportMembers@@UAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define          dllexport                void @"\01?virtualDef@ExportMembers@@UEAAXXZ"(%struct.ExportMembers* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInclass@ExportMembers@@UAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInclass@ExportMembers@@UEAAXXZ"(%struct.ExportMembers* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDef@ExportMembers@@UAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDef@ExportMembers@@UEAAXXZ"(%struct.ExportMembers* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDecl@ExportMembers@@UAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDecl@ExportMembers@@UEAAXXZ"(%struct.ExportMembers* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers10virtualDefEv(%struct.ExportMembers* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers10virtualDefEv(%struct.ExportMembers* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers14virtualInclassEv(%struct.ExportMembers* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers14virtualInclassEv(%struct.ExportMembers* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers16virtualInlineDefEv(%struct.ExportMembers* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers16virtualInlineDefEv(%struct.ExportMembers* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers17virtualInlineDeclEv(%struct.ExportMembers* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers17virtualInlineDeclEv(%struct.ExportMembers* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?virtualDef@ExportMembers@@UAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?virtualDef@ExportMembers@@UEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInclass@ExportMembers@@UAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInclass@ExportMembers@@UEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDef@ExportMembers@@UAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDef@ExportMembers@@UEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDecl@ExportMembers@@UAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDecl@ExportMembers@@UEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers10virtualDefEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers10virtualDefEv(%struct._Z13ExportMembers* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers14virtualInclassEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers14virtualInclassEv(%struct._Z13ExportMembers* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers16virtualInlineDefEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers16virtualInlineDefEv(%struct._Z13ExportMembers* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers17virtualInlineDeclEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers17virtualInlineDeclEv(%struct._Z13ExportMembers* %this)
   __declspec(dllexport) virtual        void virtualDef();
   __declspec(dllexport) virtual        void virtualInclass() {}
   __declspec(dllexport) virtual        void virtualInlineDef();
@@ -81,30 +81,30 @@ struct ExportMembers {
   __declspec(dllexport) static         void staticInlineDef();
   __declspec(dllexport) static  inline void staticInlineDecl();
 
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?protectedDef@ExportMembers@@IAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define          dllexport                void @"\01?protectedDef@ExportMembers@@IEAAXXZ"(%struct.ExportMembers* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers12protectedDefEv(%struct.ExportMembers* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers12protectedDefEv(%struct.ExportMembers* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?protectedDef@ExportMembers@@IAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?protectedDef@ExportMembers@@IEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers12protectedDefEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers12protectedDefEv(%struct._Z13ExportMembers* %this)
   // MSC-DAG: define          dllexport                void @"\01?protectedStaticDef@ExportMembers@@KAXXZ"()
   // GNU-DAG: define          dllexport                void @_ZN13ExportMembers18protectedStaticDefEv()
 protected:
   __declspec(dllexport)                void protectedDef();
   __declspec(dllexport) static         void protectedStaticDef();
 
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?privateDef@ExportMembers@@AAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define          dllexport                void @"\01?privateDef@ExportMembers@@AEAAXXZ"(%struct.ExportMembers* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers10privateDefEv(%struct.ExportMembers* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers10privateDefEv(%struct.ExportMembers* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?privateDef@ExportMembers@@AAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?privateDef@ExportMembers@@AEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers10privateDefEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers10privateDefEv(%struct._Z13ExportMembers* %this)
   // MSC-DAG: define          dllexport                void @"\01?privateStaticDef@ExportMembers@@CAXXZ"()
   // GNU-DAG: define          dllexport                void @_ZN13ExportMembers16privateStaticDefEv()
 private:
   __declspec(dllexport)                void privateDef();
   __declspec(dllexport) static         void privateStaticDef();
 
-  // M32-DAG: define                    x86_thiscallcc void @"\01?ignored@ExportMembers@@QAEXXZ"(%struct.ExportMembers* %this)
-  // M64-DAG: define                                   void @"\01?ignored@ExportMembers@@QEAAXXZ"(%struct.ExportMembers* %this)
-  // G32-DAG: define                    x86_thiscallcc void @_ZN13ExportMembers7ignoredEv(%struct.ExportMembers* %this)
-  // G64-DAG: define                                   void @_ZN13ExportMembers7ignoredEv(%struct.ExportMembers* %this)
+  // M32-DAG: define                    x86_thiscallcc void @"\01?ignored@ExportMembers@@QAEXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // M64-DAG: define                                   void @"\01?ignored@ExportMembers@@QEAAXXZ"(%"struct.\01?ExportMembers@@"* %this)
+  // G32-DAG: define                    x86_thiscallcc void @_ZN13ExportMembers7ignoredEv(%struct._Z13ExportMembers* %this)
+  // G64-DAG: define                                   void @_ZN13ExportMembers7ignoredEv(%struct._Z13ExportMembers* %this)
 public:
   void ignored();
 
@@ -149,43 +149,43 @@ constexpr int ExportMembers::ConstexprField;
 
 // Export individual members of a nested class.
 struct ExportMembers::Nested {
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?normalDef@Nested@ExportMembers@@QAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define          dllexport                void @"\01?normalDef@Nested@ExportMembers@@QEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInclass@Nested@ExportMembers@@QAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?normalInclass@Nested@ExportMembers@@QEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDef@Nested@ExportMembers@@QAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDef@Nested@ExportMembers@@QEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDecl@Nested@ExportMembers@@QAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDecl@Nested@ExportMembers@@QEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested9normalDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested9normalDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested13normalInclassEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested13normalInclassEv(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested15normalInlineDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested15normalInlineDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested16normalInlineDeclEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested16normalInlineDeclEv(%"struct.ExportMembers::Nested"* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?normalDef@Nested@ExportMembers@@QAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?normalDef@Nested@ExportMembers@@QEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInclass@Nested@ExportMembers@@QAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?normalInclass@Nested@ExportMembers@@QEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDef@Nested@ExportMembers@@QAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDef@Nested@ExportMembers@@QEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?normalInlineDecl@Nested@ExportMembers@@QAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?normalInlineDecl@Nested@ExportMembers@@QEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested9normalDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested9normalDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested13normalInclassEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested13normalInclassEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested15normalInlineDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested15normalInlineDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested16normalInlineDeclEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested16normalInlineDeclEv(%struct._ZN13ExportMembers6NestedE* %this)
   __declspec(dllexport)                void normalDef();
   __declspec(dllexport)                void normalInclass() {}
   __declspec(dllexport)                void normalInlineDef();
   __declspec(dllexport)         inline void normalInlineDecl();
 
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?virtualDef@Nested@ExportMembers@@UAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define          dllexport                void @"\01?virtualDef@Nested@ExportMembers@@UEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInclass@Nested@ExportMembers@@UAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInclass@Nested@ExportMembers@@UEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDef@Nested@ExportMembers@@UAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDef@Nested@ExportMembers@@UEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDecl@Nested@ExportMembers@@UAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDecl@Nested@ExportMembers@@UEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested10virtualDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested10virtualDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested14virtualInclassEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested14virtualInclassEv(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested16virtualInlineDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested16virtualInlineDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested17virtualInlineDeclEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested17virtualInlineDeclEv(%"struct.ExportMembers::Nested"* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?virtualDef@Nested@ExportMembers@@UAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?virtualDef@Nested@ExportMembers@@UEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInclass@Nested@ExportMembers@@UAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInclass@Nested@ExportMembers@@UEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDef@Nested@ExportMembers@@UAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDef@Nested@ExportMembers@@UEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01?virtualInlineDecl@Nested@ExportMembers@@UAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01?virtualInlineDecl@Nested@ExportMembers@@UEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested10virtualDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested10virtualDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested14virtualInclassEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested14virtualInclassEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested16virtualInlineDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested16virtualInlineDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested17virtualInlineDeclEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN13ExportMembers6Nested17virtualInlineDeclEv(%struct._ZN13ExportMembers6NestedE* %this)
   __declspec(dllexport) virtual        void virtualDef();
   __declspec(dllexport) virtual        void virtualInclass() {}
   __declspec(dllexport) virtual        void virtualInlineDef();
@@ -204,30 +204,30 @@ struct ExportMembers::Nested {
   __declspec(dllexport) static         void staticInlineDef();
   __declspec(dllexport) static  inline void staticInlineDecl();
 
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?protectedDef@Nested@ExportMembers@@IAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define          dllexport                void @"\01?protectedDef@Nested@ExportMembers@@IEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested12protectedDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested12protectedDefEv(%"struct.ExportMembers::Nested"* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?protectedDef@Nested@ExportMembers@@IAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?protectedDef@Nested@ExportMembers@@IEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested12protectedDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested12protectedDefEv(%struct._ZN13ExportMembers6NestedE* %this)
   // MSC-DAG: define          dllexport                void @"\01?protectedStaticDef@Nested@ExportMembers@@KAXXZ"()
   // GNU-DAG: define          dllexport                void @_ZN13ExportMembers6Nested18protectedStaticDefEv()
 protected:
   __declspec(dllexport)                void protectedDef();
   __declspec(dllexport) static         void protectedStaticDef();
 
-  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?privateDef@Nested@ExportMembers@@AAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define          dllexport                void @"\01?privateDef@Nested@ExportMembers@@AEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested10privateDefEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested10privateDefEv(%"struct.ExportMembers::Nested"* %this)
+  // M32-DAG: define          dllexport x86_thiscallcc void @"\01?privateDef@Nested@ExportMembers@@AAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define          dllexport                void @"\01?privateDef@Nested@ExportMembers@@AEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // G32-DAG: define          dllexport x86_thiscallcc void @_ZN13ExportMembers6Nested10privateDefEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define          dllexport                void @_ZN13ExportMembers6Nested10privateDefEv(%struct._ZN13ExportMembers6NestedE* %this)
   // MSC-DAG: define          dllexport                void @"\01?privateStaticDef@Nested@ExportMembers@@CAXXZ"()
   // GNU-DAG: define          dllexport                void @_ZN13ExportMembers6Nested16privateStaticDefEv()
 private:
   __declspec(dllexport)                void privateDef();
   __declspec(dllexport) static         void privateStaticDef();
 
-  // M32-DAG: define                    x86_thiscallcc void @"\01?ignored@Nested@ExportMembers@@QAEXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // M64-DAG: define                                   void @"\01?ignored@Nested@ExportMembers@@QEAAXXZ"(%"struct.ExportMembers::Nested"* %this)
-  // G32-DAG: define                    x86_thiscallcc void @_ZN13ExportMembers6Nested7ignoredEv(%"struct.ExportMembers::Nested"* %this)
-  // G64-DAG: define                                   void @_ZN13ExportMembers6Nested7ignoredEv(%"struct.ExportMembers::Nested"* %this)
+  // M32-DAG: define                    x86_thiscallcc void @"\01?ignored@Nested@ExportMembers@@QAEXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // M64-DAG: define                                   void @"\01?ignored@Nested@ExportMembers@@QEAAXXZ"(%"struct.\01?Nested@ExportMembers@@"* %this)
+  // G32-DAG: define                    x86_thiscallcc void @_ZN13ExportMembers6Nested7ignoredEv(%struct._ZN13ExportMembers6NestedE* %this)
+  // G64-DAG: define                                   void @_ZN13ExportMembers6Nested7ignoredEv(%struct._ZN13ExportMembers6NestedE* %this)
 public:
   void ignored();
 
@@ -272,48 +272,48 @@ constexpr int ExportMembers::Nested::ConstexprField;
 
 // Export special member functions.
 struct ExportSpecials {
-  // M32-DAG: define dllexport x86_thiscallcc %struct.ExportSpecials* @"\01??0ExportSpecials@@QAE@XZ"(%struct.ExportSpecials* returned %this)
-  // M64-DAG: define dllexport                %struct.ExportSpecials* @"\01??0ExportSpecials@@QEAA@XZ"(%struct.ExportSpecials* returned %this)
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC1Ev(%struct.ExportSpecials* %this)
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC1Ev(%struct.ExportSpecials* %this)
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC2Ev(%struct.ExportSpecials* %this)
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC2Ev(%struct.ExportSpecials* %this)
+  // M32-DAG: define dllexport x86_thiscallcc %"struct.\01?ExportSpecials@@"* @"\01??0ExportSpecials@@QAE@XZ"(%"struct.\01?ExportSpecials@@"* returned %this)
+  // M64-DAG: define dllexport                %"struct.\01?ExportSpecials@@"* @"\01??0ExportSpecials@@QEAA@XZ"(%"struct.\01?ExportSpecials@@"* returned %this)
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC1Ev(%struct._Z14ExportSpecials* %this)
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC1Ev(%struct._Z14ExportSpecials* %this)
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC2Ev(%struct._Z14ExportSpecials* %this)
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC2Ev(%struct._Z14ExportSpecials* %this)
   __declspec(dllexport) ExportSpecials();
 
-  // M32-DAG: define dllexport x86_thiscallcc void @"\01??1ExportSpecials@@QAE@XZ"(%struct.ExportSpecials* %this)
-  // M64-DAG: define dllexport                void @"\01??1ExportSpecials@@QEAA@XZ"(%struct.ExportSpecials* %this)
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsD1Ev(%struct.ExportSpecials* %this)
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsD1Ev(%struct.ExportSpecials* %this)
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsD2Ev(%struct.ExportSpecials* %this)
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsD2Ev(%struct.ExportSpecials* %this)
+  // M32-DAG: define dllexport x86_thiscallcc void @"\01??1ExportSpecials@@QAE@XZ"(%"struct.\01?ExportSpecials@@"* %this)
+  // M64-DAG: define dllexport                void @"\01??1ExportSpecials@@QEAA@XZ"(%"struct.\01?ExportSpecials@@"* %this)
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsD1Ev(%struct._Z14ExportSpecials* %this)
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsD1Ev(%struct._Z14ExportSpecials* %this)
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsD2Ev(%struct._Z14ExportSpecials* %this)
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsD2Ev(%struct._Z14ExportSpecials* %this)
   __declspec(dllexport) ~ExportSpecials();
 
-  // M32-DAG: define dllexport x86_thiscallcc %struct.ExportSpecials* @"\01??0ExportSpecials@@QAE@ABU0@@Z"(%struct.ExportSpecials* returned %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // M64-DAG: define dllexport                %struct.ExportSpecials* @"\01??0ExportSpecials@@QEAA@AEBU0@@Z"(%struct.ExportSpecials* returned %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC1ERKS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC1ERKS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC2ERKS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC2ERKS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
+  // M32-DAG: define dllexport x86_thiscallcc %"struct.\01?ExportSpecials@@"* @"\01??0ExportSpecials@@QAE@ABU0@@Z"(%"struct.\01?ExportSpecials@@"* returned %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // M64-DAG: define dllexport                %"struct.\01?ExportSpecials@@"* @"\01??0ExportSpecials@@QEAA@AEBU0@@Z"(%"struct.\01?ExportSpecials@@"* returned %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC1ERKS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC1ERKS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC2ERKS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC2ERKS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
   __declspec(dllexport) ExportSpecials(const ExportSpecials&);
 
-  // M32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @"\01??4ExportSpecials@@QAEAAU0@ABU0@@Z"(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // M64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @"\01??4ExportSpecials@@QEAAAEAU0@AEBU0@@Z"(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @_ZN14ExportSpecialsaSERKS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @_ZN14ExportSpecialsaSERKS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
+  // M32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?ExportSpecials@@"* @"\01??4ExportSpecials@@QAEAAU0@ABU0@@Z"(%"struct.\01?ExportSpecials@@"* %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // M64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %"struct.\01?ExportSpecials@@"* @"\01??4ExportSpecials@@QEAAAEAU0@AEBU0@@Z"(%"struct.\01?ExportSpecials@@"* %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // G32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct._Z14ExportSpecials* @_ZN14ExportSpecialsaSERKS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct._Z14ExportSpecials* @_ZN14ExportSpecialsaSERKS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
   __declspec(dllexport) ExportSpecials& operator=(const ExportSpecials&);
 
-  // M32-DAG: define dllexport x86_thiscallcc %struct.ExportSpecials* @"\01??0ExportSpecials@@QAE@$$QAU0@@Z"(%struct.ExportSpecials* returned %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // M64-DAG: define dllexport                %struct.ExportSpecials* @"\01??0ExportSpecials@@QEAA@$$QEAU0@@Z"(%struct.ExportSpecials* returned %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC1EOS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC1EOS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC2EOS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC2EOS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
+  // M32-DAG: define dllexport x86_thiscallcc %"struct.\01?ExportSpecials@@"* @"\01??0ExportSpecials@@QAE@$$QAU0@@Z"(%"struct.\01?ExportSpecials@@"* returned %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // M64-DAG: define dllexport                %"struct.\01?ExportSpecials@@"* @"\01??0ExportSpecials@@QEAA@$$QEAU0@@Z"(%"struct.\01?ExportSpecials@@"* returned %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC1EOS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC1EOS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G32-DAG: define dllexport x86_thiscallcc void @_ZN14ExportSpecialsC2EOS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G64-DAG: define dllexport                void @_ZN14ExportSpecialsC2EOS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
   __declspec(dllexport) ExportSpecials(ExportSpecials&&);
 
-  // M32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @"\01??4ExportSpecials@@QAEAAU0@$$QAU0@@Z"(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // M64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @"\01??4ExportSpecials@@QEAAAEAU0@$$QEAU0@@Z"(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @_ZN14ExportSpecialsaSEOS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
-  // G64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct.ExportSpecials* @_ZN14ExportSpecialsaSEOS_(%struct.ExportSpecials* %this, %struct.ExportSpecials* dereferenceable({{[0-9]+}}))
+  // M32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?ExportSpecials@@"* @"\01??4ExportSpecials@@QAEAAU0@$$QAU0@@Z"(%"struct.\01?ExportSpecials@@"* %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // M64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %"struct.\01?ExportSpecials@@"* @"\01??4ExportSpecials@@QEAAAEAU0@$$QEAU0@@Z"(%"struct.\01?ExportSpecials@@"* %this, %"struct.\01?ExportSpecials@@"* dereferenceable({{[0-9]+}}))
+  // G32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct._Z14ExportSpecials* @_ZN14ExportSpecialsaSEOS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
+  // G64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct._Z14ExportSpecials* @_ZN14ExportSpecialsaSEOS_(%struct._Z14ExportSpecials* %this, %struct._Z14ExportSpecials* dereferenceable({{[0-9]+}}))
   __declspec(dllexport) ExportSpecials& operator=(ExportSpecials&&);
 };
 ExportSpecials::ExportSpecials() {}
@@ -326,8 +326,8 @@ ExportSpecials& ExportSpecials::operator=(ExportSpecials&&) { return *this; }
 
 // Export class with inline special member functions.
 struct ExportInlineSpecials {
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.ExportInlineSpecials* @"\01??0ExportInlineSpecials@@QAE@XZ"(%struct.ExportInlineSpecials* returned %this)
-  // M64-DAG: define weak_odr dllexport                %struct.ExportInlineSpecials* @"\01??0ExportInlineSpecials@@QEAA@XZ"(
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?ExportInlineSpecials@@"* @"\01??0ExportInlineSpecials@@QAE@XZ"(%"struct.\01?ExportInlineSpecials@@"* returned %this)
+  // M64-DAG: define weak_odr dllexport                %"struct.\01?ExportInlineSpecials@@"* @"\01??0ExportInlineSpecials@@QEAA@XZ"(
   // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN20ExportInlineSpecialsC1Ev(
   // G64-DAG: define weak_odr dllexport                void @_ZN20ExportInlineSpecialsC1Ev(
   __declspec(dllexport) ExportInlineSpecials() {}
@@ -338,28 +338,28 @@ struct ExportInlineSpecials {
   // G64-DAG: define weak_odr dllexport                void @_ZN20ExportInlineSpecialsD1Ev(
   __declspec(dllexport) ~ExportInlineSpecials() {}
 
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.ExportInlineSpecials* @"\01??0ExportInlineSpecials@@QAE@ABU0@@Z"(
-  // M64-DAG: define weak_odr dllexport                %struct.ExportInlineSpecials* @"\01??0ExportInlineSpecials@@QEAA@AEBU0@@Z"(
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?ExportInlineSpecials@@"* @"\01??0ExportInlineSpecials@@QAE@ABU0@@Z"(
+  // M64-DAG: define weak_odr dllexport                %"struct.\01?ExportInlineSpecials@@"* @"\01??0ExportInlineSpecials@@QEAA@AEBU0@@Z"(
   // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN20ExportInlineSpecialsC1ERKS_(
   // G64-DAG: define weak_odr dllexport                void @_ZN20ExportInlineSpecialsC1ERKS_(
   __declspec(dllexport) inline ExportInlineSpecials(const ExportInlineSpecials&);
 
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @"\01??4ExportInlineSpecials@@QAEAAU0@ABU0@@Z"(
-  // M64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @"\01??4ExportInlineSpecials@@QEAAAEAU0@AEBU0@@Z"(
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSERKS_(
-  // G64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSERKS_(
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?ExportInlineSpecials@@"* @"\01??4ExportInlineSpecials@@QAEAAU0@ABU0@@Z"(
+  // M64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %"struct.\01?ExportInlineSpecials@@"* @"\01??4ExportInlineSpecials@@QEAAAEAU0@AEBU0@@Z"(
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct._Z20ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSERKS_(
+  // G64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct._Z20ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSERKS_(
   __declspec(dllexport) ExportInlineSpecials& operator=(const ExportInlineSpecials&);
 
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.ExportInlineSpecials* @"\01??0ExportInlineSpecials@@QAE@$$QAU0@@Z"(
-  // M64-DAG: define weak_odr dllexport                %struct.ExportInlineSpecials* @"\01??0ExportInlineSpecials@@QEAA@$$QEAU0@@Z"(
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?ExportInlineSpecials@@"* @"\01??0ExportInlineSpecials@@QAE@$$QAU0@@Z"(
+  // M64-DAG: define weak_odr dllexport                %"struct.\01?ExportInlineSpecials@@"* @"\01??0ExportInlineSpecials@@QEAA@$$QEAU0@@Z"(
   // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN20ExportInlineSpecialsC1EOS_(
   // G64-DAG: define weak_odr dllexport                void @_ZN20ExportInlineSpecialsC1EOS_(
   __declspec(dllexport) ExportInlineSpecials(ExportInlineSpecials&&) {}
 
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @"\01??4ExportInlineSpecials@@QAEAAU0@$$QAU0@@Z"(
-  // M64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @"\01??4ExportInlineSpecials@@QEAAAEAU0@$$QEAU0@@Z"(
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSEOS_(
-  // G64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct.ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSEOS_(
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?ExportInlineSpecials@@"* @"\01??4ExportInlineSpecials@@QAEAAU0@$$QAU0@@Z"(
+  // M64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %"struct.\01?ExportInlineSpecials@@"* @"\01??4ExportInlineSpecials@@QEAAAEAU0@$$QEAU0@@Z"(
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct._Z20ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSEOS_(
+  // G64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct._Z20ExportInlineSpecials* @_ZN20ExportInlineSpecialsaSEOS_(
   __declspec(dllexport) ExportInlineSpecials& operator=(ExportInlineSpecials&&) { return *this; }
 };
 ExportInlineSpecials::ExportInlineSpecials(const ExportInlineSpecials&) {}
@@ -376,48 +376,48 @@ struct ExportDefaultedDefs {
   __declspec(dllexport) ExportDefaultedDefs& operator=(ExportDefaultedDefs&&);
 };
 
-// M32-DAG: define dllexport x86_thiscallcc %struct.ExportDefaultedDefs* @"\01??0ExportDefaultedDefs@@QAE@XZ"(%struct.ExportDefaultedDefs* returned %this)
-// M64-DAG: define dllexport                %struct.ExportDefaultedDefs* @"\01??0ExportDefaultedDefs@@QEAA@XZ"(%struct.ExportDefaultedDefs* returned %this)
-// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC1Ev(%struct.ExportDefaultedDefs* %this)
-// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC1Ev(%struct.ExportDefaultedDefs* %this)
-// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC2Ev(%struct.ExportDefaultedDefs* %this)
-// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC2Ev(%struct.ExportDefaultedDefs* %this)
+// M32-DAG: define dllexport x86_thiscallcc %"struct.\01?ExportDefaultedDefs@@"* @"\01??0ExportDefaultedDefs@@QAE@XZ"(%"struct.\01?ExportDefaultedDefs@@"* returned %this)
+// M64-DAG: define dllexport                %"struct.\01?ExportDefaultedDefs@@"* @"\01??0ExportDefaultedDefs@@QEAA@XZ"(%"struct.\01?ExportDefaultedDefs@@"* returned %this)
+// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC1Ev(%struct._Z19ExportDefaultedDefs* %this)
+// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC1Ev(%struct._Z19ExportDefaultedDefs* %this)
+// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC2Ev(%struct._Z19ExportDefaultedDefs* %this)
+// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC2Ev(%struct._Z19ExportDefaultedDefs* %this)
 __declspec(dllexport) ExportDefaultedDefs::ExportDefaultedDefs() = default;
 
-// M32-DAG: define dllexport x86_thiscallcc void @"\01??1ExportDefaultedDefs@@QAE@XZ"(%struct.ExportDefaultedDefs* %this)
-// M64-DAG: define dllexport                void @"\01??1ExportDefaultedDefs@@QEAA@XZ"(%struct.ExportDefaultedDefs* %this)
-// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsD1Ev(%struct.ExportDefaultedDefs* %this)
-// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsD1Ev(%struct.ExportDefaultedDefs* %this)
-// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsD2Ev(%struct.ExportDefaultedDefs* %this)
-// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsD2Ev(%struct.ExportDefaultedDefs* %this)
+// M32-DAG: define dllexport x86_thiscallcc void @"\01??1ExportDefaultedDefs@@QAE@XZ"(%"struct.\01?ExportDefaultedDefs@@"* %this)
+// M64-DAG: define dllexport                void @"\01??1ExportDefaultedDefs@@QEAA@XZ"(%"struct.\01?ExportDefaultedDefs@@"* %this)
+// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsD1Ev(%struct._Z19ExportDefaultedDefs* %this)
+// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsD1Ev(%struct._Z19ExportDefaultedDefs* %this)
+// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsD2Ev(%struct._Z19ExportDefaultedDefs* %this)
+// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsD2Ev(%struct._Z19ExportDefaultedDefs* %this)
 ExportDefaultedDefs::~ExportDefaultedDefs() = default;
 
-// M32-DAG: define weak_odr dllexport x86_thiscallcc %struct.ExportDefaultedDefs* @"\01??0ExportDefaultedDefs@@QAE@ABU0@@Z"(%struct.ExportDefaultedDefs* returned %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// M64-DAG: define weak_odr dllexport                %struct.ExportDefaultedDefs* @"\01??0ExportDefaultedDefs@@QEAA@AEBU0@@Z"(%struct.ExportDefaultedDefs* returned %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC1ERKS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G64-DAG: define weak_odr dllexport                void @_ZN19ExportDefaultedDefsC1ERKS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC2ERKS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G64-DAG: define weak_odr dllexport                void @_ZN19ExportDefaultedDefsC2ERKS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// M32-DAG: define weak_odr dllexport x86_thiscallcc %"struct.\01?ExportDefaultedDefs@@"* @"\01??0ExportDefaultedDefs@@QAE@ABU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* returned %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// M64-DAG: define weak_odr dllexport                %"struct.\01?ExportDefaultedDefs@@"* @"\01??0ExportDefaultedDefs@@QEAA@AEBU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* returned %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC1ERKS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G64-DAG: define weak_odr dllexport                void @_ZN19ExportDefaultedDefsC1ERKS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC2ERKS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G64-DAG: define weak_odr dllexport                void @_ZN19ExportDefaultedDefsC2ERKS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
 __declspec(dllexport) ExportDefaultedDefs::ExportDefaultedDefs(const ExportDefaultedDefs&) = default;
 
-// M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @"\01??4ExportDefaultedDefs@@QAEAAU0@ABU0@@Z"(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// M64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @"\01??4ExportDefaultedDefs@@QEAAAEAU0@AEBU0@@Z"(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSERKS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSERKS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// M32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?ExportDefaultedDefs@@"* @"\01??4ExportDefaultedDefs@@QAEAAU0@ABU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// M64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %"struct.\01?ExportDefaultedDefs@@"* @"\01??4ExportDefaultedDefs@@QEAAAEAU0@AEBU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// G32-DAG: define weak_odr dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct._Z19ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSERKS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G64-DAG: define weak_odr dllexport                dereferenceable({{[0-9]+}}) %struct._Z19ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSERKS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
 inline ExportDefaultedDefs& ExportDefaultedDefs::operator=(const ExportDefaultedDefs&) = default;
 
-// M32-DAG: define dllexport x86_thiscallcc %struct.ExportDefaultedDefs* @"\01??0ExportDefaultedDefs@@QAE@$$QAU0@@Z"(%struct.ExportDefaultedDefs* returned %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// M64-DAG: define dllexport                %struct.ExportDefaultedDefs* @"\01??0ExportDefaultedDefs@@QEAA@$$QEAU0@@Z"(%struct.ExportDefaultedDefs* returned %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC1EOS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC1EOS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC2EOS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC2EOS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// M32-DAG: define dllexport x86_thiscallcc %"struct.\01?ExportDefaultedDefs@@"* @"\01??0ExportDefaultedDefs@@QAE@$$QAU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* returned %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// M64-DAG: define dllexport                %"struct.\01?ExportDefaultedDefs@@"* @"\01??0ExportDefaultedDefs@@QEAA@$$QEAU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* returned %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC1EOS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC1EOS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G32-DAG: define dllexport x86_thiscallcc void @_ZN19ExportDefaultedDefsC2EOS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G64-DAG: define dllexport                void @_ZN19ExportDefaultedDefsC2EOS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
 __declspec(dllexport) ExportDefaultedDefs::ExportDefaultedDefs(ExportDefaultedDefs&&) = default;
 
-// M32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @"\01??4ExportDefaultedDefs@@QAEAAU0@$$QAU0@@Z"(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// M64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @"\01??4ExportDefaultedDefs@@QEAAAEAU0@$$QEAU0@@Z"(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSEOS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
-// G64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct.ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSEOS_(%struct.ExportDefaultedDefs* %this, %struct.ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// M32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %"struct.\01?ExportDefaultedDefs@@"* @"\01??4ExportDefaultedDefs@@QAEAAU0@$$QAU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// M64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %"struct.\01?ExportDefaultedDefs@@"* @"\01??4ExportDefaultedDefs@@QEAAAEAU0@$$QEAU0@@Z"(%"struct.\01?ExportDefaultedDefs@@"* %this, %"struct.\01?ExportDefaultedDefs@@"* dereferenceable({{[0-9]+}}))
+// G32-DAG: define dllexport x86_thiscallcc dereferenceable({{[0-9]+}}) %struct._Z19ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSEOS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
+// G64-DAG: define dllexport                dereferenceable({{[0-9]+}}) %struct._Z19ExportDefaultedDefs* @_ZN19ExportDefaultedDefsaSEOS_(%struct._Z19ExportDefaultedDefs* %this, %struct._Z19ExportDefaultedDefs* dereferenceable({{[0-9]+}}))
 ExportDefaultedDefs& ExportDefaultedDefs::operator=(ExportDefaultedDefs&&) = default;
 
 
@@ -467,10 +467,10 @@ struct MemFunTmpl {
 
 // Export implicit instantiation of an exported member function template.
 void useMemFunTmpl() {
-  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UImplicitInst_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-  // M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UImplicitInst_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI21ImplicitInst_ExportedEEvv(%struct.MemFunTmpl* %this)
-  // G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI21ImplicitInst_ExportedEEvv(%struct.MemFunTmpl* %this)
+  // M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UImplicitInst_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+  // M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UImplicitInst_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+  // G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI21ImplicitInst_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+  // G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI21ImplicitInst_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
   MemFunTmpl().exportedNormal<ImplicitInst_Exported>();
 
   // MSC-DAG: define weak_odr dllexport                void @"\01??$exportedStatic@UImplicitInst_Exported@@@MemFunTmpl@@SAXXZ"()
@@ -481,10 +481,10 @@ void useMemFunTmpl() {
 
 // Export explicit instantiation declaration of an exported member function
 // template.
-// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitDecl_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UExplicitDecl_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI21ExplicitDecl_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI21ExplicitDecl_ExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitDecl_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UExplicitDecl_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI21ExplicitDecl_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI21ExplicitDecl_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
 extern template void MemFunTmpl::exportedNormal<ExplicitDecl_Exported>();
        template void MemFunTmpl::exportedNormal<ExplicitDecl_Exported>();
 
@@ -496,10 +496,10 @@ extern template void MemFunTmpl::exportedStatic<ExplicitDecl_Exported>();
 
 // Export explicit instantiation definition of an exported member function
 // template.
-// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitInst_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UExplicitInst_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI21ExplicitInst_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI21ExplicitInst_ExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitInst_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UExplicitInst_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI21ExplicitInst_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI21ExplicitInst_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
 template void MemFunTmpl::exportedNormal<ExplicitInst_Exported>();
 
 // MSC-DAG: define weak_odr dllexport                void @"\01??$exportedStatic@UExplicitInst_Exported@@@MemFunTmpl@@SAXXZ"()
@@ -508,16 +508,16 @@ template void MemFunTmpl::exportedStatic<ExplicitInst_Exported>();
 
 
 // Export specialization of an exported member function template.
-// M32-DAG: define          dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define          dllexport                void @"\01??$exportedNormal@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define          dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI25ExplicitSpec_Def_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define          dllexport                void @_ZN10MemFunTmpl14exportedNormalI25ExplicitSpec_Def_ExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define          dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define          dllexport                void @"\01??$exportedNormal@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define          dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI25ExplicitSpec_Def_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define          dllexport                void @_ZN10MemFunTmpl14exportedNormalI25ExplicitSpec_Def_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
 template<> __declspec(dllexport) void MemFunTmpl::exportedNormal<ExplicitSpec_Def_Exported>() {}
 
-// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI31ExplicitSpec_InlineDef_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI31ExplicitSpec_InlineDef_ExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$exportedNormal@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define weak_odr dllexport                void @"\01??$exportedNormal@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI31ExplicitSpec_InlineDef_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl14exportedNormalI31ExplicitSpec_InlineDef_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
 template<> __declspec(dllexport) inline void MemFunTmpl::exportedNormal<ExplicitSpec_InlineDef_Exported>() {}
 
 // MSC-DAG: define          dllexport                void @"\01??$exportedStatic@UExplicitSpec_Def_Exported@@@MemFunTmpl@@SAXXZ"()
@@ -531,10 +531,10 @@ template<> __declspec(dllexport) inline void MemFunTmpl::exportedStatic<Explicit
 
 // Not exporting specialization of an exported member function template without
 // explicit dllexport.
-// M32-DAG: define                    x86_thiscallcc void @"\01??$exportedNormal@UExplicitSpec_NotExported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define                                   void @"\01??$exportedNormal@UExplicitSpec_NotExported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define                    x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI24ExplicitSpec_NotExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define                                   void @_ZN10MemFunTmpl14exportedNormalI24ExplicitSpec_NotExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define                    x86_thiscallcc void @"\01??$exportedNormal@UExplicitSpec_NotExported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define                                   void @"\01??$exportedNormal@UExplicitSpec_NotExported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define                    x86_thiscallcc void @_ZN10MemFunTmpl14exportedNormalI24ExplicitSpec_NotExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define                                   void @_ZN10MemFunTmpl14exportedNormalI24ExplicitSpec_NotExportedEEvv(%struct._Z10MemFunTmpl* %this)
 template<> void MemFunTmpl::exportedNormal<ExplicitSpec_NotExported>() {}
 
 // M32-DAG: define                                   void @"\01??$exportedStatic@UExplicitSpec_NotExported@@@MemFunTmpl@@SAXXZ"()
@@ -544,10 +544,10 @@ template<> void MemFunTmpl::exportedStatic<ExplicitSpec_NotExported>() {}
 
 // Export explicit instantiation declaration of a non-exported member function
 // template.
-// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitDecl_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define weak_odr dllexport                void @"\01??$normalDef@UExplicitDecl_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI21ExplicitDecl_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl9normalDefI21ExplicitDecl_ExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitDecl_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define weak_odr dllexport                void @"\01??$normalDef@UExplicitDecl_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI21ExplicitDecl_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl9normalDefI21ExplicitDecl_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
 extern template __declspec(dllexport) void MemFunTmpl::normalDef<ExplicitDecl_Exported>();
        template __declspec(dllexport) void MemFunTmpl::normalDef<ExplicitDecl_Exported>();
 
@@ -559,10 +559,10 @@ extern template __declspec(dllexport) void MemFunTmpl::staticDef<ExplicitDecl_Ex
 
 // Export explicit instantiation definition of a non-exported member function
 // template.
-// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitInst_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define weak_odr dllexport                void @"\01??$normalDef@UExplicitInst_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI21ExplicitInst_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl9normalDefI21ExplicitInst_ExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitInst_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define weak_odr dllexport                void @"\01??$normalDef@UExplicitInst_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI21ExplicitInst_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl9normalDefI21ExplicitInst_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
 template __declspec(dllexport) void MemFunTmpl::normalDef<ExplicitInst_Exported>();
 
 // MSC-DAG: define weak_odr dllexport                void @"\01??$staticDef@UExplicitInst_Exported@@@MemFunTmpl@@SAXXZ"()
@@ -571,14 +571,14 @@ template __declspec(dllexport) void MemFunTmpl::staticDef<ExplicitInst_Exported>
 
 
 // Export specialization of a non-exported member function template.
-// M32-DAG: define          dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define          dllexport                void @"\01??$normalDef@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QAEXXZ"(%struct.MemFunTmpl* %this)
-// M64-DAG: define weak_odr dllexport                void @"\01??$normalDef@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QEAAXXZ"(%struct.MemFunTmpl* %this)
-// G32-DAG: define          dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI25ExplicitSpec_Def_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define          dllexport                void @_ZN10MemFunTmpl9normalDefI25ExplicitSpec_Def_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI31ExplicitSpec_InlineDef_ExportedEEvv(%struct.MemFunTmpl* %this)
-// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl9normalDefI31ExplicitSpec_InlineDef_ExportedEEvv(%struct.MemFunTmpl* %this)
+// M32-DAG: define          dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define          dllexport                void @"\01??$normalDef@UExplicitSpec_Def_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M32-DAG: define weak_odr dllexport x86_thiscallcc void @"\01??$normalDef@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QAEXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// M64-DAG: define weak_odr dllexport                void @"\01??$normalDef@UExplicitSpec_InlineDef_Exported@@@MemFunTmpl@@QEAAXXZ"(%"struct.\01?MemFunTmpl@@"* %this)
+// G32-DAG: define          dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI25ExplicitSpec_Def_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define          dllexport                void @_ZN10MemFunTmpl9normalDefI25ExplicitSpec_Def_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G32-DAG: define weak_odr dllexport x86_thiscallcc void @_ZN10MemFunTmpl9normalDefI31ExplicitSpec_InlineDef_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
+// G64-DAG: define weak_odr dllexport                void @_ZN10MemFunTmpl9normalDefI31ExplicitSpec_InlineDef_ExportedEEvv(%struct._Z10MemFunTmpl* %this)
 template<> __declspec(dllexport) void MemFunTmpl::normalDef<ExplicitSpec_Def_Exported>() {}
 template<> __declspec(dllexport) inline void MemFunTmpl::normalDef<ExplicitSpec_InlineDef_Exported>() {}
 

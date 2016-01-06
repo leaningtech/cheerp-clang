@@ -45,7 +45,7 @@ v16i16 test_v16i16(v16i16 x)
   return x;
 }
 
-// CHECK: define void @test_struct_v16i16(%struct.v16i16* noalias sret %agg.result, [2 x i128] %x.coerce)
+// CHECK: define void @test_struct_v16i16(%struct._Z6v16i16* noalias sret %agg.result, [2 x i128] %x.coerce)
 struct v16i16 test_struct_v16i16(struct v16i16 x)
 {
   return x;
