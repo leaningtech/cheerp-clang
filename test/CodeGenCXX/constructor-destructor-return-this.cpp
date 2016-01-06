@@ -131,11 +131,11 @@ void test_destructor() {
 
 // Verify that virtual calls to destructors are not marked with a 'returned'
 // this parameter at the call site...
-// CHECKARM: [[VFN:%.*]] = getelementptr inbounds %class.E* (%class.E*)*, %class.E* (%class.E*)**
-// CHECKARM: [[THUNK:%.*]] = load %class.E* (%class.E*)*, %class.E* (%class.E*)** [[VFN]]
-// CHECKARM: call %class.E* [[THUNK]](%class.E* %
+// CHECKARM: [[VFN:%.*]] = getelementptr inbounds %class._Z1E* (%class._Z1E*)*, %class._Z1E* (%class._Z1E*)**
+// CHECKARM: [[THUNK:%.*]] = load %class._Z1E* (%class._Z1E*)*, %class._Z1E* (%class._Z1E*)** [[VFN]]
+// CHECKARM: call %class._Z1E* [[THUNK]](%class._Z1E* %
 
 // ...but static calls create declarations with 'returned' this
-// CHECKARM: {{%.*}} = call %class.E* @_ZN1ED1Ev(%class.E* %
+// CHECKARM: {{%.*}} = call %class._Z1E* @_ZN1ED1Ev(%class._Z1E* %
 
-// CHECKARM: declare %class.E* @_ZN1ED1Ev(%class.E* returned)
+// CHECKARM: declare %class._Z1E* @_ZN1ED1Ev(%class._Z1E* returned)

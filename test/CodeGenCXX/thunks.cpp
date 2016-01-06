@@ -338,7 +338,7 @@ namespace Test13 {
   // CHECK: getelementptr inbounds i8, i8* {{.*}}, i64 -32
   // CHECK: getelementptr inbounds i8, i8* {{.*}}, i64 -24
   // CHECK: getelementptr inbounds i8, i8* {{.*}}, i64 8
-  // CHECK: ret %"struct.Test13::D"*
+  // CHECK: ret %struct._ZN6Test131DE*
 }
 
 namespace Test14 {

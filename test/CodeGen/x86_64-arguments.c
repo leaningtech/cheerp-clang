@@ -63,7 +63,7 @@ struct s9 { int a; int b; int : 0; } f9(void) { while (1) {} }
 struct s10 { int a; int b; int : 0; };
 void f10(struct s10 a0) {}
 
-// CHECK-LABEL: define void @f11(%union.anon* noalias sret %agg.result)
+// CHECK-LABEL: define void @f11(%"union._Z3$_0"* noalias sret %agg.result)
 union { long double a; float b; } f11() { while (1) {} }
 
 // CHECK-LABEL: define i32 @f12_0()
@@ -152,7 +152,7 @@ struct f24s { long a; int b; };
 struct f23S f24(struct f23S *X, struct f24s *P2) {
   return *X;
   
-  // CHECK: define { i64, i32 } @f24(%struct.f23S* %X, %struct.f24s* %P2)
+  // CHECK: define { i64, i32 } @f24(%struct._Z4f23S* %X, %struct._Z4f24s* %P2)
 }
 
 // rdar://8248065
@@ -174,7 +174,7 @@ struct foo26 {
 };
 
 struct foo26 f26(struct foo26 *P) {
-  // CHECK: define { i32*, float* } @f26(%struct.foo26* %P)
+  // CHECK: define { i32*, float* } @f26(%struct._Z5foo26* %P)
   return *P;
 }
 

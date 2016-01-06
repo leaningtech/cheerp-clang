@@ -32,7 +32,7 @@ struct CGRect {
 @synthesize frame;
 
 // CHECK: define internal void @"\01-[I setPosition:]"
-// CHECK: call dereferenceable({{[0-9]+}}) %class.S* @_ZN1SaSERKS_
+// CHECK: call dereferenceable({{[0-9]+}}) %class._Z1S* @_ZN1SaSERKS_
 // CHECK-NEXT: ret void
 
 // Don't attach debug locations to the prologue instructions. These were
