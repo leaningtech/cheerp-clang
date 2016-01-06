@@ -30,12 +30,12 @@ void test4 (int x, struct test4 y)
 {
 }
 
-// CHECK: define void @test5(i32 signext %x, %struct.test5* byval align 8 %y)
+// CHECK: define void @test5(i32 signext %x, %struct._Z5test5* byval align 8 %y)
 void test5 (int x, struct test5 y)
 {
 }
 
-// CHECK: define void @test6(i32 signext %x, %struct.test6* byval align 16 %y)
+// CHECK: define void @test6(i32 signext %x, %struct._Z5test6* byval align 16 %y)
 void test6 (int x, struct test6 y)
 {
 }

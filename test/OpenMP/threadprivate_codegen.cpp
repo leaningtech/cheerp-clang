@@ -139,7 +139,7 @@ struct S5 {
 // CHECK-DAG:  [[ST_INT_ST]].cache. = common global i8** null
 // CHECK-DAG:  [[ST_FLOAT_ST:@.+]] = linkonce_odr global float 2.300000e+01
 // CHECK-DAG:  [[ST_FLOAT_ST]].cache. = common global i8** null
-// CHECK-DAG:  [[ST_S4_ST:@.+]] = linkonce_odr global %struct.S4 zeroinitializer
+// CHECK-DAG:  [[ST_S4_ST:@.+]] = linkonce_odr global %struct._Z2S4 zeroinitializer
 // CHECK-DAG:  [[ST_S4_ST]].cache. = common global i8** null
 // CHECK-NOT:  .cache. = common global i8** null
 // There is no cache for gs2 - it is not threadprivate. Check that there is only

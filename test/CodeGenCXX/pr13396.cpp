@@ -12,8 +12,8 @@ foo::foo() {
 }
 
 foo::~foo() {
-  // CHECK-LABEL: define void @_ZN3fooD2Ev(%struct.foo* inreg %this)
-  // CHECK-LABEL: define void @_ZN3fooD1Ev(%struct.foo* inreg %this)
+  // CHECK-LABEL: define void @_ZN3fooD2Ev(%struct._Z3foo* inreg %this)
+  // CHECK-LABEL: define void @_ZN3fooD1Ev(%struct._Z3foo* inreg %this)
 }
 
 void dummy() {

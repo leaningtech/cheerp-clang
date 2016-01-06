@@ -48,7 +48,7 @@ union simple_union {
   char b;
 };
 // Unions should be passed as byval structs
-// CHECK-LABEL: define void @f7(%union.simple_union* byval align 4 %s)
+// CHECK-LABEL: define void @f7(%union._Z12simple_union* byval align 4 %s)
 void f7(union simple_union s) {}
 
 typedef struct {

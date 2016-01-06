@@ -1,8 +1,8 @@
 // RUN: %clang_cc1 -triple i686-pc-linux -emit-llvm < %s | FileCheck %s
 // All of these should uses the memory representation of _Bool
 
-// CHECK-LABEL: %struct.teststruct1 = type { i8, i8 }
-// CHECK-LABEL: @test1 = common global %struct.teststruct1
+// CHECK-LABEL: %struct._Z11teststruct1 = type { i8, i8 }
+// CHECK-LABEL: @test1 = common global %struct._Z11teststruct1
 struct teststruct1 {_Bool a, b;} test1;
 
 // CHECK-LABEL: @test2 = common global i8* null
