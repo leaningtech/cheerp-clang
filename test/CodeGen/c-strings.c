@@ -11,7 +11,7 @@
 // MSABI: @f1.x = internal global i8* getelementptr inbounds ([6 x i8], [6 x i8]* @"\01??_C@_05CJBACGMB@hello?$AA@", i32 0, i32 0)
 // CHECK: @f2.x = internal global [6 x i8] c"hello\00", align [[ALIGN]]
 // CHECK: @f3.x = internal global [8 x i8] c"hello\00\00\00", align [[ALIGN]]
-// ITANIUM: @f4.x = internal global %struct.s { i8* getelementptr inbounds ([6 x i8]* @.str, i32 0, i32 0) }
+// ITANIUM: @f4.x = internal global %struct._ZZ2f4E1s { i8* getelementptr inbounds ([6 x i8]* @.str, i32 0, i32 0) }
 // MSABI: @f4.x = internal global %struct.s { i8* getelementptr inbounds ([6 x i8]* @"\01??_C@_05CJBACGMB@hello?$AA@", i32 0, i32 0) }
 // CHECK: @x = global [3 x i8] c"ola", align [[ALIGN]]
 

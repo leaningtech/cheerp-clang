@@ -46,6 +46,6 @@ unsigned char test5(unsigned char a, signed short b) {
 __fp16 test_half(__fp16 A) { }
 
 // __fp16 is a base type for homogeneous floating-point aggregates for AArch64 (but not 32-bit ARM).
-// CHECK: define %struct.HFA_half @test_half_hfa([4 x half] %{{.*}})
+// CHECK: define %struct._Z8HFA_half @test_half_hfa([4 x half] %{{.*}})
 struct HFA_half { __fp16 a[4]; };
 struct HFA_half test_half_hfa(struct HFA_half A) { }

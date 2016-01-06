@@ -7,13 +7,13 @@ struct foo {
 };
 
 foo::foo() {
-  // CHECK-LABEL: define void @_ZN3fooC2Ev(%struct.foo* inreg %this)
-  // CHECK-LABEL: define void @_ZN3fooC1Ev(%struct.foo* inreg %this)
+  // CHECK-LABEL: define void @_ZN3fooC2Ev(%struct._Z3foo* inreg %this)
+  // CHECK-LABEL: define void @_ZN3fooC1Ev(%struct._Z3foo* inreg %this)
 }
 
 foo::~foo() {
-  // CHECK-LABEL: define void @_ZN3fooD2Ev(%struct.foo* inreg %this)
-  // CHECK-LABEL: define void @_ZN3fooD1Ev(%struct.foo* inreg %this)
+  // CHECK-LABEL: define void @_ZN3fooD2Ev(%struct._Z3foo* inreg %this)
+  // CHECK-LABEL: define void @_ZN3fooD1Ev(%struct._Z3foo* inreg %this)
 }
 
 void dummy() {
@@ -21,6 +21,6 @@ void dummy() {
   // older clangs accept:
   // template foo::foo(int x);
   foo x(10);
-  // CHECK-LABEL: define linkonce_odr void @_ZN3fooC1IiEET_(%struct.foo* inreg %this, i32 inreg %x)
-  // CHECK-LABEL: define linkonce_odr void @_ZN3fooC2IiEET_(%struct.foo* inreg %this, i32 inreg %x)
+  // CHECK-LABEL: define linkonce_odr void @_ZN3fooC1IiEET_(%struct._Z3foo* inreg %this, i32 inreg %x)
+  // CHECK-LABEL: define linkonce_odr void @_ZN3fooC2IiEET_(%struct._Z3foo* inreg %this, i32 inreg %x)
 }

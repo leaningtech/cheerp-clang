@@ -45,6 +45,7 @@ CHECK-NEXT:   warn_call_to_pure_virtual_member_function_from_ctor_dtor
 CHECK-NEXT:   warn_call_wrong_number_of_arguments
 CHECK-NEXT:   warn_case_empty_range
 CHECK-NEXT:   warn_char_constant_too_large
+CHECK-NEXT:   warn_cheerp_deprecated_attribute
 CHECK-NEXT:   warn_cheerp_inefficient_unions
 CHECK-NEXT:   warn_cheerp_unsafe_cast
 CHECK-NEXT:   warn_collection_expr_type

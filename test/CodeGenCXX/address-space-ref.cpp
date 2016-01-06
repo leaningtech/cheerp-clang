@@ -21,7 +21,7 @@ b & bar(b &x, b & y) {
   return x;
 }
 
-// CHECK: define %class.bc addrspace(1)* @_Z3barRU3AS12bcS1_(%class.bc addrspace(1)* %x, %class.bc addrspace(1)* %y)
+// CHECK: define %class._Z2bc addrspace(1)* @_Z3barRU3AS12bcS1_(%class._Z2bc addrspace(1)* %x, %class._Z2bc addrspace(1)* %y)
 
 // For a reference to an incomplete type in addrspace(0), output nonnull.
 
@@ -29,6 +29,6 @@ bc & bar2(bc &x, bc & y) {
   return x;
 }
 
-// CHECK: define nonnull %class.bc* @_Z4bar2R2bcS0_(%class.bc* nonnull %x, %class.bc* nonnull %y)
+// CHECK: define nonnull %class._Z2bc* @_Z4bar2R2bcS0_(%class._Z2bc* nonnull %x, %class._Z2bc* nonnull %y)
 
 

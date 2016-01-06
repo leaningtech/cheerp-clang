@@ -144,12 +144,12 @@ struct leading_anon_bitfield { int : 32; int n; } lab = { .n = 123 };
 
 void test1(int argc, char **argv)
 {
-  // CHECK: internal global %struct.foo { i8* null, i32 1024 }
+  // CHECK: internal global %struct._Z3foo { i8* null, i32 1024 }
   static struct foo foo = {
     .b = 1024,
   };
 
-  // CHECK: bitcast %union.anon.4* %u2
+  // CHECK: bitcast %"union._ZZ5test1E3$_0"* %u2
   // CHECK: call void @llvm.memset
    union { int i; float f; } u2 = { };
 

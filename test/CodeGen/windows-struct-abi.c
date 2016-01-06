@@ -34,7 +34,7 @@ struct f4 {
 
 struct f4 return_f4(void) { while (1); }
 
-// CHECK: define void @return_f4(%struct.f4* noalias sret %agg.result)
+// CHECK: define void @return_f4(%struct._Z2f4* noalias sret %agg.result)
 
 void receive_f4(struct f4 a0) { }
 

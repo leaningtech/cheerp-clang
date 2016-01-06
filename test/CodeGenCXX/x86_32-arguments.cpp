@@ -6,9 +6,9 @@ struct S {
   short s;
 };
 
-// CHECK-LABEL: define void @_Z1fv(%struct.S* noalias sret %
+// CHECK-LABEL: define void @_Z1fv(%struct._Z1S* noalias sret %
 S f() { return S(); }
-// CHECK-LABEL: define void @_Z1f1S(%struct.S*)
+// CHECK-LABEL: define void @_Z1f1S(%struct._Z1S*)
 void f(S) { }
 
 // Non-trivial dtors, should both be passed indirectly.
@@ -18,10 +18,10 @@ public:
   double c;
 };
 
-// CHECK-LABEL: define void @_Z1gv(%class.C* noalias sret %
+// CHECK-LABEL: define void @_Z1gv(%class._Z1C* noalias sret %
 C g() { return C(); }
 
-// CHECK-LABEL: define void @_Z1f1C(%class.C*) 
+// CHECK-LABEL: define void @_Z1f1C(%class._Z1C*)
 void f(C) { }
 
 
@@ -31,7 +31,7 @@ void f(C) { }
 
 // CHECK-LABEL: define void @_ZThn4_N18BasicAliasAnalysis13getModRefInfoE8CallSite
 // ...
-// CHECK: %struct.CallSite* byval align 4 %CS)
+// CHECK: %struct._Z8CallSite* byval align 4 %CS)
 struct CallSite {
   unsigned Ptr;
   CallSite(unsigned XX) : Ptr(XX) {}
@@ -103,13 +103,13 @@ struct s7_1 { double x; };
 struct s7 : s7_0, s7_1 { };
 s7 f7() { return s7(); }
 
-// CHECK-LABEL: define void @_Z2f8v(%struct.s8* noalias sret %agg.result)
+// CHECK-LABEL: define void @_Z2f8v(%struct._Z2s8* noalias sret %agg.result)
 struct s8_0 { };
 struct s8_1 { double x; };
 struct s8 { s8_0 a; s8_1 b; };
 s8 f8() { return s8(); }
 
-// CHECK-LABEL: define void @_Z2f9v(%struct.s9* noalias sret %agg.result)
+// CHECK-LABEL: define void @_Z2f9v(%struct._Z2s9* noalias sret %agg.result)
 struct s9_0 { unsigned : 0; };
 struct s9_1 { double x; };
 struct s9 { s9_0 a; s9_1 b; };

@@ -11,7 +11,7 @@ void bar() {
   foo({});
 }
 // CHECK-LABEL: define void @_ZN7trivial3barEv()
-// CHECK: alloca %"struct.trivial::A"
+// CHECK: alloca %struct._ZN7trivial1AE
 // CHECK: load i8*, i8**
 // CHECK: call void @_ZN7trivial3fooENS_1AE(i8* %{{.*}})
 // CHECK-LABEL: declare void @_ZN7trivial3fooENS_1AE(i8*)
@@ -31,7 +31,7 @@ void bar() {
   foo({});
 }
 // CHECK-LABEL: define void @_ZN12default_ctor3barEv()
-// CHECK: alloca %"struct.default_ctor::A"
+// CHECK: alloca %struct._ZN12default_ctor1AE
 // CHECK: call void @_Z{{.*}}C1Ev(
 // CHECK: load i8*, i8**
 // CHECK: call void @_ZN12default_ctor3fooENS_1AE(i8* %{{.*}})

@@ -52,14 +52,14 @@ int g9 = (2 + 3i) * (5 + 7i) != (-11 + 29i);
 int g10 = (2.0 + 3.0i) * (5.0 + 7.0i) != (-11.0 + 29.0i);
 
 // PR5108
-// CHECK: @gv1 = global %struct.anon <{ i32 0, i8 7 }>, align 1
+// CHECK: @gv1 = global %"struct._Z3$_0" <{ i32 0, i8 7 }>, align 1
 struct {
   unsigned long a;
   unsigned long b:3;
 } __attribute__((__packed__)) gv1  = { .a = 0x0, .b = 7,  };
 
 // PR5118
-// CHECK: @gv2 = global %struct.anon.0 <{ i8 1, i8* null }>, align 1 
+// CHECK: @gv2 = global %"struct._Z3$_1" <{ i8 1, i8* null }>, align 1 
 struct {
   unsigned char a;
   char *b;
@@ -76,7 +76,7 @@ long g11() {
 static char g12_tmp;
 long g12 = (long) &g12_tmp;
 
-// CHECK: @g13 = global [1 x %struct.g13_s0] [%struct.g13_s0 { i32 ptrtoint (i8* @g12_tmp to i32) }]
+// CHECK: @g13 = global [1 x %struct._Z6g13_s0] [%struct._Z6g13_s0 { i32 ptrtoint (i8* @g12_tmp to i32) }]
 struct g13_s0 {
    long a;
 };
@@ -102,7 +102,7 @@ void g18(void) {
   static int *p[] = { &g19 };
 }
 
-// CHECK: @g20.l0 = internal global %struct.g20_s1 { %struct.g20_s0* null, %struct.g20_s0** getelementptr inbounds (%struct.g20_s1* @g20.l0, i32 0, i32 0) }
+// CHECK: @g20.l0 = internal global %struct._Z6g20_s1 { %struct._Z6g20_s0* null, %struct._Z6g20_s0** getelementptr inbounds (%struct._Z6g20_s1* @g20.l0, i32 0, i32 0) }
 struct g20_s0;
 struct g20_s1 {
   struct g20_s0 *f0, **f1;
@@ -167,7 +167,7 @@ void g30() {
     int : 1;
     int x;
   } a = {};
-  // CHECK: @g30.a = internal global %struct.anon.1 <{ i8 undef, i32 0 }>, align 1
+  // CHECK: @g30.a = internal global %"struct._ZZ3g30E3$_2" <{ i8 undef, i32 0 }>, align 1
 #pragma pack()
 }
 
@@ -179,5 +179,5 @@ void g31() {
     short z;
   } a = {23122, -12312731, -312};
 #pragma pack()
-  // CHECK: @g31.a = internal global %struct.anon.2 { i16 23122, i32 -12312731, i16 -312 }, align 4
+  // CHECK: @g31.a = internal global %"struct._ZZ3g31E3$_3" { i16 23122, i32 -12312731, i16 -312 }, align 4
 }

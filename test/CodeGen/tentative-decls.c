@@ -7,10 +7,10 @@ int (*a)[] = &r;
 
 struct s0;
 struct s0 x;
-// RUN: grep '@x = common global .struct.s0 zeroinitializer' %t
+// RUN: grep '@x = common global .struct._Z2s0 zeroinitializer' %t
 
 struct s0 y;
-// RUN: grep '@y = common global .struct.s0 zeroinitializer' %t
+// RUN: grep '@y = common global .struct._Z2s0 zeroinitializer' %t
 struct s0 *f0() {
   return &y;
 }
