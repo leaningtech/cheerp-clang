@@ -494,7 +494,7 @@ void MicrosoftCXXNameMangler::mangle(const NamedDecl *D, StringRef Prefix) {
     mangleFunctionEncoding(FD, Context.shouldMangleDeclName(FD));
   else if (const VarDecl *VD = dyn_cast<VarDecl>(D))
     mangleVariableEncoding(VD);
-  else
+  else if (!isa<RecordDecl>(D))
     llvm_unreachable("Tried to mangle unexpected NamedDecl!");
 }
 
@@ -2942,7 +2942,7 @@ void MicrosoftCXXNameMangler::mangleType(const PipeType *T, Qualifiers,
 
 void MicrosoftMangleContextImpl::mangleCXXName(const NamedDecl *D,
                                                raw_ostream &Out) {
-  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D)) &&
+  assert((isa<FunctionDecl>(D) || isa<VarDecl>(D) || isa<RecordDecl>(D)) &&
          "Invalid mangleName() call, argument is not a variable or function!");
   assert(!isa<CXXConstructorDecl>(D) && !isa<CXXDestructorDecl>(D) &&
          "Invalid mangleName() call on 'structor decl!");
