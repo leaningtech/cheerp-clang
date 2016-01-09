@@ -238,17 +238,17 @@ S1 arr_x[2][3] = { { 1, 2, 3 }, { 4, 5, 6 } };
 // CHECK:      define internal {{.*}}void [[ARR_X_DTOR:@\.__kmpc_global_dtor_\..*]](i8*)
 // CHECK:      store i8* %0, i8** [[ARG_ADDR:%.*]],
 // CHECK:      [[ARG:%.+]] = load i8** [[ARG_ADDR]]
-// CHECK:      [[ARR_BEGIN:%.*]] = bitcast i8* [[ARG]] to [[S1]]*
-// CHECK-NEXT: [[ARR_CUR:%.*]] = getelementptr inbounds [[S1]]* [[ARR_BEGIN]], i{{.*}} 6
+// CHECK:      [[ARR_BEGIN:%.*]] = bitcast i8* [[ARG]] to [3 x [[S1]]]*
+// CHECK-NEXT: [[ARR_CUR:%.*]] = getelementptr inbounds [3 x [[S1]]]* [[ARR_BEGIN]], i{{.*}} 2
 // CHECK-NEXT: br label %[[ARR_LOOP:.*]]
 // CHECK:      {{.*}}[[ARR_LOOP]]{{.*}}
-// CHECK-NEXT: [[ARR_ELEMENTPAST:%.*]] = phi [[S1]]* [ [[ARR_CUR]], {{.*}} ], [ [[ARR_ELEMENT:%.*]], {{.*}} ]
+// CHECK: [[ARR_ELEMENTPAST:%.*]] = phi [[S1]]*
 // CHECK-NEXT: [[ARR_ELEMENT:%.*]] = getelementptr inbounds [[S1]]* [[ARR_ELEMENTPAST]], i{{.*}} -1
 // CHECK-NEXT: invoke {{.*}} [[S1_DTOR]]([[S1]]* [[ARR_ELEMENT]])
 // CHECK:      [[ARR_DONE:%.*]] = icmp eq [[S1]]* [[ARR_ELEMENT]], [[ARR_BEGIN]]
 // CHECK-NEXT: br i1 [[ARR_DONE]], label %[[ARR_EXIT:.*]], label %[[ARR_LOOP]]
 // CHECK:      {{.*}}[[ARR_EXIT]]{{.*}}
-// CHECK-NEXT: ret void
+// CHECK: ret void
 // CHECK:      }
 // CHECK:      define internal {{.*}}void [[ARR_X_INIT:@\.__omp_threadprivate_init_\..*]]()
 // CHECK:      call {{.*}}void @__kmpc_threadprivate_register([[IDENT]]* [[DEFAULT_LOC]], i8* bitcast ([2 x [3 x [[S1]]]]* [[ARR_X]] to i8*), i8* (i8*)* [[ARR_X_CTOR]], i8* (i8*, i8*)* null, void (i8*)* [[ARR_X_DTOR]])

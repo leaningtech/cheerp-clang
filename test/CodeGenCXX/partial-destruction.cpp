@@ -134,8 +134,8 @@ namespace test2 {
     // CHECK-NEXT: alloca i32
 
     // Main initialization loop.
-    // CHECK-NEXT: [[BEGIN:%.*]] = getelementptr inbounds [4 x [7 x [[A]]]]* [[V]], i32 0, i32 0, i32 0
-    // CHECK-NEXT: [[END:%.*]] = getelementptr inbounds [[A]]* [[BEGIN]], i64 28
+    // CHECK: [[BEGIN:%.*]] = getelementptr inbounds [7 x [[A]]]* {{.*}}, i32 0, i32 0
+    // CHECK-NEXT: [[END:%.*]] = getelementptr inbounds [[A]]* [[BEGIN]], i64 7
     // CHECK-NEXT: br label
     // CHECK:      [[CUR:%.*]] = phi [[A]]* [ [[BEGIN]], {{%.*}} ], [ [[NEXT:%.*]], {{%.*}} ]
     // CHECK-NEXT: invoke void @_ZN5test21AC1Ev([[A]]* [[CUR]])
