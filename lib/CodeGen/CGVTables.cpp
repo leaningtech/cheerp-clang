@@ -562,8 +562,10 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
   llvm::Constant *PureVirtualFn = nullptr, *DeletedVirtualFn = nullptr;
 
   std::set<std::pair<uint32_t,uint32_t>> unifiedAddressPoints;
-  for(auto it: getItaniumVTableContext().getVTableLayout(RD).getAddressPoints())
-      unifiedAddressPoints.insert(it.second);
+  if (!CGM.getTarget().isByteAddressable()) {
+    for (auto it: getItaniumVTableContext().getVTableLayout(RD).getAddressPoints())
+        unifiedAddressPoints.insert(it.second);
+  }
 
   auto it=unifiedAddressPoints.begin();
 
