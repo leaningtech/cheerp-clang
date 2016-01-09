@@ -2273,7 +2273,7 @@ llvm::Value *CodeGenFunction::GetVTablePtr(llvm::Value *This,
   if(!VTablePtrSrc->getType()->getPointerElementType()->isPointerTy())
   {
     // We did not find a pointer, use the type unsafe code path
-    VTablePtrSrc = Builder.CreateBitCast(This, Ty->getPointerTo());
+    VTablePtrSrc = Builder.CreateBitCast(VTablePtrSrc, Ty->getPointerTo());
   }
   llvm::Instruction *VTable = Builder.CreateLoad(VTablePtrSrc, "vtable");
   CGM.DecorateInstruction(VTable, CGM.getTBAAInfoForVTablePtr());

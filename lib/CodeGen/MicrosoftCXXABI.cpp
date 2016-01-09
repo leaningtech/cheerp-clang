@@ -1056,9 +1056,9 @@ llvm::Value *MicrosoftCXXABI::adjustThisArgumentForVirtualFunctionCall(
 
     unsigned AS = cast<llvm::PointerType>(This->getType())->getAddressSpace();
     llvm::Type *charPtrTy = CGF.Int8Ty->getPointerTo(AS);
-    This = CGF.Builder.CreateBitCast(This, charPtrTy);
+    llvm::Value *NewThis = CGF.Builder.CreateBitCast(This, charPtrTy);
     assert(Adjustment.isPositive());
-    return CGF.Builder.CreateConstGEP1_32(This, Adjustment.getQuantity());
+    return CGF.Builder.CreateBitCast(CGF.Builder.CreateConstGEP1_32(NewThis, Adjustment.getQuantity()), This->getType());
   }
 
   GD = GD.getCanonicalDecl();
@@ -1089,24 +1089,26 @@ llvm::Value *MicrosoftCXXABI::adjustThisArgumentForVirtualFunctionCall(
     StaticOffset = CharUnits::Zero();
 
   if (ML.VBase) {
-    This = CGF.Builder.CreateBitCast(This, charPtrTy);
+    llvm::Value *NewThis = CGF.Builder.CreateBitCast(This, charPtrTy);
     llvm::Value *VBaseOffset =
-        GetVirtualBaseClassOffset(CGF, This, MD->getParent(), ML.VBase);
-    This = CGF.Builder.CreateInBoundsGEP(This, VBaseOffset);
+        GetVirtualBaseClassOffset(CGF, NewThis, MD->getParent(), ML.VBase);
+    NewThis = CGF.Builder.CreateInBoundsGEP(NewThis, VBaseOffset);
+    This = CGF.Builder.CreateBitCast(NewThis, This->getType());
   }
   if (!StaticOffset.isZero()) {
     assert(StaticOffset.isPositive());
-    This = CGF.Builder.CreateBitCast(This, charPtrTy);
+    llvm::Value *NewThis = CGF.Builder.CreateBitCast(This, charPtrTy);
     if (ML.VBase) {
       // Non-virtual adjustment might result in a pointer outside the allocated
       // object, e.g. if the final overrider class is laid out after the virtual
       // base that declares a method in the most derived class.
       // FIXME: Update the code that emits this adjustment in thunks prologues.
-      This = CGF.Builder.CreateConstGEP1_32(This, StaticOffset.getQuantity());
+      NewThis = CGF.Builder.CreateConstGEP1_32(NewThis, StaticOffset.getQuantity());
     } else {
-      This = CGF.Builder.CreateConstInBoundsGEP1_32(This,
+      NewThis = CGF.Builder.CreateConstInBoundsGEP1_32(NewThis,
                                                     StaticOffset.getQuantity());
     }
+    This = CGF.Builder.CreateBitCast(NewThis, This->getType());
   }
   return This;
 }
