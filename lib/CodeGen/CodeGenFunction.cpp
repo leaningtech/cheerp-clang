@@ -226,7 +226,8 @@ llvm::Value *CodeGenFunction::EmitHighIntFromInt(QualType Ty,
 llvm::Value *CodeGenFunction::EmitHighInt(QualType Ty,
                                           llvm::Value *high,
                                           llvm::Value *low) {
-  llvm::AllocaInst *highint = Builder.CreateAlloca(ConvertType(Ty));
+  llvm::AllocaInst *highint = new llvm::AllocaInst(ConvertType(Ty), nullptr, "", AllocaInsertPt);
+
   llvm::Value *highLoc = Builder.CreateConstGEP2_32(highint, 0, 0);
   llvm::Value *lowLoc = Builder.CreateConstGEP2_32(highint, 0, 1);
   Builder.CreateStore(high, highLoc, /*volatile*/false);
