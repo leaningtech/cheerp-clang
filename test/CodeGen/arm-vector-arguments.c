@@ -9,7 +9,7 @@
 
 #include <arm_neon.h>
 
-// CHECK: define void @f0(%struct.int8x16x2_t* noalias sret %agg.result, <16 x i8> %{{.*}}, <16 x i8> %{{.*}})
+// CHECK: define void @f0(%struct._Z11int8x16x2_t* noalias sret %agg.result, <16 x i8> %{{.*}}, <16 x i8> %{{.*}})
 int8x16x2_t f0(int8x16_t a0, int8x16_t a1) {
   return vzipq_s8(a0, a1);
 }
