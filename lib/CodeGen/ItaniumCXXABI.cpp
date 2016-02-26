@@ -43,9 +43,8 @@ class ItaniumCXXABI : public CodeGen::CGCXXABI {
   llvm::StructType* GetMemberPtrTy() {
     if (MemberPtrTyCache)
       return MemberPtrTyCache;
-    llvm::Type* elementType = CGM.getTarget().isByteAddressable()?
-                              (llvm::Type*)CGM.PtrDiffTy:
-                              (llvm::Type*)llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo();
+    assert(CGM.getTarget().isByteAddressable());
+    llvm::Type* elementType = CGM.PtrDiffTy;
     MemberPtrTyCache = llvm::StructType::create("memberptr", elementType, CGM.PtrDiffTy, NULL);
     return MemberPtrTyCache;
   }
@@ -372,6 +371,8 @@ llvm::Type *
 ItaniumCXXABI::ConvertMemberPointerType(const MemberPointerType *MPT) {
   if (MPT->isMemberDataPointer())
     return CGM.PtrDiffTy;
+  if (!CGM.getTarget().isByteAddressable())
+     return llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo();
   return GetMemberPtrTy();
 }
 
@@ -409,6 +410,11 @@ llvm::Value *ItaniumCXXABI::EmitLoadOfMemberFunctionPointer(
     CGM.getTypes().GetFunctionType(
       CGM.getTypes().arrangeCXXMethodType(RD, FPT));
 
+  //On NBA we use a plain function pointer
+  if (!CGF.getTarget().isByteAddressable()) {
+    return Builder.CreateBitCast(MemFnPtr, FTy->getPointerTo(), "memptr");
+  }
+
   llvm::Constant *ptrdiff_1 = llvm::ConstantInt::get(CGM.PtrDiffTy, 1);
 
   llvm::BasicBlock *FnVirtual = CGF.createBasicBlock("memptr.virtual");
@@ -423,22 +429,15 @@ llvm::Value *ItaniumCXXABI::EmitLoadOfMemberFunctionPointer(
   if (UseARMMethodPtrABI)
     Adj = Builder.CreateAShr(Adj, ptrdiff_1, "memptr.adj.shifted");
 
-  //On NBA only 0 adjustment is currently supported
-  if (CGF.getTarget().isByteAddressable())
-  {
-    // Apply the adjustment and cast back to the original struct type
-    // for consistency.
-    llvm::Value *Ptr = Builder.CreateBitCast(This, Builder.getInt8PtrTy());
-    Ptr = Builder.CreateInBoundsGEP(Ptr, Adj);
-    This = Builder.CreateBitCast(Ptr, This->getType(), "this.adjusted");
-  }
+  // Apply the adjustment and cast back to the original struct type
+  // for consistency.
+  llvm::Value *Ptr = Builder.CreateBitCast(This, Builder.getInt8PtrTy());
+  Ptr = Builder.CreateInBoundsGEP(Ptr, Adj);
+  This = Builder.CreateBitCast(Ptr, This->getType(), "this.adjusted");
   
   // Load the function pointer.
   llvm::Value *FnAsInt = Builder.CreateExtractValue(MemFnPtr, 0, "memptr.ptr");
   
-  if (!CGF.getTarget().isByteAddressable())
-    return Builder.CreateBitCast(FnAsInt, FTy->getPointerTo(), "memptr.nonvirtualfn");
-
   // If the LSB in the function pointer is 1, the function pointer points to
   // a virtual function.
   llvm::Value *IsVirtual;
@@ -641,12 +640,12 @@ ItaniumCXXABI::EmitNullMemberPointer(const MemberPointerType *MPT) {
   if (MPT->isMemberDataPointer()) 
     return llvm::ConstantInt::get(CGM.PtrDiffTy, -1ULL, /*isSigned=*/true);
 
+  if (!CGM.getTarget().isByteAddressable()) {
+    return llvm::ConstantPointerNull::get(llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo());
+  }
+
   llvm::Constant *Zero = llvm::ConstantInt::get(CGM.PtrDiffTy, 0);
-  llvm::Constant *Zero2 = CGM.getTarget().isByteAddressable()?
-                          (llvm::Constant*)llvm::ConstantInt::get(CGM.PtrDiffTy, 0):
-                          (llvm::Constant*)llvm::ConstantPointerNull::get(
-					llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo());
-  llvm::Constant *Values[2] = { Zero2, Zero };
+  llvm::Constant *Values[2] = { Zero, Zero };
   return llvm::ConstantStruct::get(GetMemberPtrTy(), Values);
 }
 
@@ -718,17 +717,16 @@ llvm::Constant *ItaniumCXXABI::BuildMemberPointer(const CXXMethodDecl *MD,
     }
     llvm::Constant *addr = CGM.GetAddrOfFunction(MD, Ty);
 
-    if (CGM.getTarget().isByteAddressable())
-      MemPtr[0] = llvm::ConstantExpr::getPtrToInt(addr, CGM.PtrDiffTy);
-    else
+    if (!CGM.getTarget().isByteAddressable())
     {
-      MemPtr[0] = llvm::ConstantExpr::getBitCast(addr, llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo());
       if (ThisAdjustment.getQuantity())
       {
         CGM.ErrorUnsupported(MD, "Cheerp: this pointer to member function is not yet supported");
         return NULL;
       }
+      return llvm::ConstantExpr::getBitCast(addr, llvm::FunctionType::get(CGM.Int32Ty, true)->getPointerTo());
     }
+    MemPtr[0] = llvm::ConstantExpr::getPtrToInt(addr, CGM.PtrDiffTy);
     MemPtr[1] = llvm::ConstantInt::get(CGM.PtrDiffTy,
                                        (UseARMMethodPtrABI ? 2 : 1) *
                                        ThisAdjustment.getQuantity());
@@ -780,7 +778,7 @@ ItaniumCXXABI::EmitMemberPointerComparison(CodeGenFunction &CGF,
 
   // Member data pointers are easy because there's a unique null
   // value, so it just comes down to bitwise equality.
-  if (MPT->isMemberDataPointer())
+  if (MPT->isMemberDataPointer() || !CGM.getTarget().isByteAddressable())
     return Builder.CreateICmp(Eq, L, R);
 
   // For member function pointers, the tautologies are more complex.
@@ -845,13 +843,16 @@ ItaniumCXXABI::EmitMemberPointerIsNotNull(CodeGenFunction &CGF,
       llvm::Constant::getAllOnesValue(MemPtr->getType());
     return Builder.CreateICmpNE(MemPtr, NegativeOne, "memptr.tobool");
   }
+
+  if (!CGM.getTarget().isByteAddressable()) {
+    llvm::Constant *Zero = llvm::ConstantPointerNull::get(cast<llvm::PointerType>(MemPtr->getType()));
+    return Builder.CreateICmpNE(MemPtr, Zero, "memptr.tobool");
+  }
   
   // In Itanium, a member function pointer is not null if 'ptr' is not null.
   llvm::Value *Ptr = Builder.CreateExtractValue(MemPtr, 0, "memptr.ptr");
 
-  llvm::Constant *Zero = CGM.getTarget().isByteAddressable()?
-                          (llvm::Constant*)llvm::ConstantInt::get(Ptr->getType(), 0):
-                          (llvm::Constant*)llvm::ConstantPointerNull::get(cast<llvm::PointerType>(Ptr->getType()));
+  llvm::Constant *Zero = llvm::ConstantInt::get(Ptr->getType(), 0);
   llvm::Value *Result = Builder.CreateICmpNE(Ptr, Zero, "memptr.tobool");
 
   // On ARM, a member function pointer is also non-null if the low bit of 'adj'

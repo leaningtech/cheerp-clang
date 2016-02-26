@@ -42,9 +42,9 @@ static void AssignToArrayRange(CodeGen::CGBuilderTy &Builder,
   }
 }
 
-static bool isAggregateTypeForABI(QualType T) {
+static bool isAggregateTypeForABI(QualType T, bool byteAddressable = true) {
   return !CodeGenFunction::hasScalarEvaluationKind(T) ||
-         T->isMemberFunctionPointerType() ||
+         (T->isMemberFunctionPointerType() && byteAddressable) ||
          CodeGenFunction::IsHighInt(T);
 }
 
@@ -288,7 +288,7 @@ static const Type *isSingleElementStruct(QualType T, ASTContext &Context) {
       FT = AT->getElementType();
     }
 
-    if (!isAggregateTypeForABI(FT)) {
+    if (!isAggregateTypeForABI(FT, Context.getTargetInfo().isByteAddressable())) {
       Found = FT.getTypePtr();
     } else {
       Found = isSingleElementStruct(FT, Context);
@@ -400,7 +400,7 @@ llvm::Value *DefaultABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
 }
 
 ABIArgInfo DefaultABIInfo::classifyArgumentType(QualType Ty) const {
-  if (isAggregateTypeForABI(Ty))
+  if (isAggregateTypeForABI(Ty, getTarget().isByteAddressable()))
     return ABIArgInfo::getIndirect(0);
 
   // Treat an enum type as its underlying type.
@@ -415,7 +415,7 @@ ABIArgInfo DefaultABIInfo::classifyReturnType(QualType RetTy) const {
   if (RetTy->isVoidType())
     return ABIArgInfo::getIgnore();
 
-  if (isAggregateTypeForABI(RetTy))
+  if (isAggregateTypeForABI(RetTy, getTarget().isByteAddressable()))
     return ABIArgInfo::getIndirect(0);
 
   // Treat an enum type as its underlying type.
