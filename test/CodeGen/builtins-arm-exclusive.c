@@ -109,10 +109,10 @@ int test_ldrex(char *addr, long long *addr64, float *addrfloat) {
 
   sum += __builtin_arm_ldrex((struct Simple **)addr)->a;
 // CHECK: [[INTRES:%.*]] = tail call i32 @llvm.arm.ldrex.p0i32(i32* [[ADDR32]])
-// CHECK: inttoptr i32 [[INTRES]] to %struct.Simple*
+// CHECK: inttoptr i32 [[INTRES]] to %struct._Z6Simple*
 
 // CHECK-ARM64: [[INTRES:%.*]] = tail call i64 @llvm.aarch64.ldxr.p0i64(i64* [[ADDR64]])
-// CHECK-ARM64: inttoptr i64 [[INTRES]] to %struct.Simple*
+// CHECK-ARM64: inttoptr i64 [[INTRES]] to %struct._Z6Simple*
   return sum;
 }
 
@@ -193,10 +193,10 @@ int test_ldaex(char *addr, long long *addr64, float *addrfloat) {
 
   sum += __builtin_arm_ldaex((struct Simple **)addr)->a;
 // CHECK: [[INTRES:%.*]] = tail call i32 @llvm.arm.ldaex.p0i32(i32* [[ADDR32]])
-// CHECK: inttoptr i32 [[INTRES]] to %struct.Simple*
+// CHECK: inttoptr i32 [[INTRES]] to %struct._Z6Simple*
 
 // CHECK-ARM64: [[INTRES:%.*]] = tail call i64 @llvm.aarch64.ldaxr.p0i64(i64* [[ADDR64]])
-// CHECK-ARM64: inttoptr i64 [[INTRES]] to %struct.Simple*
+// CHECK-ARM64: inttoptr i64 [[INTRES]] to %struct._Z6Simple*
   return sum;
 }
 
