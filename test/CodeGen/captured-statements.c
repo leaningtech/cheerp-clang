@@ -40,7 +40,7 @@ void test2(int x) {
     for (i = 0; i < x; i++)
       foo();
   }
-  // CHECK-2: test2
+  // CHECK-2: @test2
   // CHECK-2-NOT: %i
   // CHECK-2: call void @[[HelperName:__captured_stmt[0-9]+]]
 }
@@ -86,7 +86,7 @@ void dont_capture_global() {
     e++;
   }
 
-  // CHECK-GLOBALS: %[[Capture:"struct._ZZ5test1E3\$_0"*]] = type { i32* }
+  // CHECK-GLOBALS: %[[Capture:"struct._ZZ19dont_capture_globalE3\$_4"]] = type {}
   // CHECK-GLOBALS: call void @__captured_stmt[[HelperName:[0-9]*]](%[[Capture]]
 }
 
