@@ -674,7 +674,8 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     Inits.push_back(Init);
     if (!CGM.getTarget().isByteAddressable() && Inits.size() == (it->second+1)) {
       // Break this vtable here
-      llvm::Constant* VTable = llvm::ConstantStruct::getAnon(Inits);
+      llvm::StructType* directBase = cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType());
+      llvm::Constant* VTable = llvm::ConstantStruct::getAnon(Inits, false, directBase);
       WrapperInits.push_back(VTable);
       Inits.clear();
       ++it;
@@ -943,7 +944,7 @@ llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount)
   VTableTypes.push_back(GetClassTypeInfoType()->getPointerTo());
   for(uint32_t j=0;j<virtualMethodsCount;j++)
     VTableTypes.push_back(FuncPtrTy);
-  return llvm::StructType::get(getLLVMContext(), VTableTypes);
+  return llvm::StructType::get(getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(GetVTableBaseType()));
 }
 
 llvm::Type* CodeGenTypes::GetClassTypeInfoType()
