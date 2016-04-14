@@ -1310,9 +1310,11 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                 const FunctionDecl *CalleeDecl,
                                 const FunctionProtoType *CalleeType,
                                 const CallArgList &Args,
-                                QualType* allocType = NULL) {
+                                bool IsDelete,
+                                QualType* allocType) {
   llvm::CallBase *CallOrInvoke;
   llvm::Constant *CalleePtr = CGF.CGM.GetAddrOfFunction(CalleeDecl);
+  CGCallee Callee = CGCallee::forDirect(CalleePtr, GlobalDecl(CalleeDecl));
 
   RValue RV;
   if(CalleeDecl->hasAttr<MallocAttr>() && !CGF.getTarget().isByteAddressable())
@@ -1320,7 +1322,7 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     // If allocType is specified this is an allocation, otherwise a free
     QualType retType;
     llvm::Function* intrinsic;
-    if(allocType) {
+    if(!IsDelete) {
       // Forge a call to a special type safe allocator intrinsic
       retType = CGF.getContext().getPointerType(*allocType);
       llvm::Type* types[] = { CGF.ConvertType(retType) };
@@ -1329,15 +1331,16 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                   llvm::Intrinsic::cheerp_allocate, types);
     } else {
       retType = CGF.getContext().VoidTy;
+      QualType argType = allocType ? CGF.getContext().getPointerType(*allocType) : CGF.getContext().VoidPtrTy;
+      llvm::Type* types[] = { CGF.ConvertType(argType) };
       intrinsic = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                  llvm::Intrinsic::cheerp_deallocate);
+                                  llvm::Intrinsic::cheerp_deallocate, types);
     }
-    llvm::Value* SizeArg[] = { Args[0].RV.getScalarVal() };
-    RV = RValue::get(CGF.Builder.CreateCall(intrinsic, SizeArg));
+    llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
+    RV = RValue::get(CGF.Builder.CreateCall(intrinsic, Arg));
   }
   else
   {
-    CGCallee Callee = CGCallee::forDirect(CalleePtr, GlobalDecl(CalleeDecl));
     RV =
       CGF.EmitCall(CGF.CGM.getTypes().arrangeFreeFunctionCall(
                        Args, CalleeType, /*chainCall=*/false),
@@ -1372,7 +1375,7 @@ RValue CodeGenFunction::EmitBuiltinNewDeleteCall(const FunctionProtoType *Type,
   for (auto *Decl : Ctx.getTranslationUnitDecl()->lookup(Name))
     if (auto *FD = dyn_cast<FunctionDecl>(Decl))
       if (Ctx.hasSameType(FD->getType(), QualType(Type, 0)))
-        return EmitNewDeleteCall(*this, FD, Type, Args);
+        return EmitNewDeleteCall(*this, FD, Type, Args, IsDelete, NULL);
   llvm_unreachable("predeclared global operator new/delete is missing");
 }
 
@@ -1506,7 +1509,7 @@ namespace {
       }
 
       // Call 'operator delete'.
-      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs);
+      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs, /* IsDelete */ true, NULL);
     }
   };
 }
@@ -1681,7 +1684,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
                  /*AC*/AbstractCallee(), /*ParamsToSkip*/ParamsToSkip);
 
     RValue RV =
-      EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, &allocType);
+      EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, /* IsDelete */ false, &allocType);
 
     // If this was a call to a global replaceable allocation function that does
     // not take an alignment argument, the allocator is known to produce
@@ -1825,7 +1828,7 @@ void CodeGenFunction::EmitDeleteCall(const FunctionDecl *DeleteFD,
 
   // Pass the pointer itself.
   QualType ArgTy = *ParamTypeIt++;
-  llvm::Value *DeletePtr = Builder.CreateBitCast(Ptr, ConvertType(ArgTy));
+  llvm::Value *DeletePtr = getTarget().isByteAddressable() ? Builder.CreateBitCast(Ptr, ConvertType(ArgTy)) : Ptr;
   DeleteArgs.add(RValue::get(DeletePtr), ArgTy);
 
   // Pass the std::destroying_delete tag if present.
@@ -1869,7 +1872,7 @@ void CodeGenFunction::EmitDeleteCall(const FunctionDecl *DeleteFD,
          "unknown parameter to usual delete function");
 
   // Emit the call to delete.
-  EmitNewDeleteCall(*this, DeleteFD, DeleteFTy, DeleteArgs);
+  EmitNewDeleteCall(*this, DeleteFD, DeleteFTy, DeleteArgs, /* IsDelete */ true, &DeleteTy);
 }
 
 namespace {
