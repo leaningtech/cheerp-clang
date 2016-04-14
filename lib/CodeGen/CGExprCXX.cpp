@@ -1050,7 +1050,8 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                 const FunctionDecl *Callee,
                                 const FunctionProtoType *CalleeType,
                                 const CallArgList &Args,
-                                QualType* allocType = NULL) {
+                                bool IsDelete,
+                                QualType* allocType) {
   llvm::Instruction *CallOrInvoke;
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
 
@@ -1058,7 +1059,7 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
   if(!CGF.getTarget().isByteAddressable()) {
     // If allocType is specified this is an allocation, otherwise a free
     QualType retType;
-    if(allocType) {
+    if(!IsDelete) {
       // Forge a call to a special type safe allocator intrinsic
       retType = CGF.getContext().getPointerType(*allocType);
       llvm::Type* types[] = { CGF.ConvertType(retType) };
@@ -1067,11 +1068,13 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                   llvm::Intrinsic::cheerp_allocate, types);
     } else {
       retType = CGF.getContext().VoidTy;
+      QualType argType = allocType ? CGF.getContext().getPointerType(*allocType) : CGF.getContext().VoidPtrTy;
+      llvm::Type* types[] = { CGF.ConvertType(argType) };
       CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                  llvm::Intrinsic::cheerp_deallocate);
+                                  llvm::Intrinsic::cheerp_deallocate, types);
     }
-    llvm::Value* SizeArg[] = { Args[0].RV.getScalarVal() };
-    RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, SizeArg));
+    llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
+    RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
   }
   else
   {
@@ -1117,7 +1120,7 @@ RValue CodeGenFunction::EmitBuiltinNewDeleteCall(const FunctionProtoType *Type,
   for (auto *Decl : Ctx.getTranslationUnitDecl()->lookup(Name))
     if (auto *FD = dyn_cast<FunctionDecl>(Decl))
       if (Ctx.hasSameType(FD->getType(), QualType(Type, 0)))
-        return EmitNewDeleteCall(*this, cast<FunctionDecl>(Decl), Type, Args);
+        return EmitNewDeleteCall(*this, cast<FunctionDecl>(Decl), Type, Args, IsDelete, NULL);
   llvm_unreachable("predeclared global operator new/delete is missing");
 }
 
@@ -1170,7 +1173,7 @@ namespace {
         DeleteArgs.add(getPlacementArgs()[I], *AI++);
 
       // Call 'operator delete'.
-      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs);
+      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs, /* IsDelete */ true, NULL);
     }
   };
 
@@ -1229,7 +1232,7 @@ namespace {
       }
 
       // Call 'operator delete'.
-      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs);
+      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs, /* IsDelete */ true, NULL);
     }
   };
 }
@@ -1336,7 +1339,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
     // TODO: kill any unnecessary computations done for the size
     // argument.
   } else {
-    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, &allocType);
+    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, /* IsDelete */ false, &allocType);
   }
 
   // Emit a null check on the allocation result if the allocation
@@ -1450,14 +1453,14 @@ void CodeGenFunction::EmitDeleteCall(const FunctionDecl *DeleteFD,
   }
 
   QualType ArgTy = DeleteFTy->getParamType(0);
-  llvm::Value *DeletePtr = Builder.CreateBitCast(Ptr, ConvertType(ArgTy));
+  llvm::Value *DeletePtr = getTarget().isByteAddressable() ? Builder.CreateBitCast(Ptr, ConvertType(ArgTy)) : Ptr;
   DeleteArgs.add(RValue::get(DeletePtr), ArgTy);
 
   if (Size)
     DeleteArgs.add(RValue::get(Size), SizeTy);
 
   // Emit the call to delete.
-  EmitNewDeleteCall(*this, DeleteFD, DeleteFTy, DeleteArgs);
+  EmitNewDeleteCall(*this, DeleteFD, DeleteFTy, DeleteArgs, /* IsDelete */ true, &DeleteTy);
 }
 
 namespace {
@@ -1572,7 +1575,7 @@ namespace {
       // Pass the pointer as the first argument.
       QualType VoidPtrTy = DeleteFTy->getParamType(0);
       llvm::Value *DeletePtr
-        = CGF.Builder.CreateBitCast(Ptr, CGF.ConvertType(VoidPtrTy));
+        = CGF.getTarget().isByteAddressable() ? CGF.Builder.CreateBitCast(Ptr, CGF.ConvertType(VoidPtrTy)) : Ptr;
       Args.add(RValue::get(DeletePtr), VoidPtrTy);
 
       // Pass the original requested size as the second argument.
@@ -1600,7 +1603,8 @@ namespace {
       }
 
       // Emit the call to delete.
-      EmitNewDeleteCall(CGF, OperatorDelete, DeleteFTy, Args);
+      // TODO: When we fix cookie support we can pass ElementType here
+      EmitNewDeleteCall(CGF, OperatorDelete, DeleteFTy, Args, /* IsDelete */ true, CookieSize.isZero() ? &ElementType : NULL);
     }
   };
 }

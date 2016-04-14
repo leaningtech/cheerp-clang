@@ -221,7 +221,6 @@ void CGCXXABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
   // Derive a char* in the same address space as the pointer.
   unsigned AS = ptr->getType()->getPointerAddressSpace();
   llvm::Type *charPtrTy = CGF.Int8Ty->getPointerTo(AS);
-  ptr = CGF.Builder.CreateBitCast(ptr, charPtrTy);
 
   // If we don't need an array cookie, bail out early.
   if (!requiresArrayCookie(expr, eltTy)) {
@@ -231,6 +230,7 @@ void CGCXXABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
     return;
   }
 
+  ptr = CGF.Builder.CreateBitCast(ptr, charPtrTy);
   cookieSize = getArrayCookieSizeImpl(eltTy);
   allocPtr = CGF.Builder.CreateConstInBoundsGEP1_64(ptr,
                                                     -cookieSize.getQuantity());
