@@ -1444,7 +1444,6 @@ llvm::Value *ItaniumCXXABI::EmitDynamicCastCall(
     Result->addIncoming(ZeroDowncast, ZeroBB);
     Result->addIncoming(FailedDowncast, FailedBB);
     Value = Result;
-    CGF.Builder.CreateBr(CastEnd);
   } else
     Value = CGF.Builder.CreateBitCast(Value, DestLTy);
 
