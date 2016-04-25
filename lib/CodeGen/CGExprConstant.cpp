@@ -1193,6 +1193,21 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
         {
           if (ST->isOpaque())
             break;
+          if(!OffsetVal)
+          {
+            llvm::StructType* curBase = ST;
+            bool isBaseGood = false;
+            while((curBase = curBase->getDirectBase()))
+            {
+              if(curBase == DestTy->getPointerElementType())
+              {
+                isBaseGood = true;
+                break;
+              }
+            }
+            if(isBaseGood)
+              break;
+          }
           const llvm::StructLayout *SL = getDataLayout().getStructLayout(ST);
           unsigned Index = SL->getElementContainingOffset(OffsetVal);
           Indexes.push_back(llvm::ConstantInt::get(Int32Ty, Index));
