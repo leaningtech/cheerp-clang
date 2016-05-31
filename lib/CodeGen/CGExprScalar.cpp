@@ -2714,8 +2714,9 @@ static Value *emitPointerArithmetic(CodeGenFunction &CGF,
     std::swap(pointerOperand, indexOperand);
   }
 
-  unsigned width = cast<llvm::IntegerType>(index->getType())->getBitWidth();
-  if (width != CGF.PointerWidthInBits) {
+  if (CGF.IsHighInt(indexOperand->getType())) {
+    index = CGF.EmitLoadLowBitsOfHighInt(op.RHS);
+  } else if (cast<llvm::IntegerType>(index->getType())->getBitWidth() != CGF.PointerWidthInBits) {
     // Zero-extend or sign-extend the pointer value according to
     // whether the index is signed or not.
     bool isSigned = indexOperand->getType()->isSignedIntegerOrEnumerationType();
@@ -2959,9 +2960,10 @@ Value *ScalarExprEmitter::EmitSub(const BinOpInfo &op) {
     return Builder.CreateSub(op.LHS, op.RHS, "sub");
   }
 
+  const BinaryOperator *expr = cast<BinaryOperator>(op.E);
   // If the RHS is not a pointer, then we have normal pointer
   // arithmetic.
-  if (!op.RHS->getType()->isPointerTy())
+  if (!expr->getRHS()->getType()->isPointerType())
     return emitPointerArithmetic(CGF, op, /*subtraction*/ true);
 
   // Otherwise, this is a pointer subtraction.
@@ -2974,7 +2976,6 @@ Value *ScalarExprEmitter::EmitSub(const BinOpInfo &op) {
   Value *diffInChars = Builder.CreateSub(LHS, RHS, "sub.ptr.sub");
 
   // Okay, figure out the element size.
-  const BinaryOperator *expr = cast<BinaryOperator>(op.E);
   QualType elementType = expr->getLHS()->getType()->getPointeeType();
 
   llvm::Value *divisor = nullptr;
