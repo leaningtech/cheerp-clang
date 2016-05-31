@@ -3491,7 +3491,6 @@ static Value *emitPointerArithmetic(CodeGenFunction &CGF,
 
   bool isSigned = indexOperand->getType()->isSignedIntegerOrEnumerationType();
 
-  unsigned width = cast<llvm::IntegerType>(index->getType())->getBitWidth();
   auto &DL = CGF.CGM.getDataLayout();
   auto PtrTy = cast<llvm::PointerType>(pointer->getType());
 
@@ -3518,7 +3517,9 @@ static Value *emitPointerArithmetic(CodeGenFunction &CGF,
                                                        expr->getRHS()))
     return CGF.Builder.CreateIntToPtr(index, pointer->getType());
 
-  if (width != DL.getTypeSizeInBits(PtrTy)) {
+  if (CGF.IsHighInt(indexOperand->getType())) {
+    index = CGF.EmitLoadLowBitsOfHighInt(op.RHS);
+  } else if (cast<llvm::IntegerType>(index->getType())->getBitWidth() != DL.getTypeSizeInBits(PtrTy)) {
     // Zero-extend or sign-extend the pointer value according to
     // whether the index is signed or not.
     index = CGF.Builder.CreateIntCast(index, DL.getIntPtrType(PtrTy), isSigned,
@@ -3877,9 +3878,10 @@ Value *ScalarExprEmitter::EmitSub(const BinOpInfo &op) {
     return Builder.CreateSub(op.LHS, op.RHS, "sub");
   }
 
+  const BinaryOperator *expr = cast<BinaryOperator>(op.E);
   // If the RHS is not a pointer, then we have normal pointer
   // arithmetic.
-  if (!op.RHS->getType()->isPointerTy())
+  if (!expr->getRHS()->getType()->isPointerType())
     return emitPointerArithmetic(CGF, op, CodeGenFunction::IsSubtraction);
 
   // Otherwise, this is a pointer subtraction.
@@ -3892,7 +3894,6 @@ Value *ScalarExprEmitter::EmitSub(const BinOpInfo &op) {
   Value *diffInChars = Builder.CreateSub(LHS, RHS, "sub.ptr.sub");
 
   // Okay, figure out the element size.
-  const BinaryOperator *expr = cast<BinaryOperator>(op.E);
   QualType elementType = expr->getLHS()->getType()->getPointeeType();
 
   llvm::Value *divisor = nullptr;
