@@ -1684,7 +1684,7 @@ namespace {
 /// in reverse order of their construction.
 void CodeGenFunction::EnterDtorCleanups(const CXXDestructorDecl *DD,
                                         CXXDtorType DtorType) {
-  assert((!DD->isTrivial() || DD->hasAttr<DLLExportAttr>()) &&
+  assert((!DD->isTrivial() || DD->hasAttr<DLLExportAttr>() || DD->getParent()->hasAttr<JsExportAttr>()) &&
          "Should not emit dtor epilogue for non-exported trivial dtor!");
 
   // The deleting-destructor phase just needs to call the appropriate
