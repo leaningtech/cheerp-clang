@@ -1049,6 +1049,15 @@ void CodeGenModule::SetLLVMFunctionAttributesForDefinition(const Decl *D,
   if (CodeGenOpts.SanitizeCfiCrossDso)
     if (auto *FD = dyn_cast<FunctionDecl>(D))
       CreateFunctionTypeMetadata(FD, F);
+
+  if(D->hasAttr<JsExportAttr>())
+  {
+      llvm::NamedMDNode* namedNode = getModule().getOrInsertNamedMetadata("jsexported_methods");
+      llvm::SmallVector<llvm::Metadata*,1> values;
+      values.push_back(llvm::ConstantAsMetadata::get(F));
+      llvm::MDNode* node = llvm::MDNode::get(getLLVMContext(),values);
+      namedNode->addOperand(node);
+  }
 }
 
 void CodeGenModule::SetCommonAttributes(const Decl *D,
