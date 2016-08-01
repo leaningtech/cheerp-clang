@@ -813,6 +813,14 @@ void CodeGenModule::SetLLVMFunctionAttributesForDefinition(const Decl *D,
     F->addFnAttr(llvm::Attribute::Client);
   if(D->hasAttr<ServerAttr>())
     F->addFnAttr(llvm::Attribute::Server);
+  if(D->hasAttr<JsExportAttr>())
+  {
+      llvm::NamedMDNode* namedNode = getModule().getOrInsertNamedMetadata("jsexported_methods");
+      llvm::SmallVector<llvm::Metadata*,1> values;
+      values.push_back(llvm::ConstantAsMetadata::get(F));
+      llvm::MDNode* node = llvm::MDNode::get(getLLVMContext(),values);
+      namedNode->addOperand(node);
+  }
 }
 
 void CodeGenModule::SetCommonAttributes(const Decl *D,
