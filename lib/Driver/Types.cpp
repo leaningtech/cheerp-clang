@@ -201,7 +201,8 @@ void types::getCompilationPhases(ID Id, llvm::SmallVectorImpl<phases::ID> &P) {
     if (onlyPrecompileType(Id)) {
       P.push_back(phases::Precompile);
     } else {
-      if (!onlyAssembleType(Id)) {
+      // NOTE: the second condition is added to avoid re-doing compiler and backend phases for .bc files
+      if (!onlyAssembleType(Id) && Id != TY_LLVM_BC) {
         P.push_back(phases::Compile);
         P.push_back(phases::Backend);
       }
