@@ -95,8 +95,8 @@ AppendField(const FieldDecl *Field, uint64_t FieldOffset,
     llvm::APInt v = cast<llvm::ConstantInt>(InitCst)->getValue();
     llvm::Constant *elements[] = {llvm::ConstantInt::get(CGM.Int32Ty, v.getHiBits(32).trunc(32)), 
                                   llvm::ConstantInt::get(CGM.Int32Ty, v.trunc(32))};
-    llvm::StructType* highIntType = cast<llvm::StructType>(CGM.getTypes().ConvertType(Field->getType()));
-    InitCst = llvm::ConstantStruct::get(highIntType, elements);
+    llvm::ArrayType* highIntType = cast<llvm::ArrayType>(CGM.getTypes().ConvertType(Field->getType()));
+    InitCst = llvm::ConstantArray::get(highIntType, elements);
   }
 
   AppendBytes(FieldOffsetInChars, InitCst);
