@@ -2825,6 +2825,9 @@ LValue CodeGenFunction::EmitLValueForField(LValue base,
     assert(!type->isReferenceType() && "union has reference member");
     // TODO: handle path-aware TBAA for union.
     TBAAPath = false;
+  } else if (!CGM.getTarget().isByteAddressable() && CGM.getTypes().getCGRecordLayout(rec).getLLVMFieldNo(field) == 0xffffffff) {
+    // Cheerp: If the first member is a struct we want to collapse it into the parent, and we use upcast_collapsed to access it
+    addr = GenerateUpcastCollapsed(addr, CGM.getTypes().ConvertTypeForMem(type)->getPointerTo());
   } else {
     // For structs, we GEP to the field that the record layout suggests.
     unsigned idx = CGM.getTypes().getCGRecordLayout(rec).getLLVMFieldNo(field);

@@ -490,7 +490,13 @@ void ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
       CGM.EmitConstantValueForMemory(FieldValue, Field->getType(), CGF);
     assert(EltInit && "EmitConstantValue can't fail");
 
-    if (!Field->isBitField()) {
+    if (!CGM.getTarget().isByteAddressable() && Field->getFieldIndex() == 0 && Field->getType()->isStructureOrClassType() && !RD->isUnion()) {
+      const RecordDecl* RD = Field->getType()->getAsStructureType()->getDecl();
+      const CXXRecordDecl *CD = dyn_cast<CXXRecordDecl>(RD);
+      assert(Layout.getFieldOffset(FieldNo) == 0);
+      assert(Offset.getQuantity() == 0);
+      Build(FieldValue, RD, CD, Offset);
+    } else if (!Field->isBitField()) {
       // Handle non-bitfield members.
       AppendField(*Field, Layout.getFieldOffset(FieldNo) + OffsetBits, EltInit);
     } else {
@@ -878,7 +884,14 @@ public:
       if(!field)
         return 0;
       unsigned idx=rl.getLLVMFieldNo(field);
-      initializers[idx] = init;
+      if (idx == 0xffffffff)
+      {
+        // This is a structure element that has been merged with this class, we only support zero init for them
+	if(!isa<llvm::ConstantAggregateZero>(init))
+          return 0;
+      }
+      else
+        initializers[idx] = init;
     }
     //Fill NULL values with Null values as required
     for(unsigned i=0;i<initializers.size();i++)
@@ -1231,7 +1244,8 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
           break;
       }
 
-      C = llvm::ConstantExpr::getGetElementPtr(C, Indexes);
+      if (CurrentType == DestTy->getPointerElementType())
+        C = llvm::ConstantExpr::getGetElementPtr(C, Indexes);
 
       // Apply offset if necessary.
       if (OffsetVal) {
