@@ -6477,6 +6477,8 @@ public:
                                 MacroBuilder &Builder) const {
     // Target identification.
     Builder.defineMacro("__CHEERP__");
+    if (Opts.getCheerpMode() == LangOptions::CHEERP_MODE_AsmJS)
+        Builder.defineMacro("__ASMJS__");
 
     if (Opts.CPlusPlus)
       Builder.defineMacro("_GNU_SOURCE");
