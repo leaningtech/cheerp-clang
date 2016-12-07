@@ -10593,6 +10593,8 @@ private:
   bool SemaBuiltinVSX(CallExpr *TheCall);
   bool SemaBuiltinOSLogFormat(CallExpr *TheCall);
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  void MaybeInjectCheerpModeAttr(Decl* D);
 public:
   // Used by C++ template instantiation.
   ExprResult SemaBuiltinShuffleVector(CallExpr *TheCall);
