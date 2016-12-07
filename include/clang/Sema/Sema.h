@@ -8545,6 +8545,8 @@ private:
   bool SemaBuiltinUnorderedCompare(CallExpr *TheCall);
   bool SemaBuiltinFPClassification(CallExpr *TheCall, unsigned NumArgs);
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  void MaybeInjectCheerpModeAttr(Decl* D);
 public:
   // Used by C++ template instantiation.
   ExprResult SemaBuiltinShuffleVector(CallExpr *TheCall);
