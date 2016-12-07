@@ -10388,6 +10388,9 @@ CXXConstructorDecl *Sema::DeclareImplicitDefaultConstructor(
     PushOnScopeChains(DefaultCon, S, false);
   ClassDecl->addDecl(DefaultCon);
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(DefaultCon);
+
   return DefaultCon;
 }
 
@@ -10665,6 +10668,9 @@ CXXDestructorDecl *Sema::DeclareImplicitDestructor(CXXRecordDecl *ClassDecl) {
   if (S)
     PushOnScopeChains(Destructor, S, false);
   ClassDecl->addDecl(Destructor);
+
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(Destructor);
 
   return Destructor;
 }
@@ -11266,6 +11272,9 @@ CXXMethodDecl *Sema::DeclareImplicitCopyAssignment(CXXRecordDecl *ClassDecl) {
     PushOnScopeChains(CopyAssignment, S, false);
   ClassDecl->addDecl(CopyAssignment);
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(CopyAssignment);
+
   return CopyAssignment;
 }
 
@@ -11589,6 +11598,8 @@ CXXMethodDecl *Sema::DeclareImplicitMoveAssignment(CXXRecordDecl *ClassDecl) {
     PushOnScopeChains(MoveAssignment, S, false);
   ClassDecl->addDecl(MoveAssignment);
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(MoveAssignment);
   return MoveAssignment;
 }
 
@@ -11965,6 +11976,9 @@ CXXConstructorDecl *Sema::DeclareImplicitCopyConstructor(
     PushOnScopeChains(CopyConstructor, S, false);
   ClassDecl->addDecl(CopyConstructor);
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(CopyConstructor);
+
   return CopyConstructor;
 }
 
@@ -12087,6 +12101,9 @@ CXXConstructorDecl *Sema::DeclareImplicitMoveConstructor(
   if (S)
     PushOnScopeChains(MoveConstructor, S, false);
   ClassDecl->addDecl(MoveConstructor);
+
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(MoveConstructor);
 
   return MoveConstructor;
 }
