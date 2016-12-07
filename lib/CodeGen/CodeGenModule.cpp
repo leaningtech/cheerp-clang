@@ -2135,6 +2135,10 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D) {
     GV->setConstant(false);
 
   setNonAliasAttributes(D, GV);
+  //cheerp: set the section to asmjs
+  if (D->hasAttr<AsmJSAttr>())
+    GV->setSection("asmjs");
+
 
   if (D->getTLSKind() && !GV->isThreadLocal()) {
     if (D->getTLSKind() == VarDecl::TLS_Dynamic)
@@ -2487,6 +2491,10 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
 
   if (shouldBeInCOMDAT(*this, *D))
     Fn->setComdat(TheModule.getOrInsertComdat(Fn->getName()));
+
+  //cheerp: set the section to asmjs
+  if (D->hasAttr<AsmJSAttr>())
+    Fn->setSection("asmjs");
 
   CodeGenFunction(*this).GenerateCode(D, Fn, FI);
 

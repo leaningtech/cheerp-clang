@@ -1002,6 +1002,15 @@ def JsExport : InheritableAttr {
   let Documentation = [Undocumented];
 }
 
+def AsmJS : InheritableAttr {
+  let Spellings = [CXX11<"cheerp", "asmjs">];
+  let Documentation = [Undocumented];
+}
+def GenericJS : InheritableAttr {
+  let Spellings = [CXX11<"cheerp", "genericjs">];
+  let Documentation = [Undocumented];
+}
+
 def ObjCBridge : InheritableAttr {
   let Spellings = [GNU<"objc_bridge">];
   let Subjects = SubjectList<[Record], ErrorDiag>;
