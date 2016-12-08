@@ -1054,7 +1054,7 @@ static llvm::Constant *patternFor(CodeGenModule &CGM, llvm::Type *Ty) {
 static Address createUnnamedGlobalFrom(CodeGenModule &CGM, const VarDecl &D,
                                        CGBuilderTy &Builder,
                                        llvm::Constant *Constant,
-                                       CharUnits Align) {
+                                       CharUnits Align, llvm::Function* CurFn) {
   auto FunctionName = [&](const DeclContext *DC) -> std::string {
     if (const auto *FD = dyn_cast<FunctionDecl>(DC)) {
       if (const auto *CC = dyn_cast<CXXConstructorDecl>(FD))
@@ -1087,8 +1087,12 @@ static Address createUnnamedGlobalFrom(CodeGenModule &CGM, const VarDecl &D,
   GV->setAlignment(Align.getQuantity());
   GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
 
+  //CHEERP: if function is in asmjs section, also the temporary global should
+  if (CurFn && CurFn->getSection()==StringRef("asmjs"))
+    GV->setSection("asmjs");
+
   Address SrcPtr = Address(GV, Align);
-  if (constant->getType()->isArrayTy())
+  if (Ty->isArrayTy())
     SrcPtr = Builder.CreateConstGEP2_32(GV->getType()->getPointerElementType(), SrcPtr, 0, 0);
   llvm::Type *BP = llvm::PointerType::getInt8PtrTy(CGM.getLLVMContext(), AS);
   if (CGM.getTarget().isByteAddressable() && SrcPtr.getType() != BP)
@@ -1099,7 +1103,7 @@ static Address createUnnamedGlobalFrom(CodeGenModule &CGM, const VarDecl &D,
 static void emitStoresForConstant(CodeGenModule &CGM, const VarDecl &D,
                                   Address Loc, bool isVolatile,
                                   CGBuilderTy &Builder,
-                                  llvm::Constant *constant) {
+                                  llvm::Constant *constant, llvm::Function* CurFn) {
   auto *Ty = constant->getType();
   bool isScalar = Ty->isIntOrIntVectorTy() || Ty->isPtrOrPtrVectorTy() ||
                   Ty->isFPOrFPVectorTy();
@@ -1143,7 +1147,7 @@ static void emitStoresForConstant(CodeGenModule &CGM, const VarDecl &D,
 
   Builder.CreateMemCpy(
       Loc,
-      createUnnamedGlobalFrom(CGM, D, Builder, constant, Loc.getAlignment()),
+      createUnnamedGlobalFrom(CGM, D, Builder, constant, Loc.getAlignment(), CurFn),
       SizeVal, isVolatile, CGM.getTarget().isByteAddressable());
 }
 
@@ -1152,7 +1156,7 @@ static void emitStoresForZeroInit(CodeGenModule &CGM, const VarDecl &D,
                                   CGBuilderTy &Builder) {
   llvm::Type *ElTy = Loc.getElementType();
   llvm::Constant *constant = llvm::Constant::getNullValue(ElTy);
-  emitStoresForConstant(CGM, D, Loc, isVolatile, Builder, constant);
+  emitStoresForConstant(CGM, D, Loc, isVolatile, Builder, constant, nullptr);
 }
 
 static void emitStoresForPatternInit(CodeGenModule &CGM, const VarDecl &D,
@@ -1161,7 +1165,7 @@ static void emitStoresForPatternInit(CodeGenModule &CGM, const VarDecl &D,
   llvm::Type *ElTy = Loc.getElementType();
   llvm::Constant *constant = patternFor(CGM, ElTy);
   assert(!isa<llvm::UndefValue>(constant));
-  emitStoresForConstant(CGM, D, Loc, isVolatile, Builder, constant);
+  emitStoresForConstant(CGM, D, Loc, isVolatile, Builder, constant, nullptr);
 }
 
 static bool containsUndef(llvm::Constant *constant) {
@@ -1703,7 +1707,7 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
       CharUnits CurAlign = Loc.getAlignment().alignmentOfArrayElement(EltSize);
       Builder.CreateMemCpy(
           Address(Cur, CurAlign),
-          createUnnamedGlobalFrom(CGM, D, Builder, Constant, ConstantAlign),
+          createUnnamedGlobalFrom(CGM, D, Builder, Constant, ConstantAlign, CurFn),
           BaseSizeInChars, isVolatile);
       llvm::Value *Next =
           Builder.CreateInBoundsGEP(Int8Ty, Cur, BaseSizeInChars, "vla.next");
@@ -1752,7 +1756,7 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
   if (getTarget().isByteAddressable() && Loc.getType() != BP)
     Loc = Builder.CreateBitCast(Loc, BP);
 
-  emitStoresForConstant(CGM, D, Loc, isVolatile, Builder, constant);
+  emitStoresForConstant(CGM, D, Loc, isVolatile, Builder, constant, CurFn);
 }
 
 /// Emit an expression as an initializer for an object (variable, field, etc.)
