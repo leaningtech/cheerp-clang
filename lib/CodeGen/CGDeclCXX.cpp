@@ -468,6 +468,11 @@ CodeGenModule::EmitCXXGlobalVarDeclInitFunc(const VarDecl *D,
                                          getTypes().arrangeNullaryFunction(),
                                          D->getLocation());
 
+  // CHEERP: if the global is in the asmjs section, also put the initializer
+  // there
+  if (Addr->getSection() == StringRef("asmjs"))
+    Fn->setSection("asmjs");
+
   auto *ISA = D->getAttr<InitSegAttr>();
   CodeGenFunction(*this).GenerateCXXGlobalVarDeclInitFunc(Fn, D, Addr,
                                                           PerformInit);
