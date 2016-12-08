@@ -2677,7 +2677,7 @@ LValue CodeGenFunction::EmitDeclRefLValue(const DeclRefExpr *E) {
       if (!VD->getType()->isReferenceType()) {
         // Spill the constant value to a global.
         Addr = CGM.createUnnamedGlobalFrom(*VD, Val,
-                                           getContext().getDeclAlign(VD));
+                                           getContext().getDeclAlign(VD), CurFn);
       } else {
         // Should we be using the alignment of the constant pointer we emitted?
         CharUnits Alignment =
