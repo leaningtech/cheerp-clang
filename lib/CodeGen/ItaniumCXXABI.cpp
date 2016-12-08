@@ -1867,6 +1867,9 @@ void ItaniumCXXABI::EmitGuardedInit(CodeGenFunction &CGF,
     // If the variable is thread-local, so is its guard variable.
     guard->setThreadLocalMode(var->getThreadLocalMode());
 
+    // CHEERP: if the variable is in the asmjs section, so is its guard variable
+    if (var->getSection()==StringRef("asmjs"))
+      guard->setSection("asmjs");
     // The ABI says: It is suggested that it be emitted in the same COMDAT group
     // as the associated data object
     llvm::Comdat *C = var->getComdat();
