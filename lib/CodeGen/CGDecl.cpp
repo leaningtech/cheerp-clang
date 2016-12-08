@@ -1166,6 +1166,10 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
     GV->setAlignment(alignment.getQuantity());
     GV->setUnnamedAddr(true);
 
+    //CHEERP: if function is in asmjs section, also the temporary global should
+    if (CurFn && CurFn->getSection()==StringRef("asmjs"))
+      GV->setSection("asmjs");
+
     llvm::Value *SrcPtr = GV;
     if (constant->getType()->isArrayTy())
       SrcPtr = Builder.CreateConstGEP2_32(SrcPtr, 0, 0);
