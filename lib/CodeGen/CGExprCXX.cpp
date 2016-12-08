@@ -1056,7 +1056,8 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
 
   RValue RV;
-  if(!CGF.getTarget().isByteAddressable()) {
+  bool asmjs = CGF.CurFn->getSection() == StringRef("asmjs");
+  if(!CGF.getTarget().isByteAddressable() && !asmjs) {
     // If allocType is specified this is an allocation, otherwise a free
     QualType retType;
     if(!IsDelete) {
