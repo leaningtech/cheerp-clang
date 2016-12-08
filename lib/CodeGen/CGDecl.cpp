@@ -206,6 +206,9 @@ llvm::Constant *CodeGenModule::getOrCreateStaticVarDecl(
   GV->setAlignment(getContext().getDeclAlign(&D).getQuantity());
   setGlobalVisibility(GV, &D);
 
+  if (D.hasAttr<AsmJSAttr>())
+    GV->setSection("asmjs");
+
   if (supportsCOMDAT() && GV->isWeakForLinker())
     GV->setComdat(TheModule.getOrInsertComdat(GV->getName()));
 
