@@ -191,6 +191,8 @@ static llvm::Value *EmitOverflowIntrinsic(CodeGenFunction &CGF,
 RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
                                         unsigned BuiltinID, const CallExpr *E,
                                         ReturnValueSlot ReturnValue) {
+  // CHEERP: we don't need special handling in the asmjs section
+  bool asmjs = CurFn->getSection() == StringRef("asmjs");
   // See if we can constant fold this builtin.  If so, don't emit it at all.
   Expr::EvalResult Result;
   if (E->EvaluateAsRValue(Result, CGM.getContext()) &&
@@ -664,7 +666,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
   case Builtin::BI__builtin_memcpy: {
     const Expr *DestE = E->getArg(0);
     const Expr *SrcE = E->getArg(1);
-    if (!getTarget().isByteAddressable())
+    if (!asmjs && !getTarget().isByteAddressable())
     {
       // There must be a cast from a valid type to void*
       const CastExpr *DestCast = dyn_cast<CastExpr>(DestE);
@@ -748,7 +750,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
   case Builtin::BI__builtin_memmove: {
     const Expr *DestE = E->getArg(0);
     const Expr *SrcE = E->getArg(1);
-    if (!getTarget().isByteAddressable())
+    if (!asmjs && !getTarget().isByteAddressable())
     {
       // There must be a cast from a valid type to void*
       const CastExpr *DestCast = dyn_cast<CastExpr>(DestE);
@@ -785,7 +787,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
   case Builtin::BImemset:
   case Builtin::BI__builtin_memset: {
     const Expr *DestE = E->getArg(0);
-    if (!getTarget().isByteAddressable())
+    if (!asmjs && !getTarget().isByteAddressable())
     {
       // There must be a cast from a valid type to void*
       const CastExpr *DestCast = dyn_cast<CastExpr>(DestE);
@@ -1722,8 +1724,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
   }
   case Builtin::BImalloc:
   case Builtin::BIrealloc: {
-    // On cheerp we need special handling for malloc and realloc
-    if (getTarget().getTriple().getArch() == llvm::Triple::cheerp)
+    // On cheerp in generic code, we need special handling for malloc and realloc
+    if (!asmjs && getTarget().getTriple().getArch() == llvm::Triple::cheerp)
       return RValue::get(EmitCheerpBuiltinExpr(BuiltinID, E));
   }
   }
