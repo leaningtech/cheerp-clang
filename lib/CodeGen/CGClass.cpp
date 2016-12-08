@@ -395,7 +395,8 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
   llvm::Value *NonVirtualOffset =
     CGM.GetNonVirtualBaseClassOffset(Derived, PathBegin, PathEnd);
 
-  if (!NonVirtualOffset && getTarget().isByteAddressable()) {
+  bool asmjs = CurFn->getSection() == StringRef("asmjs");
+  if (!NonVirtualOffset && (getTarget().isByteAddressable() || asmjs)) {
     // No offset, we can just cast back.
     return Builder.CreateBitCast(Value, DerivedPtrTy);
   }
@@ -413,8 +414,7 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
     Builder.CreateCondBr(IsNull, CastNull, CastNotNull);
     EmitBlock(CastNotNull);
   }
-  
-  if (!getTarget().isByteAddressable())
+  if (!asmjs && !getTarget().isByteAddressable())
   {
     llvm::SmallVector<const CXXBaseSpecifier*, 4> path;
     for (CastExpr::path_const_iterator I = PathBegin; I != PathEnd; ++I)
