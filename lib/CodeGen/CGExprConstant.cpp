@@ -1012,8 +1012,23 @@ public:
                           CGM.getContext().getTargetAddressSpace(E->getType()));
       return C;
     }
-    case Expr::StringLiteralClass:
-      return CGM.GetAddrOfConstantStringFromLiteral(cast<StringLiteral>(E));
+    case Expr::StringLiteralClass: {
+      llvm::GlobalVariable* GV =  CGM.GetAddrOfConstantStringFromLiteral(cast<StringLiteral>(E));
+      // CHEERP: if the current global declaration has the asmjs attribute,
+      // all the additional globals produced should be in the asmjs section too
+      if (CGF && CGF->CurFn) {
+        if (CGF->CurFn->getSection() == StringRef("asmjs"))
+          GV->setSection("asmjs");
+      } else if (CGM.getInitializedGlobalDecl()->getDecl()) {
+        if (CGM.getInitializedGlobalDecl()->getDecl()->hasAttr<AsmJSAttr>())
+          GV->setSection("asmjs");
+      } else {
+        llvm::errs() << "This string literal does not come from a global nor a function: ";
+        E->dump();
+        llvm::report_fatal_error("please report a bug");
+      }
+      return GV;
+    }
     case Expr::ObjCEncodeExprClass:
       return CGM.GetAddrOfConstantStringFromObjCEncode(cast<ObjCEncodeExpr>(E));
     case Expr::ObjCStringLiteralClass: {

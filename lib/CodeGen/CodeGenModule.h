@@ -603,6 +603,8 @@ public:
   const llvm::Triple &getTriple() const;
   bool supportsCOMDAT() const;
 
+  const GlobalDecl* getInitializedGlobalDecl() { return &initializedGlobalDecl; }
+
   CGCXXABI &getCXXABI() const { return *ABI; }
   llvm::LLVMContext &getLLVMContext() { return VMContext; }
 
