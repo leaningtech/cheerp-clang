@@ -2213,8 +2213,7 @@ LValue CodeGenFunction::EmitStringLiteralLValue(const StringLiteral *E) {
 
   // CHEERP: if the parent function is in the asmjs section, so is the string
   // literal
-  assert(CurFn);
-  if (CurFn->getSection() == StringRef("asmjs"))
+  if (CurFn && CurFn->getSection() == StringRef("asmjs"))
     S->setSection("asmjs");
   return MakeAddrLValue(S,E->getType());
 }
@@ -2238,6 +2237,11 @@ LValue CodeGenFunction::EmitPredefinedLValue(const PredefinedExpr *E) {
     return MakeAddrLValue(C, E->getType());
   }
   auto C = CGM.GetAddrOfConstantStringFromLiteral(SL, GVName);
+  // CHEERP: if the parent function is in the asmjs section, so is the string
+  // literal
+  assert(CurFn);
+  if (CurFn->getSection() == StringRef("asmjs"))
+    C->setSection("asmjs");
   return MakeAddrLValue(C, E->getType());
 }
 
