@@ -14142,6 +14142,9 @@ CreateNewDecl:
 
   if (Attr)
     ProcessDeclAttributeList(S, New, Attr);
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(New);
+
   AddPragmaAttributes(S, New);
 
   // If this has an identifier, add it to the scope stack.
