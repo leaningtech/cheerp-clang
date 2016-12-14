@@ -1572,6 +1572,9 @@ DeclResult Sema::CheckClassTemplate(
   Expr *const ACtoAttach =
       PrevClassTemplate && ShouldAddRedecl ? nullptr : CurAC;
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(NewClass);
+
   ClassTemplateDecl *NewTemplate
     = ClassTemplateDecl::Create(Context, SemanticContext, NameLoc,
                                 DeclarationName(Name), TemplateParams,
