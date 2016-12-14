@@ -12025,6 +12025,9 @@ CreateNewDecl:
   if (Attr)
     ProcessDeclAttributeList(S, New, Attr);
 
+  // CHEERP: Inject asmjs/genericjs attribute if required
+  MaybeInjectCheerpModeAttr(New);
+
   // Set the lexical context. If the tag has a C++ scope specifier, the
   // lexical context will be different from the semantic context.
   New->setLexicalDeclContext(CurContext);

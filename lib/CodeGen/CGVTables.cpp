@@ -485,6 +485,11 @@ void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
   }
 
   CGM.SetLLVMFunctionAttributesForDefinition(GD.getDecl(), ThunkFn);
+  // CHEERP: if the class is declared with the asmjs attribute, put the thunk
+  // in the asmjs section
+  if (GD.getDecl()->hasAttr<AsmJSAttr>()) {
+    ThunkFn->setSection("asmjs");
+  }
 
   if (ThunkFn->isVarArg()) {
     // Varargs thunks are special; we can't just generate a call because
