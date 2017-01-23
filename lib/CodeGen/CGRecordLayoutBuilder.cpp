@@ -771,6 +771,10 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
   if (!getTarget().isByteAddressable() && D->isByteLayout())
       Ty->setByteLayout();
 
+  // Cheerp: set this type as asmjs based on attribute
+  if (D->hasAttr<AsmJSAttr>())
+      Ty->setAsmJS();
+
   // Add all the field numbers.
   RL->FieldInfo.swap(Builder.Fields);
 

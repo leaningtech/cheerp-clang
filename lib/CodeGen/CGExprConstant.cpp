@@ -564,6 +564,8 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
     if (ValSTy->hasByteLayout())
       STy->setByteLayout();
+    if (RD->hasAttr<AsmJSAttr>())
+      STy->setAsmJS();
     if (ValSTy->isLayoutIdentical(STy))
       STy = ValSTy;
     else if(!CGM.getTarget().isByteAddressable())
