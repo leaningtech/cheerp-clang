@@ -2354,6 +2354,7 @@ LValue ScalarExprEmitter::EmitCompoundAssignLValue(
       default:
         llvm_unreachable("Invalid compound assignment type");
     }
+    Result = highint;
 
     if (!highint)
         return LHSLV;
