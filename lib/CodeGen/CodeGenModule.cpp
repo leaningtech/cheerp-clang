@@ -1590,7 +1590,7 @@ CodeGenModule::GetOrCreateLLVMFunction(StringRef MangledName,
   bool IsIncompleteFunction = false;
 
   llvm::FunctionType *FTy;
-  if (isa<llvm::FunctionType>(Ty)) {
+  if (isa<llvm::FunctionType>(Ty) && Ty != llvm::FunctionType::get(Int32Ty, true)) {
     FTy = cast<llvm::FunctionType>(Ty);
   } else {
     FTy = llvm::FunctionType::get(VoidTy, false);
