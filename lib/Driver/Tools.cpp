@@ -8383,11 +8383,23 @@ void cheerp::Link::ConstructJob(Compilation &C, const JobAction &JA,
   // Add standard libraries
   if (!Args.hasArg(options::OPT_nostdlib) &&
       !Args.hasArg(options::OPT_nodefaultlibs)) {
-    if (C.getDriver().CCCIsCXX()) {
-      CmdArgs.push_back(LLVM_PREFIX "/lib/libstdlibs.bc");
-    } else {
-      CmdArgs.push_back(LLVM_PREFIX "/lib/libc.bc");
-      CmdArgs.push_back(LLVM_PREFIX "/lib/libm.bc");
+    Arg *CheerpMode = C.getArgs().getLastArg(options::OPT_cheerp_mode_EQ);
+    bool asmjs = CheerpMode && CheerpMode->getValue() == StringRef("asmjs");
+    if (asmjs) {
+	    if (C.getDriver().CCCIsCXX()) {
+		CmdArgs.push_back(LLVM_PREFIX "/lib/libstdlibs-asmjs.bc");
+	    } else {
+		CmdArgs.push_back(LLVM_PREFIX "/lib/libc-asmjs.bc");
+		CmdArgs.push_back(LLVM_PREFIX "/lib/libm-asmjs.bc");
+	    }
+    }
+    else {
+	    if (C.getDriver().CCCIsCXX()) {
+		CmdArgs.push_back(LLVM_PREFIX "/lib/libstdlibs.bc");
+	    } else {
+		CmdArgs.push_back(LLVM_PREFIX "/lib/libc.bc");
+		CmdArgs.push_back(LLVM_PREFIX "/lib/libm.bc");
+	    }
     }
   }
 
