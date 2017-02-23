@@ -1221,6 +1221,7 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
       llvm::SmallVector<llvm::Constant*, 4> Indexes;
       llvm::Type* CurrentType = C->getType()->getPointerElementType();
       Indexes.push_back(llvm::ConstantInt::get(Int32Ty, 0));
+      bool allZeroGeps = true;
       while(DestTy->isPointerTy() && (OffsetVal || CurrentType!=DestTy->getPointerElementType()))
       {
         if (llvm::StructType* ST=dyn_cast<llvm::StructType>(CurrentType))
@@ -1244,6 +1245,8 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
           }
           const llvm::StructLayout *SL = getDataLayout().getStructLayout(ST);
           unsigned Index = SL->getElementContainingOffset(OffsetVal);
+          if (Index != 0)
+            allZeroGeps = false;
           Indexes.push_back(llvm::ConstantInt::get(Int32Ty, Index));
           OffsetVal -= SL->getElementOffset(Index);
           CurrentType = ST->getElementType(Index);
@@ -1253,6 +1256,8 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
           llvm::Type *ElementTy = AT->getElementType();
           unsigned ElementSize = getDataLayout().getTypeAllocSize(ElementTy);
           unsigned Index = OffsetVal / ElementSize;
+          if (Index != 0)
+            allZeroGeps = false;
           Indexes.push_back(llvm::ConstantInt::get(Int32Ty, Index));
           OffsetVal -= Index * ElementSize;
           CurrentType = ElementTy;
@@ -1261,7 +1266,7 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
           break;
       }
 
-      if (CurrentType == DestTy->getPointerElementType())
+      if (CurrentType == DestTy->getPointerElementType() || !allZeroGeps)
         C = llvm::ConstantExpr::getGetElementPtr(C, Indexes);
 
       // Apply offset if necessary.
