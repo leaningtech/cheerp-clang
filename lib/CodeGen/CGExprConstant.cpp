@@ -709,6 +709,9 @@ public:
     case CK_BaseToDerivedMemberPointer:
       return CGM.getCXXABI().EmitMemberPointerConversion(E, C);
 
+    case CK_NullToPointer:
+      return llvm::Constant::getNullValue(destType);
+
     // These will never be supported.
     case CK_ObjCObjectLValueCast:
     case CK_ARCProduceObject:
@@ -748,7 +751,6 @@ public:
     case CK_IntegralComplexToFloatingComplex:
     case CK_PointerToIntegral:
     case CK_PointerToBoolean:
-    case CK_NullToPointer:
     case CK_IntegralCast:
     case CK_IntegralToPointer:
     case CK_IntegralToBoolean:
@@ -862,8 +864,7 @@ public:
     if(!D->hasTrivialBody())
       return 0;
     //Base and dynamic classes are currently unsupported
-    if(D->getParent()->getNumBases() ||
-       D->getParent()->getNumVBases() ||
+    if(D->getParent()->getNumVBases() ||
        D->getParent()->isDynamicClass())
     {
       return 0;
@@ -877,20 +878,25 @@ public:
     initializers.resize(llvmType->getNumElements(), NULL);
     for(;it!=itE;++it)
     {
-      if((*it)->isBaseInitializer())
-        return 0;
       llvm::Constant* init=Visit((*it)->getInit());
       if(!init)
         return 0;
+
+      if(isa<llvm::ConstantAggregateZero>(init))
+        continue;
+
+      if((*it)->isBaseInitializer())
+        return 0;
+
       FieldDecl* field = (*it)->getMember();
       if(!field)
         return 0;
+
       unsigned idx=rl.getLLVMFieldNo(field);
       if (idx == 0xffffffff)
       {
         // This is a structure element that has been merged with this class, we only support zero init for them
-	if(!isa<llvm::ConstantAggregateZero>(init))
-          return 0;
+        return 0;
       }
       else
         initializers[idx] = init;
