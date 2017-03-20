@@ -42,9 +42,9 @@ static void AssignToArrayRange(CodeGen::CGBuilderTy &Builder,
   }
 }
 
-static bool isAggregateTypeForABI(QualType T, bool byteAddressable = true) {
+static bool isAggregateTypeForABI(QualType T) {
   return !CodeGenFunction::hasScalarEvaluationKind(T) ||
-         (T->isMemberFunctionPointerType() && byteAddressable) ||
+         T->isMemberFunctionPointerType() ||
          CodeGenFunction::IsHighInt(T);
 }
 
@@ -288,7 +288,7 @@ static const Type *isSingleElementStruct(QualType T, ASTContext &Context) {
       FT = AT->getElementType();
     }
 
-    if (!isAggregateTypeForABI(FT, Context.getTargetInfo().isByteAddressable())) {
+    if (!isAggregateTypeForABI(FT)) {
       Found = FT.getTypePtr();
     } else {
       Found = isSingleElementStruct(FT, Context);
@@ -400,7 +400,7 @@ llvm::Value *DefaultABIInfo::EmitVAArg(llvm::Value *VAListAddr, QualType Ty,
 }
 
 ABIArgInfo DefaultABIInfo::classifyArgumentType(QualType Ty) const {
-  if (isAggregateTypeForABI(Ty, getTarget().isByteAddressable())) {
+  if (isAggregateTypeForABI(Ty)) {
     if (CGCXXABI::RecordArgABI RAA = getRecordArgABI(Ty, getCXXABI()))
       return ABIArgInfo::getIndirect(0, RAA == CGCXXABI::RAA_DirectInMemory);
     return ABIArgInfo::getIndirect(0);
@@ -418,7 +418,7 @@ ABIArgInfo DefaultABIInfo::classifyReturnType(QualType RetTy) const {
   if (RetTy->isVoidType())
     return ABIArgInfo::getIgnore();
 
-  if (isAggregateTypeForABI(RetTy, getTarget().isByteAddressable()))
+  if (isAggregateTypeForABI(RetTy))
     return ABIArgInfo::getIndirect(0);
 
   // Treat an enum type as its underlying type.
