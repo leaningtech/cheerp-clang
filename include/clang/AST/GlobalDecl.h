@@ -49,6 +49,7 @@ public:
       : MultiVersionIndex(MVIndex) {
     Init(D);
   }
+  GlobalDecl(const CXXMethodDecl *D, bool isMemberPointerThunk) : Value(D, isMemberPointerThunk){ }
   GlobalDecl(const BlockDecl *D) { Init(D); }
   GlobalDecl(const CapturedDecl *D) { Init(D); }
   GlobalDecl(const ObjCMethodDecl *D) { Init(D); }
@@ -85,6 +86,11 @@ public:
     return MultiVersionIndex;
   }
 
+  bool isMemberPointerThunk() const {
+    assert(isa<CXXMethodDecl>(getDecl()) && "Decl is not a method!");
+    return static_cast<bool>(Value.getInt());
+  }
+  
   friend bool operator==(const GlobalDecl &LHS, const GlobalDecl &RHS) {
     return LHS.Value == RHS.Value &&
            LHS.MultiVersionIndex == RHS.MultiVersionIndex;
