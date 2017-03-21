@@ -992,6 +992,11 @@ static std::string getMangledNameImpl(const CodeGenModule &CGM, GlobalDecl GD,
       MC.mangleCXXCtor(D, GD.getCtorType(), Out);
     else if (const auto *D = dyn_cast<CXXDestructorDecl>(ND))
       MC.mangleCXXDtor(D, GD.getDtorType(), Out);
+    else if (isa<CXXMethodDecl>(ND) && GD.isMemberPointerThunk()) {
+      ThunkInfo TI;
+      TI.Method = cast<CXXMethodDecl>(ND);
+      MC.mangleThunk(TI.Method, TI, Out);
+    }
     else
       MC.mangleName(ND, Out);
   } else {
@@ -2758,7 +2763,12 @@ void CodeGenModule::EmitGlobalDefinition(GlobalDecl GD, llvm::GlobalValue *GV) {
         ABI->emitCXXStructor(GD);
       else if (FD->isMultiVersion())
         EmitMultiVersionFunctionDefinition(GD, GV);
-      else
+      else if (GD.isMemberPointerThunk()) {
+         ThunkInfo TI;
+         TI.Method = Method;
+         TI.This.AdjustmentTarget = Method->getParent();
+         getVTables().emitThunk(GlobalDecl(Method), TI, false);
+      } else
         EmitGlobalFunctionDefinition(GD, GV);
 
       if (Method->isVirtual())
