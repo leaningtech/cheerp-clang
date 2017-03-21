@@ -575,6 +575,11 @@ StringRef CodeGenModule::getMangledName(GlobalDecl GD) {
       getCXXABI().getMangleContext().mangleCXXCtor(D, GD.getCtorType(), Out);
     else if (const auto *D = dyn_cast<CXXDestructorDecl>(ND))
       getCXXABI().getMangleContext().mangleCXXDtor(D, GD.getDtorType(), Out);
+    else if (isa<CXXMethodDecl>(ND) && GD.isMemberPointerThunk()) {
+      ThunkInfo TI;
+      TI.Method = cast<CXXMethodDecl>(ND);
+      getCXXABI().getMangleContext().mangleThunk(TI.Method, TI, Out);
+    }
     else
       getCXXABI().getMangleContext().mangleName(ND, Out);
     Str = Out.str();
@@ -1531,7 +1536,12 @@ void CodeGenModule::EmitGlobalDefinition(GlobalDecl GD, llvm::GlobalValue *GV) {
         ABI->emitCXXStructor(CD, getFromCtorType(GD.getCtorType()));
       else if (const auto *DD = dyn_cast<CXXDestructorDecl>(Method))
         ABI->emitCXXStructor(DD, getFromDtorType(GD.getDtorType()));
-      else
+      else if (GD.isMemberPointerThunk()) {
+         ThunkInfo TI;
+         TI.Method = Method;
+         TI.This.AdjustmentTarget = Method->getParent();
+         getVTables().emitThunk(GlobalDecl(Method), TI, false);
+      } else
         EmitGlobalFunctionDefinition(GD, GV);
 
       if (Method->isVirtual())

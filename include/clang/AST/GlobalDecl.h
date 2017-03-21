@@ -40,6 +40,7 @@ public:
 
   GlobalDecl(const VarDecl *D) { Init(D);}
   GlobalDecl(const FunctionDecl *D) { Init(D); }
+  GlobalDecl(const CXXMethodDecl *D, bool isMemberPointerThunk) : Value(D, isMemberPointerThunk){ }
   GlobalDecl(const BlockDecl *D) { Init(D); }
   GlobalDecl(const CapturedDecl *D) { Init(D); }
   GlobalDecl(const ObjCMethodDecl *D) { Init(D); }
@@ -67,6 +68,11 @@ public:
   CXXDtorType getDtorType() const {
     assert(isa<CXXDestructorDecl>(getDecl()) && "Decl is not a dtor!");
     return static_cast<CXXDtorType>(Value.getInt());
+  }
+
+  bool isMemberPointerThunk() const {
+    assert(isa<CXXMethodDecl>(getDecl()) && "Decl is not a method!");
+    return static_cast<bool>(Value.getInt());
   }
   
   friend bool operator==(const GlobalDecl &LHS, const GlobalDecl &RHS) {

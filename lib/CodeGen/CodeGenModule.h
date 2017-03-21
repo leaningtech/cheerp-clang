@@ -328,9 +328,11 @@ private:
     GlobalDecl GD;
   };
   std::vector<DeferredGlobal> DeferredDeclsToEmit;
+public:
   void addDeferredDeclToEmit(llvm::GlobalValue *GV, GlobalDecl GD) {
     DeferredDeclsToEmit.push_back(DeferredGlobal(GV, GD));
   }
+private:
 
   /// List of alias we have emitted. Used to make sure that what they point to
   /// is defined once we get to the end of the of the translation unit.
