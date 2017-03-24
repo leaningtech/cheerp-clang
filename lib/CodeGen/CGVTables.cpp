@@ -403,7 +403,11 @@ void CodeGenFunction::GenerateThunk(llvm::Function *Fn,
   // Get our callee.
   llvm::Type *Ty =
     CGM.getTypes().GetFunctionType(CGM.getTypes().arrangeGlobalDeclaration(GD));
-  llvm::Value *Callee = CGM.GetAddrOfFunction(GD, Ty, /*ForVTable=*/true);
+  llvm::Value *Callee = nullptr;
+  if(Thunk.isMemberPointerThunk && OriginalMethod->isVirtual())
+    Callee = CGM.getCXXABI().getVirtualFunctionPointer(*this, OriginalMethod, LoadCXXThis(), Ty);
+  else
+    Callee = CGM.GetAddrOfFunction(GD, Ty, /*ForVTable=*/true);
 
   // Make the call and return the result.
   EmitCallAndReturnForThunk(Callee, &Thunk);
