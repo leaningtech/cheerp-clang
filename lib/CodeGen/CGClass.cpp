@@ -1053,7 +1053,8 @@ namespace {
       Qualifiers Qual = F->getType().getQualifiers();
       if (Qual.hasVolatile() || Qual.hasObjCLifetime())
         return false;
-      if (!CGF.getTarget().isByteAddressable())
+	bool asmjs = ClassDecl->hasAttr<AsmJSAttr>();
+      if (!CGF.getTarget().isByteAddressable() && !asmjs)
         return false;
       return true;
     }
