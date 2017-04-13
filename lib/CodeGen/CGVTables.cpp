@@ -705,7 +705,8 @@ void CodeGenVTables::addVTableComponent(
   llvm_unreachable("Unexpected vtable component kind");
 }
 
-llvm::Type *CodeGenVTables::getVTableType(const VTableLayout &layout) {
+llvm::Type *CodeGenVTables::getVTableType(const VTableLayout &layout, const CXXRecordDecl* LayoutClass) {
+  bool asmjs = LayoutClass->hasAttr<AsmJSAttr>();
   SmallVector<llvm::Type *, 4> tys;
   for (unsigned i = 0, e = layout.getNumVTables(); i != e; ++i) {
     if(CGM.getTarget().isByteAddressable()) {
@@ -713,14 +714,15 @@ llvm::Type *CodeGenVTables::getVTableType(const VTableLayout &layout) {
     } else {
       auto firstComp = layout.vtable_components().begin() + layout.getVTableOffset(i);
       auto lastComp = firstComp + layout.getVTableSize(i);
-      tys.push_back(CGM.getTypes().GetVTableSubObjectType(CGM, firstComp, lastComp, 0));
+      tys.push_back(CGM.getTypes().GetVTableSubObjectType(CGM, firstComp, lastComp, 0, asmjs));
     }
   }
 
-  return llvm::StructType::get(CGM.getLLVMContext(), tys);
+  return llvm::StructType::get(CGM.getLLVMContext(), tys, false, NULL, /*isByteLayout*/false, asmjs);
 }
 
 void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
+                                             const CXXRecordDecl *LayoutClass,
                                              const VTableLayout &layout,
                                              llvm::Constant *rtti) {
   unsigned nextVTableThunkIndex = 0;
@@ -736,6 +738,7 @@ void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
   }
   } else {
     // This is very ugly, we need to duplicate the whole code since we need to pass a StructBuilder and not an ArrayBuilder
+    bool asmjs = LayoutClass->hasAttr<AsmJSAttr>();
     for (unsigned i = 0, e = layout.getNumVTables(); i != e; ++i) {
       auto vtableElem = builder.beginStruct();
       size_t thisIndex = layout.getVTableOffset(i);
@@ -743,7 +746,7 @@ void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
       for (unsigned i = thisIndex; i != nextIndex; ++i) {
         addVTableComponent(vtableElem, layout, i, rtti, nextVTableThunkIndex);
       }
-      vtableElem.finishAndAddTo(builder);
+      vtableElem.finishAndAddTo(builder, cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType(asmjs)), asmjs);
     }
   }
 }
@@ -772,7 +775,7 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
                            Base.getBase(), Out);
   StringRef Name = OutName.str();
 
-  llvm::Type *VTType = getVTableType(*VTLayout);
+  llvm::Type *VTType = getVTableType(*VTLayout, RD);
 
   // Construction vtable symbols are not part of the Itanium ABI, so we cannot
   // guarantee that they actually will be available externally. Instead, when
@@ -796,7 +799,7 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   // Create and set the initializer.
   ConstantInitBuilder builder(CGM);
   auto components = builder.beginStruct();
-  createVTableInitializer(components, *VTLayout, RTTI);
+  createVTableInitializer(components, RD, *VTLayout, RTTI);
   components.finishAndSetAsInitializer(VTable);
 
   CGM.EmitVTableTypeMetadata(VTable, *VTLayout.get());
@@ -1090,12 +1093,17 @@ llvm::Type* CodeGenTypes::GetVTableType(const CXXRecordDecl* RD)
 {
   ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
   uint32_t virtualMethodsCount = VTContext.getVTableLayout(RD).getPrimaryVirtualMethodsCount();
-  return GetVTableType(virtualMethodsCount);
+  return GetVTableType(virtualMethodsCount, RD->hasAttr<AsmJSAttr>());
 }
 
-llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount)
+llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop)
 {
   llvm::SmallVector<llvm::Type*, 16> VTableTypes;
+  if (withOffsetToTop)
+  {
+    llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
+    VTableTypes.push_back(OffsetTy);
+  }
   llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
   VTableTypes.push_back(GetClassTypeInfoType()->getPointerTo());
   for(uint32_t j=0;j<virtualMethodsCount;j++)
