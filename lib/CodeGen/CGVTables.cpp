@@ -567,6 +567,8 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
   llvm::Type *PtrDiffTy = 
     CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
 
+  bool asmjs = RD->hasAttr<AsmJSAttr>();
+
   unsigned NextVTableThunkIndex = 0;
 
   llvm::Constant *PureVirtualFn = nullptr, *DeletedVirtualFn = nullptr;
@@ -598,7 +600,8 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     case VTableComponent::CK_OffsetToTop:
       Init = llvm::ConstantInt::get(PtrDiffTy, 
                                     Component.getOffsetToTop().getQuantity());
-      Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
+      if(CGM.getTarget().isByteAddressable())
+        Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
       break;
     case VTableComponent::CK_RTTI:
       if (CGM.getTarget().isByteAddressable())
@@ -653,7 +656,6 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
         if (NextVTableThunkIndex < NumVTableThunks &&
             VTableThunks[NextVTableThunkIndex].first == I) {
           ThunkInfo Thunk = VTableThunks[NextVTableThunkIndex].second;
-          bool asmjs = cast<CXXMethodDecl>(GD.getDecl())->getParent()->hasAttr<AsmJSAttr>();
           if (!CGM.getTarget().isByteAddressable() && !asmjs) {
             // Override the non virtual offset in bytes with the topological offset
             // TODO: Really move topological offset logic in AST
@@ -683,13 +685,16 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     };
     
     Inits.push_back(Init);
-    if (!CGM.getTarget().isByteAddressable() && Inits.size() == (it->second+1)) {
-      // Break this vtable here
-      llvm::StructType* directBase = cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType());
-      llvm::Constant* VTable = llvm::ConstantStruct::getAnon(Inits, false, directBase);
-      WrapperInits.push_back(VTable);
-      Inits.clear();
-      ++it;
+    if (!CGM.getTarget().isByteAddressable()) {
+      uint32_t stop = asmjs? it->second+2 : it->second+1;
+      if (stop == Inits.size()) {
+        // Break this vtable here
+        llvm::StructType* directBase = cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType());
+        llvm::Constant* VTable = llvm::ConstantStruct::getAnon(Inits, false, directBase);
+        WrapperInits.push_back(VTable);
+        Inits.clear();
+        ++it;
+      }
     }
   }
   
@@ -945,12 +950,17 @@ llvm::Type* CodeGenTypes::GetVTableType(const CXXRecordDecl* RD)
 {
   ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
   uint32_t virtualMethodsCount = VTContext.getVTableLayout(RD).getPrimaryVirtualMethodsCount();
-  return GetVTableType(virtualMethodsCount);
+  return GetVTableType(virtualMethodsCount, RD->hasAttr<AsmJSAttr>());
 }
 
-llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount)
+llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop)
 {
   llvm::SmallVector<llvm::Type*, 16> VTableTypes;
+  if (withOffsetToTop)
+  {
+    llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
+    VTableTypes.push_back(OffsetTy);
+  }
   llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
   VTableTypes.push_back(GetClassTypeInfoType()->getPointerTo());
   for(uint32_t j=0;j<virtualMethodsCount;j++)
