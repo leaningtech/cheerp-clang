@@ -172,8 +172,9 @@ public:
     RValue RV;
     QualType Ty;
     bool NeedsCopy;
-    CallArg(RValue rv, QualType ty, bool needscopy)
-    : RV(rv), Ty(ty), NeedsCopy(needscopy)
+    bool IsNull;
+    CallArg(RValue rv, QualType ty, bool needscopy, bool isnull = false)
+    : RV(rv), Ty(ty), NeedsCopy(needscopy), IsNull(isnull)
     { }
   };
 
@@ -204,8 +205,8 @@ public:
       llvm::Instruction *IsActiveIP;
     };
 
-    void add(RValue rvalue, QualType type, bool needscopy = false) {
-      push_back(CallArg(rvalue, type, needscopy));
+    void add(RValue rvalue, QualType type, bool needscopy = false, bool isnull = false) {
+      push_back(CallArg(rvalue, type, needscopy, isnull));
     }
 
     /// Add all the arguments from another CallArgList to this one. After doing
