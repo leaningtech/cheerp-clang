@@ -2825,7 +2825,8 @@ void CodeGenFunction::EmitCallArg(CallArgList &args, const Expr *E,
     return;
   }
 
-  args.add(EmitAnyExprToTemp(E), type);
+  bool isNull = isa<GNUNullExpr>(E);
+  args.add(EmitAnyExprToTemp(E), type, false, isNull);
 }
 
 QualType CodeGenFunction::getVarArgType(const Expr *Arg) {
@@ -3136,9 +3137,14 @@ RValue CodeGenFunction::EmitCall(const CGFunctionInfo &CallInfo,
           ArgInfo.getDirectOffset() == 0) {
         assert(NumIRArgs == 1);
         llvm::Value *V;
-        if (RV.isScalar())
-          V = RV.getScalarVal();
-        else
+        if (RV.isScalar()) {
+          // Special handling for NULL pointers passed to variadic functions
+          // without this they would be an int
+          if(ArgNo >= CallInfo.getNumRequiredArgs() && I->IsNull)
+            V = llvm::ConstantPointerNull::get(Int8PtrTy);
+          else
+            V = RV.getScalarVal();
+        } else
           V = Builder.CreateLoad(RV.getAggregateAddr());
 
         // We might have to widen integers, but we should never truncate.
