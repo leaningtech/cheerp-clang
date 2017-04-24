@@ -1722,6 +1722,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
         Builder.CreateAlignedLoad(IntToPtr, /*Align=*/4, /*isVolatile=*/true);
     return RValue::get(Load);
   }
+  case Builtin::BIcalloc:
   case Builtin::BImalloc:
   case Builtin::BIrealloc: {
     // On cheerp in generic code, we need special handling for malloc and realloc
@@ -5888,6 +5889,29 @@ Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
     }
     Function *F = CGM.getIntrinsic(Intrinsic::cheerp_allocate, Tys);
     return Builder.CreateCall(F, Ops);
+  }
+  else if (BuiltinID == Builtin::BIcalloc) {
+    const FunctionDecl* FD=dyn_cast<FunctionDecl>(CurFuncDecl);
+    assert(FD);
+    ParentMap PM(FD->getBody());
+    const Stmt* parent=PM.getParent(E);
+    // We need an explicit cast after the call, void* can't be used
+    llvm::Type *Tys[] = { VoidPtrTy };
+    const CastExpr* retCE=dyn_cast<CastExpr>(parent);
+    if (!retCE || retCE->getType()->isVoidPointerType())
+        CGM.getDiags().Report(E->getLocStart(), diag::err_cheerp_alloc_requires_cast);
+    else
+    {
+        QualType returnType=retCE->getType();
+        Tys[0] = ConvertType(returnType);
+    }
+    Function *F = CGM.getIntrinsic(Intrinsic::cheerp_allocate, Tys);
+    // Compute the size in bytes
+    llvm::Value* sizeInBytes = Builder.CreateMul(Ops[0], Ops[1]);
+    llvm::Value* NewOp[1] = { sizeInBytes };
+    llvm::Value* Ret = Builder.CreateCall(F, NewOp);
+    Builder.CreateMemSet(Ret, ConstantInt::get(Int8Ty, 0), sizeInBytes, 1, false, NULL, NULL, NULL, getTarget().isByteAddressable());
+    return Ret;
   }
   else if (BuiltinID == Builtin::BIrealloc) {
     // There must be an incoming cast, void* are not directly accepted
