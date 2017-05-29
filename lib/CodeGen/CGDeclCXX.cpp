@@ -401,29 +401,38 @@ CodeGenModule::EmitCXXGlobalInitFunc() {
     }
   }
 
-  SmallString<128> FileName;
-  SourceManager &SM = Context.getSourceManager();
-  if (const FileEntry *MainFile = SM.getFileEntryForID(SM.getMainFileID())) {
-    // Include the filename in the symbol name. Including "sub_" matches gcc and
-    // makes sure these symbols appear lexicographically behind the symbols with
-    // priority emitted above.
-    FileName = llvm::sys::path::filename(MainFile->getName());
+  // For Wast and Wasm, it is important to have all constructors in the
+  // llvm.global_ctors list. That way, Cheerp can figure out which constructors
+  // can be called in Webassembly without relying on FFI to JavaScript.
+  if (!getLangOpts().ObjCAutoRefCount || !getLangOpts().CPlusPlus) {
+    for (unsigned i = 0, e = CXXGlobalInits.size(); i != e; ++i)
+      if (CXXGlobalInits[i])
+        AddGlobalCtor(CXXGlobalInits[i]);
   } else {
-    FileName = SmallString<128>("<null>");
+    SmallString<128> FileName;
+    SourceManager &SM = Context.getSourceManager();
+    if (const FileEntry *MainFile = SM.getFileEntryForID(SM.getMainFileID())) {
+      // Include the filename in the symbol name. Including "sub_" matches gcc and
+      // makes sure these symbols appear lexicographically behind the symbols with
+      // priority emitted above.
+      FileName = llvm::sys::path::filename(MainFile->getName());
+    } else {
+      FileName = SmallString<128>("<null>");
+    }
+
+    for (size_t i = 0; i < FileName.size(); ++i) {
+      // Replace everything that's not [a-zA-Z0-9._] with a _. This set happens
+      // to be the set of C preprocessing numbers.
+      if (!isPreprocessingNumberBody(FileName[i]))
+        FileName[i] = '_';
+    }
+
+    llvm::Function *Fn = CreateGlobalInitOrDestructFunction(
+        FTy, llvm::Twine("_GLOBAL__sub_I_", FileName));
+
+    CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn, CXXGlobalInits);
+    AddGlobalCtor(Fn);
   }
-
-  for (size_t i = 0; i < FileName.size(); ++i) {
-    // Replace everything that's not [a-zA-Z0-9._] with a _. This set happens
-    // to be the set of C preprocessing numbers.
-    if (!isPreprocessingNumberBody(FileName[i]))
-      FileName[i] = '_';
-  }
-
-  llvm::Function *Fn = CreateGlobalInitOrDestructFunction(
-      FTy, llvm::Twine("_GLOBAL__sub_I_", FileName));
-
-  CodeGenFunction(*this).GenerateCXXGlobalInitFunc(Fn, CXXGlobalInits);
-  AddGlobalCtor(Fn);
 
   CXXGlobalInits.clear();
   PrioritizedCXXGlobalInits.clear();
