@@ -1309,7 +1309,8 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
 
   unsigned startArg = 0;
   // On NBA targets we only accept placement new if the source memory is of the right type
-  if (allocator->isReservedGlobalPlacementOperator() && !getTarget().isByteAddressable())
+  bool asmjs = CurFn->getSection() == StringRef("asmjs");
+  if (allocator->isReservedGlobalPlacementOperator() && !getTarget().isByteAddressable() && !asmjs)
   {
     const CastExpr* castExpr = dyn_cast<CastExpr>(*E->placement_arg_begin());
     if (castExpr == NULL ||
