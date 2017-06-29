@@ -239,7 +239,7 @@ llvm::Value *CodeGenFunction::GetAddressOfBaseClass(
 
   // If the static offset is zero and we don't have a virtual step,
   // just do a bitcast; null checks are unnecessary.
-  if (NonVirtualOffset.isZero() && !VBase && (getTarget().isByteAddressable() || asmjs)) {
+  if (NonVirtualOffset.isZero() && !VBase) {
     if (sanitizePerformTypeCheck()) {
       EmitTypeCheck(TCK_Upcast, Loc, Value, DerivedTy, DerivedAlign,
                     !NullCheckValue);
