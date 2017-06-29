@@ -244,7 +244,10 @@ llvm::Value *CodeGenFunction::GetAddressOfBaseClass(
       EmitTypeCheck(TCK_Upcast, Loc, Value, DerivedTy, DerivedAlign,
                     !NullCheckValue);
     }
-    return Builder.CreateBitCast(Value, BasePtrTy);
+    if(getTarget().isByteAddressable())
+      return Builder.CreateBitCast(Value, BasePtrTy);
+    else
+      return GenerateUpcastCollapsed(Value, BasePtrTy);
   }
 
   llvm::BasicBlock *origBB = nullptr;
