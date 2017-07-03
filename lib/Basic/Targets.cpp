@@ -6484,6 +6484,12 @@ public:
         Builder.defineMacro("__ASMJS__");
     }
 
+    if (Opts.getCheerpMode() == LangOptions::CHEERP_MODE_Wast ||
+        Opts.getCheerpMode() == LangOptions::CHEERP_MODE_Wasm)
+    {
+        Builder.defineMacro("__WASM__");
+    }
+
     if (Opts.CPlusPlus)
       Builder.defineMacro("_GNU_SOURCE");
 
