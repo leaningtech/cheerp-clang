@@ -4160,8 +4160,11 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
   case Builtin::BImalloc:
   case Builtin::BIrealloc: {
     // On cheerp in generic code, we need special handling for malloc and realloc
-    if (!asmjs && getTarget().getTriple().getArch() == llvm::Triple::cheerp)
-      return RValue::get(EmitCheerpBuiltinExpr(BuiltinID, E));
+    if (getTarget().getTriple().getArch() == llvm::Triple::cheerp) {
+      Value* ret = EmitCheerpBuiltinExpr(BuiltinID, E, asmjs);
+      if (ret)
+        return RValue::get(ret);
+    }
   }
   }
 
@@ -4299,7 +4302,7 @@ static Value *EmitTargetArchBuiltinExpr(CodeGenFunction *CGF,
   case llvm::Triple::aarch64_be:
     return CGF->EmitAArch64BuiltinExpr(BuiltinID, E, Arch);
   case llvm::Triple::cheerp:
-    return CGF->EmitCheerpBuiltinExpr(BuiltinID, E);
+    return CGF->EmitCheerpBuiltinExpr(BuiltinID, E, false);
   case llvm::Triple::x86:
   case llvm::Triple::x86_64:
     return CGF->EmitX86BuiltinExpr(BuiltinID, E);
@@ -9359,7 +9362,7 @@ Value *CodeGenFunction::EmitAArch64BuiltinExpr(unsigned BuiltinID,
 }
 
 Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
-                                              const CallExpr *E) {
+                                              const CallExpr *E, bool asmjs) {
   //Emit the operands
   SmallVector<Value*, 4> Ops;
   for (unsigned i = 0, e = E->getNumArgs(); i != e; i++) {
@@ -9400,7 +9403,10 @@ Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
     llvm::Type *Tys[] = { VoidPtrTy };
     const CastExpr* retCE=dyn_cast<CastExpr>(parent);
     if (!retCE || retCE->getType()->isVoidPointerType())
+    {
+        if (asmjs) return 0;
         CGM.getDiags().Report(E->getLocStart(), diag::err_cheerp_alloc_requires_cast);
+    }
     else
     {
         QualType returnType=retCE->getType();
@@ -9418,7 +9424,10 @@ Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
     llvm::Type *Tys[] = { VoidPtrTy };
     const CastExpr* retCE=dyn_cast<CastExpr>(parent);
     if (!retCE || retCE->getType()->isVoidPointerType())
+    {
+        if (asmjs) return 0;
         CGM.getDiags().Report(E->getLocStart(), diag::err_cheerp_alloc_requires_cast);
+    }
     else
     {
         QualType returnType=retCE->getType();
@@ -9451,9 +9460,15 @@ Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
     // We need an explicit cast after the call, void* can't be used
     const CastExpr* retCE=dyn_cast<CastExpr>(parent);
     if (!retCE || retCE->getType()->isVoidPointerType())
+    {
+        if (asmjs) return 0;
         CGM.getDiags().Report(E->getLocStart(), diag::err_cheerp_alloc_requires_cast);
+    }
     else if(retCE->getType().getCanonicalType()!=reallocType.getCanonicalType())
+    {
+        if (asmjs) return 0;
         CGM.getDiags().Report(E->getLocStart(), diag::err_cheerp_realloc_different_types);
+    }
     else {
       // The call is fully valid, so set the return type to the existing type
       Tys[0]=Tys[1];
