@@ -1056,24 +1056,36 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
 
   RValue RV;
+  bool cheerp = !CGF.getTarget().isByteAddressable();
   bool asmjs = CGF.CurFn->getSection() == StringRef("asmjs");
-  if(!CGF.getTarget().isByteAddressable()) {
-    // If allocType is specified this is an allocation, otherwise a free
-    QualType retType;
-    if(!IsDelete) {
-      // Forge a call to a special type safe allocator intrinsic
-      retType = CGF.getContext().getPointerType(*allocType);
-      llvm::Type* types[] = { CGF.ConvertType(retType) };
-
-      CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                  llvm::Intrinsic::cheerp_allocate, types);
-    } else {
-      retType = CGF.getContext().VoidTy;
-      QualType argType = allocType ? CGF.getContext().getPointerType(*allocType) : CGF.getContext().VoidPtrTy;
-      llvm::Type* types[] = { CGF.ConvertType(argType) };
-      CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                  llvm::Intrinsic::cheerp_deallocate, types);
+  bool user_defined_new = false;
+  for(auto redecl: Callee->redecls())
+  {
+    if(!redecl->hasAttr<DefaultNewAttr>())
+    {
+      user_defined_new = true;
+      break;
     }
+  }
+  //CHEERP TODO: warning/error when `cheerp && !asmjs && user_defined_new`
+  // If allocType is specified this is an allocation, otherwise a free
+  if(!IsDelete && cheerp && !(asmjs && user_defined_new))
+  {
+    // Forge a call to a special type safe allocator intrinsic
+    QualType retType = CGF.getContext().getPointerType(*allocType);
+    llvm::Type* types[] = { CGF.ConvertType(retType) };
+
+    CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+                                llvm::Intrinsic::cheerp_allocate, types);
+    llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
+    RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
+  }
+  else if(IsDelete && cheerp && !asmjs)
+  {
+    QualType argType = allocType ? CGF.getContext().getPointerType(*allocType) : CGF.getContext().VoidPtrTy;
+    llvm::Type* types[] = { CGF.ConvertType(argType) };
+    CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+                                llvm::Intrinsic::cheerp_deallocate, types);
     llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
     RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
   }

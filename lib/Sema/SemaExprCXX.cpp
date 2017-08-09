@@ -2141,6 +2141,7 @@ void Sema::DeclareGlobalAllocationFunction(DeclarationName Name,
 
   if (AddMallocAttr)
     Alloc->addAttr(MallocAttr::CreateImplicit(Context));
+  Alloc->addAttr(DefaultNewAttr::CreateImplicit(Context,DefaultNewAttr::GNU_cheerp_default_new));
 
   ParmVarDecl *ParamDecls[2];
   for (unsigned I = 0; I != NumParams; ++I) {
