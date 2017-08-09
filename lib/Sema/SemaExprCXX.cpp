@@ -2724,6 +2724,8 @@ void Sema::DeclareGlobalAllocationFunction(DeclarationName Name,
     Alloc->addAttr(
         VisibilityAttr::CreateImplicit(Context, VisibilityAttr::Default));
 
+    Alloc->addAttr(DefaultNewAttr::CreateImplicit(Context,DefaultNewAttr::GNU_cheerp_default_new));
+
     llvm::SmallVector<ParmVarDecl *, 3> ParamDecls;
     for (QualType T : Params) {
       ParamDecls.push_back(ParmVarDecl::Create(
