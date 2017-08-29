@@ -568,7 +568,7 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
       STy->setAsmJS();
     if (ValSTy->isLayoutIdentical(STy))
       STy = ValSTy;
-    else if(!CGM.getTarget().isByteAddressable())
+    else if(!CGM.getTarget().isByteAddressable() && !RD->hasAttr<AsmJSAttr>())
       CGM.Error(RD->getLocation(), "Constant initializer has the wrong type");
   }
 
