@@ -4748,7 +4748,8 @@ Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
                             Expr *Config, bool IsExecConfig) {
   FunctionDecl *FDecl = dyn_cast_or_null<FunctionDecl>(NDecl);
   unsigned BuiltinID = (FDecl ? FDecl->getBuiltinID() : 0);
-  if (!Context.getTargetInfo().isByteAddressable()) {
+  bool asmjs = FDecl && FDecl->hasAttr<AsmJSAttr>();
+  if (!Context.getTargetInfo().isByteAddressable() && !asmjs) {
     // Cheerp: Disable some type-unsafe C functions
     switch (BuiltinID) {
       case Builtin::BIbsearch:
