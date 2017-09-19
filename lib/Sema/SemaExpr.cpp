@@ -5786,7 +5786,8 @@ ExprResult Sema::BuildResolvedCallExpr(Expr *Fn, NamedDecl *NDecl,
         Diag(Fn->getExprLoc(), diag::warn_arm_interrupt_calling_convention);
     }
 
-  if (!Context.getTargetInfo().isByteAddressable()) {
+  bool asmjs = FDecl && FDecl->hasAttr<AsmJSAttr>();
+  if (!Context.getTargetInfo().isByteAddressable() && !asmjs) {
     // Cheerp: Disable some type-unsafe C functions
     switch (BuiltinID) {
       case Builtin::BIbsearch:
