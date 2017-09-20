@@ -3523,6 +3523,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D,
   CXXRecordDecl *RD = ASTTy->getBaseElementTypeUnsafe()->getAsCXXRecordDecl();
   bool NeedsGlobalCtor = false;
   bool NeedsGlobalDtor = !D->hasAttr<NoInitAttr>() && RD && !RD->hasTrivialDestructor();
+  bool asmjs = D->hasAttr<AsmJSAttr>();
 
   const VarDecl *InitDecl;
   const Expr *InitExpr = D->getAnyInitializer(InitDecl);
@@ -3559,7 +3560,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D,
     emitter.emplace(*this);
     Init = emitter->tryEmitForInitializer(*InitDecl);
 
-    if(!getTarget().isByteAddressable() &&
+    if(!getTarget().isByteAddressable() && !asmjs &&
          Init && llvm::ConstantExpr::classof(Init) &&
          CodeGenFunction::hasScalarEvaluationKind(ASTTy))
     {
@@ -3742,7 +3743,7 @@ void CodeGenModule::EmitGlobalVarDefinition(const VarDecl *D,
 
   setNonAliasAttributes(D, GV);
   //cheerp: set the section to asmjs
-  if (D->hasAttr<AsmJSAttr>())
+  if (asmjs)
     GV->setSection("asmjs");
 
 
@@ -4097,9 +4098,9 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
     AddGlobalAnnotations(D, Fn);
 }
 
-llvm::Function* CodeGenModule::GetUserCastIntrinsic(const CastExpr* CE, QualType SrcTy, QualType DestTy)
+llvm::Function* CodeGenModule::GetUserCastIntrinsic(const CastExpr* CE, QualType SrcTy, QualType DestTy, bool asmjs)
 {
-  if(!CE->isCheerpSafe())
+  if(!CE->isCheerpSafe() && !asmjs)
     getDiags().Report(CE->getBeginLoc(), diag::warn_cheerp_unsafe_cast);
 
   llvm::Type* types[] = { getTypes().ConvertType(DestTy), getTypes().ConvertType(SrcTy) };

@@ -2124,9 +2124,12 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     }
     else
     {
+      bool asmjs = CGF.CurFn && CGF.CurFn->getSection()==StringRef("asmjs");
+	
       llvm::Function* intrinsic = CGF.CGM.GetUserCastIntrinsic(CE,
 		      CGF.getContext().getPointerType(E->getType()),
-		      CGF.getContext().getPointerType(DestTy));
+		      CGF.getContext().getPointerType(DestTy),
+		      asmjs);
       V = Builder.CreateCall(intrinsic, V);
     }
     return EmitLoadOfLValue(LV, CE->getExprLoc());
@@ -2171,6 +2174,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
       }
     }
 
+    bool asmjs = CGF.CurFn && CGF.CurFn->getSection() == StringRef("asmjs");
     //We don't care about casts to functions types
     if (CGF.getTarget().isByteAddressable() || isa<llvm::ConstantPointerNull>(Src) ||
         (isa<llvm::FunctionType>(SrcTy->getPointerElementType()) && isa<llvm::FunctionType>(DstTy->getPointerElementType())) ||
@@ -2181,7 +2185,6 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     else if (isa<llvm::FunctionType>(SrcTy->getPointerElementType()) &&
 		!isa<llvm::FunctionType>(DstTy->getPointerElementType()))
     {
-      bool asmjs =CGF.CurFn->getSection() == StringRef("asmjs");
       if (!asmjs)
       {
         // On Cheerp in generic code we can't allow any function pointer to become any other pointer
@@ -2190,7 +2193,7 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     }
     else
     {
-      llvm::Function* intrinsic = CGF.CGM.GetUserCastIntrinsic(CE, E->getType(), DestTy);
+      llvm::Function* intrinsic = CGF.CGM.GetUserCastIntrinsic(CE, E->getType(), DestTy, asmjs);
       return Builder.CreateCall(intrinsic, Src);
     }
     return Builder.CreateBitCast(Src, DstTy);
