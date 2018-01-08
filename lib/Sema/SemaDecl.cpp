@@ -5873,6 +5873,11 @@ Sema::ActOnVariableDeclarator(Scope *S, Declarator &D, DeclContext *DC,
     return NewTemplate;
   }
 
+  // CHEERP: Disallow variables with genericjs types in the wasm section
+  if (NewVD->hasAttr<AsmJSAttr>() && !isAsmJSCompatible(NewVD->getType())) {
+      Diag(NewVD->getLocation(), diag::err_cheerp_wrong_variable_section)
+        << NewVD << NewVD->getType();
+  }
   return NewVD;
 }
 
