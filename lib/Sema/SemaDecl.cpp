@@ -8093,6 +8093,20 @@ bool Sema::CheckFunctionDeclaration(Scope *S, FunctionDecl *NewFD,
         Diag(NewFD->getLocation(), diag::warn_return_value_udt) << NewFD << R;
     }
   }
+  // CHEERP:  check if asmjs functions have genericjs parameters, and if so, complain
+  if (NewFD->hasAttr<AsmJSAttr>()) {
+    for (auto p: NewFD->parameters()) {
+      if (!isAsmJSCompatible(p->getType())) {
+        Diag(NewFD->getLocation(), diag::err_cheerp_wrong_param_section)
+          << NewFD << p << p->getType();
+      }
+    }
+    if (!isAsmJSCompatible(NewFD->getReturnType())) {
+        Diag(NewFD->getLocation(), diag::err_cheerp_wrong_return_section)
+          << NewFD << NewFD->getReturnType();
+    }
+  }
+
   return Redeclaration;
 }
 
