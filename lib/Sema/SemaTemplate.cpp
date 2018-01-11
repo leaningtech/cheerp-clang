@@ -1572,9 +1572,6 @@ DeclResult Sema::CheckClassTemplate(
   Expr *const ACtoAttach =
       PrevClassTemplate && ShouldAddRedecl ? nullptr : CurAC;
 
-  // CHEERP: Inject asmjs/genericjs attribute if required
-  MaybeInjectCheerpModeAttr(NewClass);
-
   ClassTemplateDecl *NewTemplate
     = ClassTemplateDecl::Create(Context, SemanticContext, NameLoc,
                                 DeclarationName(Name), TemplateParams,
@@ -1617,6 +1614,7 @@ DeclResult Sema::CheckClassTemplate(
     mergeDeclAttributes(NewClass, PrevClassTemplate->getTemplatedDecl());
 
   AddPushedVisibilityAttribute(NewClass);
+  MaybeInjectCheerpModeAttr(NewClass);
 
   if (TUK != TUK_Friend) {
     // Per C++ [basic.scope.temp]p2, skip the template parameter scopes.
