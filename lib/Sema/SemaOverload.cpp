@@ -13146,6 +13146,17 @@ Sema::BuildCallToMemberFunction(Scope *S, Expr *MemExprE,
       CXXMemberCallExpr::Create(Context, MemExprE, Args, ResultType, VK,
                                 RParenLoc, Proto->getNumParams());
 
+  // CHEERP: Member calls of genericjs objects are not allowed from asmjs code
+  if (const FunctionDecl *Caller = dyn_cast<FunctionDecl>(CurContext)) {
+    if (Caller->hasAttr<AsmJSAttr>()) {
+      Expr* Obj = TheCall->getImplicitObjectArgument();
+      if (!isAsmJSCompatible(Obj->getType())) {
+        Diag(MemExpr->getMemberLoc(), diag::err_cheerp_wrong_this)
+          << Method << Obj << Obj->getType();
+      }
+    }
+  }
+
   // Check for a valid return type.
   if (CheckCallReturnType(Method->getReturnType(), MemExpr->getMemberLoc(),
                           TheCall, Method))
