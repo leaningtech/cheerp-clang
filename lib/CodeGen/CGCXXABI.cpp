@@ -230,10 +230,15 @@ void CGCXXABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
     return;
   }
 
-  ptr = CGF.Builder.CreateBitCast(ptr, charPtrTy);
-  cookieSize = getArrayCookieSizeImpl(eltTy);
-  allocPtr = CGF.Builder.CreateConstInBoundsGEP1_64(ptr,
-                                                    -cookieSize.getQuantity());
+  if (CGF.getTarget().isByteAddressable()) {
+    ptr = CGF.Builder.CreateBitCast(ptr, charPtrTy);
+    cookieSize = getArrayCookieSizeImpl(eltTy);
+    allocPtr = CGF.Builder.CreateConstInBoundsGEP1_64(ptr,
+                                                      -cookieSize.getQuantity());
+  } else {
+    allocPtr = ptr;
+    cookieSize = CharUnits::Zero();
+  }
   numElements = readArrayCookieImpl(CGF, allocPtr, cookieSize);
 }
 
