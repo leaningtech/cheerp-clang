@@ -26,6 +26,7 @@
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/InlineAsm.h"
 #include "llvm/IR/Intrinsics.h"
+#include "llvm/Cheerp/Utility.h"
 
 using namespace clang;
 using namespace CodeGen;
@@ -1724,7 +1725,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const FunctionDecl *FD,
   }
   case Builtin::BIcalloc:
   case Builtin::BImalloc:
-  case Builtin::BIrealloc: {
+  case Builtin::BIrealloc:
+  case Builtin::BIfree: {
     // On cheerp in generic code, we need special handling for malloc and realloc
     if (getTarget().getTriple().getArch() == llvm::Triple::cheerp) {
       Value* ret = EmitCheerpBuiltinExpr(BuiltinID, E, asmjs);
@@ -5960,6 +5962,16 @@ Value *CodeGenFunction::EmitCheerpBuiltinExpr(unsigned BuiltinID,
     }
     Function *F = CGM.getIntrinsic(Intrinsic::cheerp_reallocate, Tys);
     return Builder.CreateCall(F, Ops);
+  }
+  else if (BuiltinID == Builtin::BIfree) {
+    if (CallInst* CI = dyn_cast<CallInst>(Ops[0])) {
+      Function* callee = CI->getCalledFunction();
+      if (callee && callee->getIntrinsicID() == llvm::Intrinsic::cheerp_cast_user) {
+        llvm::Type* origType = CI->getOperand(0)->getType();
+        Function *F = CGM.getIntrinsic(Intrinsic::cheerp_deallocate, {origType});
+        return Builder.CreateCall(F, CI->getOperand(0));
+      }
+    }
   }
   return 0;
 }
