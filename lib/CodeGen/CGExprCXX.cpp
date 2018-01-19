@@ -1051,6 +1051,7 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
                                 const FunctionProtoType *CalleeType,
                                 const CallArgList &Args,
                                 bool IsDelete,
+                                bool IsArray,
                                 QualType* allocType) {
   llvm::Instruction *CallOrInvoke;
   llvm::Value *CalleeAddr = CGF.CGM.GetAddrOfFunction(Callee);
@@ -1076,7 +1077,9 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     llvm::Type* types[] = { CGF.ConvertType(retType) };
 
     CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                llvm::Intrinsic::cheerp_allocate_array, types);
+                                IsArray? llvm::Intrinsic::cheerp_allocate_array :
+                                         llvm::Intrinsic::cheerp_allocate,
+                                types);
     llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
     RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
   }
@@ -1086,7 +1089,9 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     QualType argType = allocType ? CGF.getContext().getPointerType(*allocType) : CGF.getContext().VoidPtrTy;
     llvm::Type* types[] = { CGF.ConvertType(argType) };
     CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                llvm::Intrinsic::cheerp_deallocate_array, types);
+                                IsArray? llvm::Intrinsic::cheerp_deallocate_array :
+                                         llvm::Intrinsic::cheerp_deallocate,
+                                types);
     llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
     RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
   }
@@ -1134,7 +1139,7 @@ RValue CodeGenFunction::EmitBuiltinNewDeleteCall(const FunctionProtoType *Type,
   for (auto *Decl : Ctx.getTranslationUnitDecl()->lookup(Name))
     if (auto *FD = dyn_cast<FunctionDecl>(Decl))
       if (Ctx.hasSameType(FD->getType(), QualType(Type, 0)))
-        return EmitNewDeleteCall(*this, cast<FunctionDecl>(Decl), Type, Args, IsDelete, NULL);
+        return EmitNewDeleteCall(*this, cast<FunctionDecl>(Decl), Type, Args, IsDelete, false, NULL);
   llvm_unreachable("predeclared global operator new/delete is missing");
 }
 
@@ -1146,6 +1151,7 @@ namespace {
     const FunctionDecl *OperatorDelete;
     llvm::Value *Ptr;
     llvm::Value *AllocSize;
+    bool IsArray;
 
     RValue *getPlacementArgs() { return reinterpret_cast<RValue*>(this+1); }
 
@@ -1157,9 +1163,10 @@ namespace {
     CallDeleteDuringNew(size_t NumPlacementArgs,
                         const FunctionDecl *OperatorDelete,
                         llvm::Value *Ptr,
-                        llvm::Value *AllocSize) 
+                        llvm::Value *AllocSize,
+                        bool IsArray) 
       : NumPlacementArgs(NumPlacementArgs), OperatorDelete(OperatorDelete),
-        Ptr(Ptr), AllocSize(AllocSize) {}
+        Ptr(Ptr), AllocSize(AllocSize), IsArray(IsArray) {}
 
     void setPlacementArg(unsigned I, RValue Arg) {
       assert(I < NumPlacementArgs && "index out of range");
@@ -1187,7 +1194,7 @@ namespace {
         DeleteArgs.add(getPlacementArgs()[I], *AI++);
 
       // Call 'operator delete'.
-      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs, /* IsDelete */ true, NULL);
+      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs, /* IsDelete */ true, IsArray, NULL);
     }
   };
 
@@ -1199,6 +1206,7 @@ namespace {
     const FunctionDecl *OperatorDelete;
     DominatingValue<RValue>::saved_type Ptr;
     DominatingValue<RValue>::saved_type AllocSize;
+    bool IsArray;
 
     DominatingValue<RValue>::saved_type *getPlacementArgs() {
       return reinterpret_cast<DominatingValue<RValue>::saved_type*>(this+1);
@@ -1212,9 +1220,10 @@ namespace {
     CallDeleteDuringConditionalNew(size_t NumPlacementArgs,
                                    const FunctionDecl *OperatorDelete,
                                    DominatingValue<RValue>::saved_type Ptr,
-                              DominatingValue<RValue>::saved_type AllocSize)
+                              DominatingValue<RValue>::saved_type AllocSize,
+                              bool IsArray)
       : NumPlacementArgs(NumPlacementArgs), OperatorDelete(OperatorDelete),
-        Ptr(Ptr), AllocSize(AllocSize) {}
+        Ptr(Ptr), AllocSize(AllocSize), IsArray(IsArray) {}
 
     void setPlacementArg(unsigned I, DominatingValue<RValue>::saved_type Arg) {
       assert(I < NumPlacementArgs && "index out of range");
@@ -1246,7 +1255,7 @@ namespace {
       }
 
       // Call 'operator delete'.
-      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs, /* IsDelete */ true, NULL);
+      EmitNewDeleteCall(CGF, OperatorDelete, FPT, DeleteArgs, /* IsDelete */ true, IsArray, NULL);
     }
   };
 }
@@ -1265,7 +1274,8 @@ static void EnterNewDeleteCleanup(CodeGenFunction &CGF,
       .pushCleanupWithExtra<CallDeleteDuringNew>(EHCleanup,
                                                  E->getNumPlacementArgs(),
                                                  E->getOperatorDelete(),
-                                                 NewPtr, AllocSize);
+                                                 NewPtr, AllocSize,
+                                                 E->isArray());
     for (unsigned I = 0, N = E->getNumPlacementArgs(); I != N; ++I)
       Cleanup->setPlacementArg(I, NewArgs[I+1].RV);
 
@@ -1283,7 +1293,8 @@ static void EnterNewDeleteCleanup(CodeGenFunction &CGF,
                                                  E->getNumPlacementArgs(),
                                                  E->getOperatorDelete(),
                                                  SavedNewPtr,
-                                                 SavedAllocSize);
+                                                 SavedAllocSize,
+                                                 E->isArray());
   for (unsigned I = 0, N = E->getNumPlacementArgs(); I != N; ++I)
     Cleanup->setPlacementArg(I,
                      DominatingValue<RValue>::save(CGF, NewArgs[I+1].RV));
@@ -1354,7 +1365,7 @@ llvm::Value *CodeGenFunction::EmitCXXNewExpr(const CXXNewExpr *E) {
     // TODO: kill any unnecessary computations done for the size
     // argument.
   } else {
-    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, /* IsDelete */ false, &allocType);
+    RV = EmitNewDeleteCall(*this, allocator, allocatorType, allocatorArgs, /* IsDelete */ false, E->isArray(), &allocType);
   }
 
   // Emit a null check on the allocation result if the allocation
@@ -1475,7 +1486,7 @@ void CodeGenFunction::EmitDeleteCall(const FunctionDecl *DeleteFD,
     DeleteArgs.add(RValue::get(Size), SizeTy);
 
   // Emit the call to delete.
-  EmitNewDeleteCall(*this, DeleteFD, DeleteFTy, DeleteArgs, /* IsDelete */ true, &DeleteTy);
+  EmitNewDeleteCall(*this, DeleteFD, DeleteFTy, DeleteArgs, /* IsDelete */ true, /* IsArray */ false, &DeleteTy);
 }
 
 namespace {
@@ -1619,7 +1630,7 @@ namespace {
 
       // Emit the call to delete.
       // TODO: When we fix cookie support we can pass ElementType here
-      EmitNewDeleteCall(CGF, OperatorDelete, DeleteFTy, Args, /* IsDelete */ true, CookieSize.isZero() ? &ElementType : NULL);
+      EmitNewDeleteCall(CGF, OperatorDelete, DeleteFTy, Args, /* IsDelete */ true, /* IsArray */ true, CookieSize.isZero() ? &ElementType : NULL);
     }
   };
 }
