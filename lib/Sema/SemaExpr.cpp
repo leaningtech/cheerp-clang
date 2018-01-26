@@ -451,6 +451,24 @@ ExprResult Sema::DefaultFunctionArrayConversion(Expr *E) {
       Diag(E->getExprLoc(), diag::err_opencl_taking_function_address);
       return ExprError();
     }
+    // CHEERP: Cannot take function addresses from genericjs to asmjs and vice versa
+    if (CurScope && CurScope->getFnParent()) {
+      if (FunctionDecl* Caller = dyn_cast<FunctionDecl>(CurScope->getFnParent()->getEntity())) {
+        if (DeclRefExpr* DR = dyn_cast<DeclRefExpr>(E)) {
+          FunctionDecl* Callee = cast<FunctionDecl>(DR->getFoundDecl());
+          // Overloaded operators end up here when called, but not when their address is taken,
+          // because they require the `&` in front of them
+          bool oper = Callee->isOverloadedOperator();
+          if (!oper && Caller->hasAttr<GenericJSAttr>() && Callee->hasAttr<AsmJSAttr>()) {
+            Diag(E->getExprLoc(), diag::err_cheerp_wrong_function_addr_asmjs)
+              << Callee << Caller;
+          } else if (!oper && Caller->hasAttr<AsmJSAttr>() && Callee->hasAttr<GenericJSAttr>()) {
+            Diag(E->getExprLoc(), diag::err_cheerp_wrong_function_addr_genericjs)
+              << Callee << Caller;
+          }
+        }
+      }
+    }
     E = ImpCastExprToType(E, Context.getPointerType(Ty),
                           CK_FunctionToPointerDecay).get();
   } else if (Ty->isArrayType()) {
@@ -9133,6 +9151,23 @@ QualType Sema::CheckAddressOfOperand(ExprResult &OrigOp, SourceLocation OpLoc) {
   if (LangOpts.OpenCL && op->getType()->isFunctionType()) {
     Diag(op->getExprLoc(), diag::err_opencl_taking_function_address);
     return QualType();
+  }
+  // CHEERP: Cannot take function addresses from genericjs to asmjs and vice versa
+  else if (op->getType()->isFunctionType()) {
+    if (CurScope && CurScope->getFnParent()) {
+      if (FunctionDecl* Caller = dyn_cast<FunctionDecl>(CurScope->getFnParent()->getEntity())) {
+        if (DeclRefExpr* DR = dyn_cast<DeclRefExpr>(op)) {
+          FunctionDecl* Callee = cast<FunctionDecl>(DR->getFoundDecl());
+          if (Caller->hasAttr<GenericJSAttr>() && Callee->hasAttr<AsmJSAttr>()) {
+            Diag(op->getExprLoc(), diag::err_cheerp_wrong_function_addr_asmjs)
+              << Callee << Caller;
+          } else if (Caller->hasAttr<AsmJSAttr>() && Callee->hasAttr<GenericJSAttr>()) {
+            Diag(op->getExprLoc(), diag::err_cheerp_wrong_function_addr_genericjs)
+              << Callee << Caller;
+          }
+        }
+      }
+    }
   }
 
   if (getLangOpts().C99) {
