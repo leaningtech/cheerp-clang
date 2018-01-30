@@ -460,7 +460,7 @@ void CodeGenFunction::EmitCXXThrowExpr(const CXXThrowExpr *E,
   EmitAnyExprToExn(*this, E->getSubExpr(), ExceptionPtr);
 
   // Now throw the exception.
-  llvm::Constant *TypeInfo = CGM.GetAddrOfRTTIDescriptor(ThrowType, 
+  llvm::Value *TypeInfo = CGM.GetAddrOfRTTIDescriptor(ThrowType, 
                                                          /*ForEH=*/true);
 
   // The address of the destructor.  If the exception type has a
@@ -475,6 +475,8 @@ void CodeGenFunction::EmitCXXThrowExpr(const CXXThrowExpr *E,
     }
   }
   if (!Dtor) Dtor = llvm::Constant::getNullValue(Int8PtrTy);
+
+  TypeInfo = Builder.CreateBitCast(TypeInfo, Int8PtrTy);
 
   llvm::Value *args[] = { ExceptionPtr, TypeInfo, Dtor };
   EmitNoreturnRuntimeCallOrInvoke(getThrowFn(CGM), args);
