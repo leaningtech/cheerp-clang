@@ -467,7 +467,7 @@ static void addExceptionArgs(const ArgList &Args, types::ID InputType,
               << RTTIArg->getAsString(Args) << ExceptionArg->getAsString(Args);
         } else if (RTTIMode == ToolChain::RM_EnabledImplicitly)
           D.Diag(diag::warn_drv_enabling_rtti_with_exceptions);
-      } else
+      } else if(Triple.getArch() != llvm::Triple::cheerp)
         assert(TC.getRTTIMode() != ToolChain::RM_DisabledImplicitly);
 
       CmdArgs.push_back("-fcxx-exceptions");
