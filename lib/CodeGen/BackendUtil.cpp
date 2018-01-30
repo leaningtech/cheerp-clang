@@ -519,6 +519,8 @@ static Optional<GCOVOptions> getGCOVOptions(const CodeGenOptions &CodeGenOpts) {
 
 static void addCheerpPasses(const PassManagerBuilder &Builder,
                             PassManagerBase &PM) {
+  PM.add(createLowerInvokePass());
+  PM.add(createCFGSimplificationPass());
   //Run mem2reg first, to remove load/stores for the this argument
   //We need this to track this in custom constructors for DOM types, such as String::String(const char*)
   PM.add(createPromoteMemoryToRegisterPass());
