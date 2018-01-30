@@ -8740,6 +8740,11 @@ public:
     TagDecl* pd = pt->getAsTagDecl();
     return pd && pd->hasAttr<AsmJSAttr>();
   }
+  // CHEERP: Utility function for checking if a type is a genericjs value type
+  static bool isGenericJSValue(QualType pt) {
+    TagDecl* pd = pt->getAsTagDecl();
+    return pd && pd->hasAttr<GenericJSAttr>();
+  }
 };
 
 /// \brief RAII object that enters a new expression evaluation context.
