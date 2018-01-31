@@ -452,7 +452,7 @@ ExprResult Sema::DefaultFunctionArrayConversion(Expr *E) {
       return ExprError();
     }
     // CHEERP: Cannot take function addresses from genericjs to asmjs and vice versa
-    if (CurScope && CurScope->getFnParent()) {
+    if (CurScope && CurScope->getFnParent() && CurScope->getFnParent()->getEntity()) {
       if (FunctionDecl* Caller = dyn_cast<FunctionDecl>(CurScope->getFnParent()->getEntity())) {
         if (DeclRefExpr* DR = dyn_cast<DeclRefExpr>(E)) {
           FunctionDecl* Callee = cast<FunctionDecl>(DR->getFoundDecl());
@@ -9157,13 +9157,14 @@ QualType Sema::CheckAddressOfOperand(ExprResult &OrigOp, SourceLocation OpLoc) {
     if (CurScope && CurScope->getFnParent()) {
       if (FunctionDecl* Caller = dyn_cast<FunctionDecl>(CurScope->getFnParent()->getEntity())) {
         if (DeclRefExpr* DR = dyn_cast<DeclRefExpr>(op)) {
-          FunctionDecl* Callee = cast<FunctionDecl>(DR->getFoundDecl());
-          if (Caller->hasAttr<GenericJSAttr>() && Callee->hasAttr<AsmJSAttr>()) {
-            Diag(op->getExprLoc(), diag::err_cheerp_wrong_function_addr_asmjs)
-              << Callee << Caller;
-          } else if (Caller->hasAttr<AsmJSAttr>() && Callee->hasAttr<GenericJSAttr>()) {
-            Diag(op->getExprLoc(), diag::err_cheerp_wrong_function_addr_genericjs)
-              << Callee << Caller;
+          if (FunctionDecl* Callee = dyn_cast<FunctionDecl>(DR->getFoundDecl())) {
+            if (Caller->hasAttr<GenericJSAttr>() && Callee->hasAttr<AsmJSAttr>()) {
+              Diag(op->getExprLoc(), diag::err_cheerp_wrong_function_addr_asmjs)
+                << Callee << Caller;
+            } else if (Caller->hasAttr<AsmJSAttr>() && Callee->hasAttr<GenericJSAttr>()) {
+              Diag(op->getExprLoc(), diag::err_cheerp_wrong_function_addr_genericjs)
+                << Callee << Caller;
+            }
           }
         }
       }
