@@ -761,8 +761,7 @@ CGRecordLayout *CodeGenTypes::ComputeRecordLayout(const RecordDecl *D,
       basesRange.push_back(llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(CGM.Int32Ty, RL->firstBaseElement)));
       basesRange.push_back(llvm::ConstantAsMetadata::get(llvm::ConstantInt::get(CGM.Int32Ty, RL->totalNumberOfBases)));
       llvm::MDNode* meta = llvm::MDNode::get(getLLVMContext(), basesRange);
-      llvm::Twine basesMetaName(Ty->getName(),"_bases");
-      llvm::NamedMDNode* basesMeta = TheModule.getOrInsertNamedMetadata(basesMetaName.str());
+      llvm::NamedMDNode* basesMeta = TheModule.getOrInsertNamedMetadata((Ty->getName() + "_bases").str());
       basesMeta->addOperand(meta);
     }
   }
