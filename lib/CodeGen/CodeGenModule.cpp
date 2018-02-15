@@ -2545,7 +2545,8 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
 
 llvm::Function* CodeGenModule::GetUserCastIntrinsic(const CastExpr* CE, QualType SrcTy, QualType DestTy, bool asmjs)
 {
-  if(!CE->isCheerpSafe() && !asmjs)
+  bool isFunctionCast = SrcTy->isFunctionPointerType() || DestTy->isFunctionPointerType();
+  if(!CE->isCheerpSafe() && !isFunctionCast && !asmjs)
     getDiags().Report(CE->getLocStart(), diag::warn_cheerp_unsafe_cast);
 
   llvm::Type* types[] = { getTypes().ConvertType(DestTy), getTypes().ConvertType(SrcTy) };
