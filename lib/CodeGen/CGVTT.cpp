@@ -44,7 +44,8 @@ CodeGenVTables::EmitVTTDefinition(llvm::GlobalVariable *VTT,
                                   const CXXRecordDecl *RD) {
   VTTBuilder Builder(CGM.getContext(), RD, /*GenerateDefinition=*/true);
 
-  llvm::Type *Int8PtrTy = CGM.Int8PtrTy, *Int64Ty = CGM.Int64Ty;
+  llvm::Type *Int8PtrTy = CGM.Int8PtrTy;
+  llvm::Type *IdxTy = CGM.getTarget().isByteAddressable()? CGM.Int64Ty : CGM.Int32Ty;
   llvm::ArrayType *ArrayType = 
     llvm::ArrayType::get(Int8PtrTy, Builder.getVTTComponents().size());
   
@@ -68,15 +69,17 @@ CodeGenVTables::EmitVTTDefinition(llvm::GlobalVariable *VTT,
       AddressPoint =
           getItaniumVTableContext().getVTableLayout(RD).getAddressPoint(
               i->VTableBase);
-      assert(AddressPoint != 0 && "Did not find vtable address point!");
+      if (CGM.getTarget().isByteAddressable())
+        assert(AddressPoint != 0 && "Did not find vtable address point!");
     } else {
       AddressPoint = VTableAddressPoints[i->VTableIndex].lookup(i->VTableBase).start;
-      assert(AddressPoint != 0 && "Did not find ctor vtable address point!");
+      if (CGM.getTarget().isByteAddressable())
+        assert(AddressPoint != 0 && "Did not find ctor vtable address point!");
     }
 
      llvm::Value *Idxs[] = {
-       llvm::ConstantInt::get(Int64Ty, 0),
-       llvm::ConstantInt::get(Int64Ty, AddressPoint)
+       llvm::ConstantInt::get(IdxTy, 0),
+       llvm::ConstantInt::get(IdxTy, AddressPoint)
      };
 
      llvm::Constant *Init = 
