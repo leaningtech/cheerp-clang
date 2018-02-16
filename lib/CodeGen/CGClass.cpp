@@ -120,9 +120,6 @@ CodeGenFunction::GetAddressOfDirectBaseInCompleteClass(llvm::Value *This,
 
   bool asmjs = CurFn->getSection() == StringRef("asmjs");
 
-  if (BaseIsVirtual && !getTarget().isByteAddressable() && !asmjs)
-    CGM.ErrorUnsupported(Derived, "Cheerp: Virtual bases on non-byte addressable targets are not supported yet");
-
   // Compute the offset of the virtual base.
   CharUnits Offset;
   const ASTRecordLayout &Layout = getContext().getASTRecordLayout(Derived);
@@ -204,13 +201,6 @@ llvm::Value *CodeGenFunction::GetAddressOfBaseClass(
     VBase = 
       cast<CXXRecordDecl>((*Start)->getType()->getAs<RecordType>()->getDecl());
     ++Start;
-  }
-
-  bool asmjs = CurFn->getSection() == StringRef("asmjs");
-  if (VBase && !getTarget().isByteAddressable() && !asmjs)
-  {
-    CGM.ErrorUnsupported(Derived, "Cheerp: Virtual bases on non-byte addressable targets are not supported yet");
-    return Value;
   }
 
   // Compute the static offset of the ultimate destination within its
@@ -2140,9 +2130,6 @@ CodeGenFunction::InitializeVTablePointer(BaseSubobject Base,
   // Compute where to store the address point.
   llvm::Value *VirtualOffset = nullptr;
   CharUnits NonVirtualOffset = CharUnits::Zero();
-  
-  if (NeedsVirtualOffset && !getTarget().isByteAddressable())
-    CGM.ErrorUnsupported(VTableClass, "Cheerp: Virtual bases on non-byte addressable targets are not supported yet");
 
   if (NeedsVirtualOffset) {
     // We need to use the virtual base offset offset because the virtual base
