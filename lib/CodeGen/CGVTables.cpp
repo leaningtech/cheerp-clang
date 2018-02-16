@@ -573,7 +573,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
 
   llvm::Constant *PureVirtualFn = nullptr, *DeletedVirtualFn = nullptr;
 
-  std::set<std::pair<uint32_t,uint32_t>> unifiedAddressPoints;
+  std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
   if (!CGM.getTarget().isByteAddressable()) {
     for (auto it: getItaniumVTableContext().getVTableLayout(RD).getAddressPoints())
         unifiedAddressPoints.insert(it.second);
@@ -691,7 +691,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     
     Inits.push_back(Init);
     if (!CGM.getTarget().isByteAddressable()) {
-      uint32_t stop = asmjs? it->second+2 : it->second+1;
+      uint32_t stop = asmjs? it->methods+2 : it->methods+1;
       if (stop == Inits.size()) {
         // Break this vtable here
         llvm::StructType* directBase = cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType());

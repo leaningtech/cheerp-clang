@@ -1468,12 +1468,12 @@ llvm::GlobalVariable *ItaniumCXXABI::getAddrOfVTable(const CXXRecordDecl *RD,
     // TODO: Now we generate an object of vtable objects, it would be better to generate different objects
     llvm::SmallVector<llvm::Type*, 4> VTableWrapperTypes;
     // We need to unify the address points
-    std::set<std::pair<uint32_t,uint32_t>> unifiedAddressPoints;
+    std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
     // TODO: We may do better here
     for(auto it: VTContext.getVTableLayout(RD).getAddressPoints())
       unifiedAddressPoints.insert(it.second);
     for(auto it: unifiedAddressPoints) {
-      VTableWrapperTypes.push_back(CGM.getTypes().GetVTableType(it.second, RD->hasAttr<AsmJSAttr>()));
+      VTableWrapperTypes.push_back(CGM.getTypes().GetVTableType(it.methods, RD->hasAttr<AsmJSAttr>()));
     }
     VTableType = llvm::StructType::get(CGM.getLLVMContext(), VTableWrapperTypes);
   }

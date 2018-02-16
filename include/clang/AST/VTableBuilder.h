@@ -229,7 +229,19 @@ public:
   typedef const VTableComponent *vtable_component_iterator;
   typedef const VTableThunkTy *vtable_thunk_iterator;
 
-  typedef llvm::DenseMap<BaseSubobject, std::pair<uint32_t, uint32_t>> AddressPointsMapTy;
+  struct AddressPointInfo {
+    uint32_t start;
+    uint32_t methods;
+    uint32_t vbases;
+    bool isVbase;
+
+    bool operator<(const AddressPointInfo& other) const {
+      return start < other.start;
+    }
+  };
+
+  typedef llvm::DenseMap<BaseSubobject, AddressPointInfo> AddressPointsMapTy;
+
 private:
   uint64_t NumVTableComponents;
   std::unique_ptr<VTableComponent[]> VTableComponents;
@@ -244,6 +256,9 @@ private:
   /// \brief Count of virtual methods for the primary vtable
   uint32_t PrimaryVirtualMethodsCount;
 
+  /// \brief Count of virtual bases for the primary vtable
+  uint32_t PrimaryVirtualBasesCount;
+
   bool IsMicrosoftABI;
 
 public:
@@ -253,6 +268,7 @@ public:
                const VTableThunkTy *VTableThunks,
                const AddressPointsMapTy &AddressPoints,
                uint32_t PrimaryVirtualMethodsCount,
+               uint32_t PrimaryVirtualBasesCount,
                bool IsMicrosoftABI);
   ~VTableLayout();
 
@@ -282,7 +298,7 @@ public:
     assert(AddressPoints.count(Base) &&
            "Did not find address point!");
 
-    uint64_t AddressPoint = AddressPoints.lookup(Base).first;
+    uint64_t AddressPoint = AddressPoints.lookup(Base).start;
     (void)IsMicrosoftABI;
 
     return AddressPoint;
@@ -294,6 +310,10 @@ public:
 
   uint32_t getPrimaryVirtualMethodsCount() const {
     return PrimaryVirtualMethodsCount;
+  }
+
+  uint32_t getPrimaryVirtualBasesCount() const {
+    return PrimaryVirtualBasesCount;
   }
 };
 

@@ -35,7 +35,7 @@ class CodeGenVTables {
 
   /// VTableAddressPointsMapTy - Address points for a single vtable.
   /// The first element is the offset, the second is the number of function entries
-  typedef llvm::DenseMap<BaseSubobject, std::pair<uint32_t, uint32_t>> VTableAddressPointsMapTy;
+  typedef llvm::DenseMap<BaseSubobject, VTableLayout::AddressPointInfo> VTableAddressPointsMapTy;
 
   typedef std::pair<const CXXRecordDecl *, BaseSubobject> BaseSubobjectPairTy;
   typedef llvm::DenseMap<BaseSubobjectPairTy, uint64_t> SubVTTIndiciesMapTy;
