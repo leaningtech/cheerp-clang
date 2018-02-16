@@ -57,8 +57,16 @@ public:
     return VTableComponent(CK_VCallOffset, Offset);
   }
 
+  static VTableComponent MakeVCall(const CXXRecordDecl *RD) {
+    return VTableComponent(CK_VCallOffset, reinterpret_cast<uintptr_t>(RD));
+  }
+
   static VTableComponent MakeVBaseOffset(CharUnits Offset) {
     return VTableComponent(CK_VBaseOffset, Offset);
+  }
+
+  static VTableComponent MakeVBase(const CXXRecordDecl *RD) {
+    return VTableComponent(CK_VBaseOffset, reinterpret_cast<uintptr_t>(RD));
   }
 
   static VTableComponent MakeOffsetToTop(CharUnits Offset) {
@@ -109,10 +117,21 @@ public:
     return getOffset();
   }
 
+  CXXRecordDecl* getVCall() const {
+    assert(getKind() == CK_VCallOffset && "Invalid component kind!");
+
+    return reinterpret_cast<CXXRecordDecl *>(getPointer());
+  }
+
   CharUnits getVBaseOffset() const {
     assert(getKind() == CK_VBaseOffset && "Invalid component kind!");
 
     return getOffset();
+  }
+  CXXRecordDecl* getVBase() const {
+    assert(getKind() == CK_VBaseOffset && "Invalid component kind!");
+
+    return reinterpret_cast<CXXRecordDecl *>(getPointer());
   }
 
   CharUnits getOffsetToTop() const {
@@ -159,6 +178,8 @@ private:
 
   VTableComponent(Kind ComponentKind, uintptr_t Ptr) {
     assert((ComponentKind == CK_RTTI ||
+            ComponentKind == CK_VCallOffset ||
+            ComponentKind == CK_VBaseOffset ||
             ComponentKind == CK_FunctionPointer ||
             ComponentKind == CK_CompleteDtorPointer ||
             ComponentKind == CK_DeletingDtorPointer ||
@@ -179,6 +200,8 @@ private:
 
   uintptr_t getPointer() const {
     assert((getKind() == CK_RTTI ||
+            getKind() == CK_VCallOffset || 
+            getKind() == CK_VBaseOffset || 
             getKind() == CK_FunctionPointer ||
             getKind() == CK_CompleteDtorPointer ||
             getKind() == CK_DeletingDtorPointer ||

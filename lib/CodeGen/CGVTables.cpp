@@ -597,6 +597,11 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
                                     Component.getVBaseOffset().getQuantity());
       Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
       break;
+    case VTableComponent::CK_VBase: {
+      int32_t Offset = CGM.ComputeVirtualBaseIdOffset(RD, Component.getVBase());
+      Init = llvm::ConstantInt::get(PtrDiffTy, Offset);
+      break;
+    }
     case VTableComponent::CK_OffsetToTop:
       Init = llvm::ConstantInt::get(PtrDiffTy, 
                                     Component.getOffsetToTop().getQuantity());
