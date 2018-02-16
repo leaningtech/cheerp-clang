@@ -1728,6 +1728,12 @@ public:
   llvm::Value * GenerateDowncast(llvm::Value* Value,
                                  const CXXRecordDecl *Derived,
                                  unsigned BaseIdOffset);
+  llvm::Value * GenerateDowncast(llvm::Value* Value,
+                                 const CXXRecordDecl *Derived,
+                                 llvm::Value* BaseIdOffset);
+  llvm::Value * GenerateVirtualcast(llvm::Value* Value,
+                                 const CXXRecordDecl *VBase,
+                                 llvm::Value* VirtualOffset);
   llvm::Value *GetAddressOfDerivedClass(llvm::Value *Value,
                                         const CXXRecordDecl *Derived,
                                         CastExpr::path_const_iterator PathBegin,
