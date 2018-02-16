@@ -659,6 +659,9 @@ void CodeGenVTables::addVTableComponent(
   case VTableComponent::CK_VBaseOffset:
     return addOffsetConstant(component.getVBaseOffset());
 
+  case VTableComponent::CK_VBase:
+    return OffsetConstant(CGM.ComputeVirtualBaseIdOffset(RD, Component.getVBase()));
+
   case VTableComponent::CK_OffsetToTop:
     return addOffsetConstant(component.getOffsetToTop());
 
