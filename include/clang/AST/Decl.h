@@ -1573,8 +1573,7 @@ protected:
       IsConstexpr(isConstexprSpecified), HasSkippedBody(false),
       EndRangeLoc(NameInfo.getEndLoc()),
       TemplateOrSpecialization(),
-      DNLoc(NameInfo.getInfo()),
-      skelFunction(NULL) {}
+      DNLoc(NameInfo.getInfo()) {}
 
   typedef Redeclarable<FunctionDecl> redeclarable_base;
   FunctionDecl *getNextRedeclarationImpl() override {
@@ -2163,9 +2162,6 @@ public:
 
   friend class ASTDeclReader;
   friend class ASTDeclWriter;
-
-  //Cheerp, pointer to the skel function for this server function
-  FunctionDecl* skelFunction;
 };
 
 

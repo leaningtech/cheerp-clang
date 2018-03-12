@@ -814,10 +814,6 @@ void CodeGenModule::SetLLVMFunctionAttributesForDefinition(const Decl *D,
   if (F->getAlignment() < 2 && isa<CXXMethodDecl>(D))
     F->setAlignment(2);
 
-  if(D->hasAttr<ClientAttr>())
-    F->addFnAttr(llvm::Attribute::Client);
-  if(D->hasAttr<ServerAttr>())
-    F->addFnAttr(llvm::Attribute::Server);
   if(D->hasAttr<JsExportAttr>())
   {
       llvm::NamedMDNode* namedNode = getModule().getOrInsertNamedMetadata("jsexported_methods");
@@ -2412,12 +2408,6 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
                                                  llvm::GlobalValue *GV) {
   const auto *D = cast<FunctionDecl>(GD.getDecl());
 
-  if (D->hasAttr<ClientAttr>() && getLangOpts().getCheerpSide() != LangOptions::CHEERP_Client)
-  {
-    // If the on the wrong side, do not compile
-    return;
-  }
-
   // Compute the function info and LLVM type.
   const CGFunctionInfo &FI = getTypes().arrangeGlobalDeclaration(GD);
   llvm::FunctionType *Ty = getTypes().GetFunctionType(FI);
@@ -2520,27 +2510,6 @@ void CodeGenModule::EmitGlobalFunctionDefinition(GlobalDecl GD,
     AddGlobalDtor(Fn, DA->getPriority());
   if (D->hasAttr<AnnotateAttr>())
     AddGlobalAnnotations(D, Fn);
-
-  if (D->hasAttr<ServerAttr>() && getLangOpts().getCheerpSide() == LangOptions::CHEERP_Server)
-  {
-    llvm::Constant* skelAddr = GetAddrOfFunction(GlobalDecl(D->skelFunction));
-    llvm::SmallVector<llvm::Type*, 2> structTypes;
-    structTypes.push_back(Int8PtrTy);
-    structTypes.push_back(skelAddr->getType());
-
-    llvm::Constant* nameConst = llvm::ConstantDataArray::getString(getLLVMContext(), Fn->getName());
-    llvm::Constant *Zero = llvm::Constant::getNullValue(Int32Ty);
-    llvm::Constant *Zeros[] = { Zero, Zero };
-
-    llvm::GlobalVariable *nameGV = new llvm::GlobalVariable(getModule(), nameConst->getType(), true,
-                                       llvm::GlobalVariable::PrivateLinkage, nameConst, ".str");
-    llvm::Constant* ptrNameConst = llvm::ConstantExpr::getGetElementPtr(nameGV, Zeros);
-    llvm::SmallVector<llvm::Constant*, 2> structFields;
-    structFields.push_back(ptrNameConst);
-    structFields.push_back(skelAddr);
-
-    cheerpFunctionMap.push_back(llvm::ConstantStruct::getAnon(structFields));
-  }
 }
 
 llvm::Function* CodeGenModule::GetUserCastIntrinsic(const CastExpr* CE, QualType SrcTy, QualType DestTy, bool asmjs)

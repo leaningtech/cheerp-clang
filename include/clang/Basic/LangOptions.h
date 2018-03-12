@@ -66,11 +66,6 @@ public:
 
   enum AddrSpaceMapMangling { ASMM_Target, ASMM_On, ASMM_Off };
 
-  enum CheerpSideTy {
-    CHEERP_Client = 0, // -cheerp-side=client
-    CHEERP_Server,     // -cheerp-side=server
-    CHEERP_Invalid
-  };
   enum CheerpModeTy {
     CHEERP_MODE_GenericJS = 0,  // -cheerp-mode=genericjs
     CHEERP_MODE_AsmJS,          // -cheerp-mode=asmjs

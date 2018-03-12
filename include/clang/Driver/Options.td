@@ -1858,8 +1858,6 @@ defm stack_arrays : BooleanFFlag<"stack-arrays">, Group<gfortran_Group>;
 defm underscoring : BooleanFFlag<"underscoring">, Group<gfortran_Group>;
 defm whole_file : BooleanFFlag<"whole-file">, Group<gfortran_Group>;
 
-def cheerp_side_EQ : Joined<["-"], "cheerp-side=">, Flags<[CC1Option]>,
-  Group<CompileOnly_Group>, HelpText<"Specify which side to build [client/server]">;
 def cheerp_mode_EQ : Joined<["-"], "cheerp-mode=">, Flags<[CC1Option]>,
   Group<CompileOnly_Group>, HelpText<"Specify which mode to use by default [genericjs/asmjs]">;
 def cheerp_linear_heap_size : Joined<["-"], "cheerp-linear-heap-size=">, Flags<[DriverOption]>,

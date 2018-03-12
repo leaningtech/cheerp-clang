@@ -763,10 +763,6 @@ bool Sema::BuildCXXNestedNameSpecifier(Scope *S,
   } else if (SS.isSet()) {
     Diag(IdentifierLoc, diag::err_no_member) << &Identifier << LookupCtx
                                              << SS.getRange();
-  } else if (getCurFunctionDecl() && getCurFunctionDecl()->hasAttr<ClientAttr>() &&
-	getLangOpts().getCheerpSide() != LangOptions::CHEERP_Client) {
-    // If the on the wrong side, ignore errors
-    return true;
   } else
     Diag(IdentifierLoc, diag::err_undeclared_var_use) << &Identifier;
 

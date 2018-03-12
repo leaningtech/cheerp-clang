@@ -3453,9 +3453,6 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                     options::OPT_fno_trigraphs);
   }
 
-  // Forward cheerp-side argument
-  if (Arg *CheerpSide = Args.getLastArg(options::OPT_cheerp_side_EQ))
-    CheerpSide->render(Args, CmdArgs);
   // Forward cheerp-mode argument
   if (Arg *CheerpMode = Args.getLastArg(options::OPT_cheerp_mode_EQ))
     CheerpMode->render(Args, CmdArgs);

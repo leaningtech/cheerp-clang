@@ -7978,10 +7978,6 @@ bool ASTContext::DeclMustBeEmitted(const Decl *D) {
     return true;
 
   if (const FunctionDecl *FD = dyn_cast<FunctionDecl>(D)) {
-    // Cheerp: Force emission on server methods on the server side
-    if (FD->hasAttr<ServerAttr>() && getLangOpts().getCheerpSide() == LangOptions::CHEERP_Server)
-      return true;
-
     // Forward declarations aren't required.
     if (!FD->doesThisDeclarationHaveABody())
       return FD->doesDeclarationForceExternallyVisibleDefinition();
