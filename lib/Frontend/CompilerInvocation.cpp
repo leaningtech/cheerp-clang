@@ -1611,9 +1611,6 @@ static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args,
       Group = frontend::ExternCSystem;
     Opts.AddPath(A->getValue(), Group, false, true);
   }
-  // Add cheerp specific include directory for server side stuff
-  if (cheerpSide == LangOptions::CHEERP_Server)
-    Opts.AddPath(LLVM_PREFIX "/include/server", frontend::System, false, true);
   // Also add directory which is common to both client and server
   Opts.AddPath(LLVM_PREFIX "/include/common", frontend::System, false, true);
 
@@ -1883,20 +1880,6 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
   }
 
   // Parse cheerp options
-  if (const Arg *CheerpSide = Args.getLastArg(OPT_cheerp_side_EQ))
-  {
-    LangOptions::CheerpSideTy s = llvm::StringSwitch<LangOptions::CheerpSideTy>(CheerpSide->getValue())
-    .Case("client", LangOptions::CHEERP_Client)
-    .Case("server", LangOptions::CHEERP_Server)
-    .Default(LangOptions::CHEERP_Invalid);
-
-    Opts.setCheerpSide(s);
-    if (s == LangOptions::CHEERP_Invalid)
-    {
-      Diags.Report(diag::err_drv_invalid_value)
-      << CheerpSide->getAsString(Args) << CheerpSide->getValue();
-    }
-  }
   if (const Arg *CheerpMode = Args.getLastArg(OPT_cheerp_mode_EQ))
   {
     LangOptions::CheerpModeTy s = llvm::StringSwitch<LangOptions::CheerpModeTy>(CheerpMode->getValue())

@@ -2359,9 +2359,6 @@ public:
 
   friend class ASTDeclReader;
   friend class ASTDeclWriter;
-
-  //Cheerp, pointer to the skel function for this server function
-  FunctionDecl* skelFunction;
 };
 
 

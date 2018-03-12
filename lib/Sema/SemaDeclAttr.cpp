@@ -5920,19 +5920,6 @@ static void handleOpenCLAccessAttr(Sema &S, Decl *D,
       Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
 }
 
-static void handleClient(Sema &S, Decl *D, const AttributeList &Attr)
-{
-  D->addAttr(::new (S.Context) ClientAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
-}
-
-static void handleServer(Sema &S, Decl *D, const AttributeList &Attr)
-{
-  D->addAttr(::new (S.Context) ServerAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
-  //This should be a function
-  if (!isa<FunctionDecl>(D))
-    S.Diag(Attr.getLoc(), diag::err_cheerp_attribute_not_on_function);
-}
-
 static void handleStatic(Sema &S, Decl *D, const AttributeList &Attr)
 {
   D->addAttr(::new (S.Context) StaticAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
@@ -5997,8 +5984,6 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
   // Ignore C++11 attributes on declarator chunks: they appertain to the type
   // instead.
   if (Attr.isCXX11Attribute() && !IncludeCXX11Attributes &&
-      Attr.getKind()!=AttributeList::AT_Server &&
-      Attr.getKind()!=AttributeList::AT_Client &&
       Attr.getKind()!=AttributeList::AT_Static)
   {
     return;
