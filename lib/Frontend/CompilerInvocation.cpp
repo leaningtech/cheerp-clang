@@ -2025,9 +2025,6 @@ static void ParseHeaderSearchArgs(HeaderSearchOptions &Opts, ArgList &Args,
       Group = frontend::ExternCSystem;
     Opts.AddPath(A->getValue(), Group, false, true);
   }
-  // Add cheerp specific include directory for server side stuff
-  if (cheerpSide == LangOptions::CHEERP_Server)
-    Opts.AddPath(LLVM_PREFIX "/include/server", frontend::System, false, true);
   // Also add directory which is common to both client and server
   Opts.AddPath(LLVM_PREFIX "/include/common", frontend::System, false, true);
 
@@ -2327,6 +2324,7 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
       Opts.CFProtectionBranch = 1;
     }
   }
+
   if (const Arg *CheerpMode = Args.getLastArg(OPT_cheerp_mode_EQ))
   {
     LangOptions::CheerpModeTy s = llvm::StringSwitch<LangOptions::CheerpModeTy>(CheerpMode->getValue())
