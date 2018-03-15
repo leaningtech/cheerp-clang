@@ -2062,6 +2062,7 @@ void ItaniumVTableBuilder::LayoutPrimaryAndSecondaryVTables(
     info.start = AddressPoint;
     info.methods = currentMethodsCount;
     info.vbases = vbases;
+    info.vcalls = vcalls;
     info.isVbase = BaseIsVirtualInLayoutClass;
 
     AddressPoints.insert(std::make_pair(

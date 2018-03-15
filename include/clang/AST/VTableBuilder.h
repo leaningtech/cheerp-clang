@@ -233,6 +233,7 @@ public:
     uint32_t start;
     uint32_t methods;
     uint32_t vbases;
+    uint32_t vcalls;
     bool isVbase;
 
     bool operator<(const AddressPointInfo& other) const {

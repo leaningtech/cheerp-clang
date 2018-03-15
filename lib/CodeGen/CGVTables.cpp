@@ -697,7 +697,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     
     Inits.push_back(Init);
     if (!CGM.getTarget().isByteAddressable()) {
-      uint32_t stop = it->vbases + it->methods*(it->isVbase+1) + asmjs + 1;
+      uint32_t stop = it->vbases + it->methods + it->vcalls + asmjs + 1;
       if (stop == Inits.size()) {
         // Break this vtable here
         llvm::StructType* directBase = cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType());
