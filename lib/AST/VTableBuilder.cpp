@@ -1569,7 +1569,7 @@ ThisAdjustment ItaniumVTableBuilder::ComputeThisAdjustment(
         
       VCallOffsets = Builder.getVCallOffsets();
     }
-      
+    Adjustment.Virtual.Itanium.VirtualBase = Offset.VirtualBase;
     Adjustment.Virtual.Itanium.VCallOffsetOffset =
       VCallOffsets.getVCallOffsetOffset(MD).getQuantity();
   }
