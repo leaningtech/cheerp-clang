@@ -2267,7 +2267,14 @@ CodeGenFunction::InitializeVTablePointers(BaseSubobject Base,
       BaseOffsetFromNearestVBase = CharUnits::Zero();
       BaseDeclIsNonVirtualPrimaryBase = false;
       if (!getTarget().isByteAddressable())
-        SubBase = GetAddressOfDirectBaseInCompleteClass(BaseGEP, RD, BaseDecl, true);
+      {
+        // This bitcast is needed when the type of BaseGEP is a `.base` type.
+        // It is safe to do because we never access vbases from here
+        BaseGEP = Builder.CreateBitCast(BaseGEP, ConvertType(RD)->getPointerTo());
+        llvm::Value* VirtualOffset = CGM.getCXXABI().GetVirtualBaseClassOffset(*this, BaseGEP, RD, BaseDecl);
+        SubBase = GenerateVirtualcast(BaseGEP, BaseDecl, VirtualOffset);
+        BaseOffsetFromNearestVBase = CharUnits::Zero();
+      }
     } else {
       const ASTRecordLayout &Layout = getContext().getASTRecordLayout(RD);
 
@@ -2276,7 +2283,13 @@ CodeGenFunction::InitializeVTablePointers(BaseSubobject Base,
         OffsetFromNearestVBase + Layout.getBaseClassOffset(BaseDecl);
       BaseDeclIsNonVirtualPrimaryBase = Layout.getPrimaryBase() == BaseDecl;
       if (!getTarget().isByteAddressable())
+      {
+        // This bitcast is needed when the type of BaseGEP is a `.base` type.
+        // It is safe to do because we never access vbases from here
+        if (BaseGEP->getType() != ConvertType(RD)->getPointerTo())
+          BaseGEP = Builder.CreateBitCast(BaseGEP, ConvertType(RD)->getPointerTo());
         SubBase = GetAddressOfDirectBaseInCompleteClass(BaseGEP, RD, BaseDecl, false);
+      }
     }
     
     InitializeVTablePointers(BaseSubobject(BaseDecl, BaseOffset), 
