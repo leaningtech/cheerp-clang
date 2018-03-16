@@ -2347,10 +2347,8 @@ ItaniumVTableContext::getVirtualBaseOffsetOffset(const CXXRecordDecl *RD,
   if (I != VirtualBaseClassOffsetOffsets.end())
     return I->second;
 
-  VCallAndVBaseOffsetBuilder Builder(RD, RD, /*FinalOverriders=*/nullptr,
-                                     BaseSubobject(RD, CharUnits::Zero()),
-                                     /*BaseIsVirtual=*/false,
-                                     /*OffsetInLayoutClass=*/CharUnits::Zero());
+  ItaniumVTableBuilder Builder(*this, RD, CharUnits::Zero(),
+                               /*MostDerivedClassIsVirtual=*/0, RD);
 
   for (VCallAndVBaseOffsetBuilder::VBaseOffsetOffsetsMapTy::const_iterator I =
        Builder.getVBaseOffsetOffsets().begin(), 
