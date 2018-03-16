@@ -52,6 +52,8 @@ struct ReturnAdjustment {
       /// \brief The offset (in bytes), relative to the address point
       /// of the virtual base class offset.
       int64_t VBaseOffsetOffset;
+      /// \brief The virtual base involved in the virtual adjustment
+      const CXXRecordDecl* VirtualBase;
     } Itanium;
 
     // Microsoft ABI
