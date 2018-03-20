@@ -1563,6 +1563,9 @@ static llvm::Value *performTypeAdjustment(CodeGenFunction &CGF,
                                           bool IsReturnAdjustment,
                                           const CXXRecordDecl* AdjustmentTarget,
                                           const CXXRecordDecl* AdjustmentSource) {
+  if (!NonVirtualAdjustment && !VirtualAdjustment)
+    return Ptr;
+
   bool asmjs = AdjustmentTarget->hasAttr<AsmJSAttr>();
   // Cheerp: Handle non byte addressable case first
   if (!CGF.getTarget().isByteAddressable())
@@ -1601,9 +1604,6 @@ static llvm::Value *performTypeAdjustment(CodeGenFunction &CGF,
     }
     return Ptr;
   }
-
-  if (!NonVirtualAdjustment && !VirtualAdjustment)
-    return Ptr;
 
   llvm::Type *Int8PtrTy = CGF.Int8PtrTy;
   llvm::Value *V = CGF.Builder.CreateBitCast(Ptr, Int8PtrTy);
