@@ -428,7 +428,7 @@ void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
                 byteAddressable?GD:GD.getWithDecl(OriginalMethod));
 
   // Override the non virtual offset in bytes with the topological offset on NBA targets
-  bool asmjs = OriginalMethod->getParent()->hasAttr<AsmJSAttr>();
+  bool asmjs = OriginalMethod? OriginalMethod->getParent()->hasAttr<AsmJSAttr>() : false;
   if(!byteAddressable && !asmjs) {
     if(!Thunk.This.isEmpty())
       Thunk.This.NonVirtual = ComputeTopologicalBaseOffset(CGM, Thunk.This.AdjustmentTarget, Thunk.This.AdjustmentPath);
