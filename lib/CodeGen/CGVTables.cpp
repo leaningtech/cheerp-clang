@@ -587,9 +587,11 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
 
     switch (Component.getKind()) {
     case VTableComponent::CK_VCallOffset:
-      if(!CGM.getTarget().isByteAddressable() && !asmjs) {
+      if(!CGM.getTarget().isByteAddressable()) {
         int32_t Offset = 0;
-        if (LayoutClass != Component.getVCall() && Component.getVCall() != nullptr)
+        if(asmjs)
+          Offset = Component.getVCallOffset().getQuantity();
+        else if (LayoutClass != Component.getVCall() && Component.getVCall() != nullptr)
          Offset =  CGM.ComputeVirtualBaseIdOffset(LayoutClass, Component.getVCall());
         Init = llvm::ConstantInt::get(PtrDiffTy, Offset);
       } else {
@@ -599,8 +601,12 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
       }
       break;
     case VTableComponent::CK_VBaseOffset:
-      if(!CGM.getTarget().isByteAddressable() && !asmjs) {
-        int32_t Offset = CGM.ComputeVirtualBaseIdOffset(LayoutClass, Component.getVBase());
+      if(!CGM.getTarget().isByteAddressable()) {
+        int32_t Offset;
+        if(asmjs)
+          Offset = Component.getVBaseOffset().getQuantity();
+        else
+          Offset = CGM.ComputeVirtualBaseIdOffset(LayoutClass, Component.getVBase());
         Init = llvm::ConstantInt::get(PtrDiffTy, Offset);
       } else {
         Init = llvm::ConstantInt::get(PtrDiffTy,
