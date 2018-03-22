@@ -65,9 +65,11 @@ public:
   /// \param Components - The vtable components; this is really an array of
   /// VTableComponents.
   llvm::Constant *CreateVTableInitializer(
+      const CXXRecordDecl *LayoutClass,
       const CXXRecordDecl *RD, const VTableComponent *Components,
       unsigned NumComponents, const VTableLayout::VTableThunkTy *VTableThunks,
-      unsigned NumVTableThunks, llvm::Constant *RTTI);
+      unsigned NumVTableThunks, llvm::Constant *RTTI,
+      const std::set<VTableLayout::AddressPointInfo>& unifiedAddressPoints);
 
   CodeGenVTables(CodeGenModule &CGM);
 

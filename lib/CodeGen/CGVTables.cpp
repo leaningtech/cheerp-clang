@@ -554,9 +554,11 @@ void CodeGenVTables::EmitThunks(GlobalDecl GD)
 }
 
 llvm::Constant *CodeGenVTables::CreateVTableInitializer(
+    const CXXRecordDecl *LayoutClass,
     const CXXRecordDecl *RD, const VTableComponent *Components,
     unsigned NumComponents, const VTableLayout::VTableThunkTy *VTableThunks,
-    unsigned NumVTableThunks, llvm::Constant *RTTI) {
+    unsigned NumVTableThunks, llvm::Constant *RTTI,
+    const std::set<VTableLayout::AddressPointInfo>& unifiedAddressPoints) {
   SmallVector<llvm::Constant *, 64> Inits;
   SmallVector<llvm::Constant *, 4> WrapperInits;
 
@@ -573,13 +575,10 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
 
   llvm::Constant *PureVirtualFn = nullptr, *DeletedVirtualFn = nullptr;
 
-  std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
-  if (!CGM.getTarget().isByteAddressable()) {
-    for (auto it: getItaniumVTableContext().getVTableLayout(RD).getAddressPoints())
-        unifiedAddressPoints.insert(it.second);
-  }
-
   auto it=unifiedAddressPoints.begin();
+
+  if(!CGM.getTarget().isByteAddressable() && !asmjs)
+    assert(it != unifiedAddressPoints.end());
 
   for (unsigned I = 0; I != NumComponents; ++I) {
     VTableComponent Component = Components[I];
@@ -588,20 +587,27 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
 
     switch (Component.getKind()) {
     case VTableComponent::CK_VCallOffset:
-      Init = llvm::ConstantInt::get(PtrDiffTy, 
-                                    Component.getVCallOffset().getQuantity());
-      Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
+      if(!CGM.getTarget().isByteAddressable() && !asmjs) {
+        int32_t Offset = 0;
+        if (LayoutClass != Component.getVCall() && Component.getVCall() != nullptr)
+         Offset =  CGM.ComputeVirtualBaseIdOffset(LayoutClass, Component.getVCall());
+        Init = llvm::ConstantInt::get(PtrDiffTy, Offset);
+      } else {
+        Init = llvm::ConstantInt::get(PtrDiffTy,
+                                      Component.getVCallOffset().getQuantity());
+        Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
+      }
       break;
     case VTableComponent::CK_VBaseOffset:
-      Init = llvm::ConstantInt::get(PtrDiffTy, 
+      if(!CGM.getTarget().isByteAddressable() && !asmjs) {
+        int32_t Offset = CGM.ComputeVirtualBaseIdOffset(LayoutClass, Component.getVBase());
+        Init = llvm::ConstantInt::get(PtrDiffTy, Offset);
+      } else {
+        Init = llvm::ConstantInt::get(PtrDiffTy,
                                     Component.getVBaseOffset().getQuantity());
-      Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
+        Init = llvm::ConstantExpr::getIntToPtr(Init, Int8PtrTy);
+      }
       break;
-    case VTableComponent::CK_VBase: {
-      int32_t Offset = CGM.ComputeVirtualBaseIdOffset(RD, Component.getVBase());
-      Init = llvm::ConstantInt::get(PtrDiffTy, Offset);
-      break;
-    }
     case VTableComponent::CK_OffsetToTop:
       Init = llvm::ConstantInt::get(PtrDiffTy, 
                                     Component.getOffsetToTop().getQuantity());
@@ -691,7 +697,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     
     Inits.push_back(Init);
     if (!CGM.getTarget().isByteAddressable()) {
-      uint32_t stop = asmjs? it->methods+2 : it->methods+1;
+      uint32_t stop = it->vbases + it->methods*(it->isVbase+1) + asmjs + 1;
       if (stop == Inits.size()) {
         // Break this vtable here
         llvm::StructType* directBase = cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType());
@@ -720,6 +726,7 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   if (CGDebugInfo *DI = CGM.getModuleDebugInfo())
     DI->completeClassData(Base.getBase());
 
+  bool asmjs = RD->hasAttr<AsmJSAttr>();
   std::unique_ptr<VTableLayout> VTLayout(
       getItaniumVTableContext().createConstructionVTableLayout(
           Base.getBase(), Base.getBaseOffset(), BaseIsVirtual, RD));
@@ -736,12 +743,19 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   Out.flush();
   StringRef Name = OutName.str();
 
-  llvm::ArrayType *ArrayType = 
-    llvm::ArrayType::get( CGM.getTarget().isByteAddressable() ?
-        CGM.Int8PtrTy :
-        llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo(),
-      VTLayout->getNumVTableComponents());
-
+  llvm::Type* VTableType = NULL;
+  // CHEERP: We need to unify the address points
+  std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
+  if(CGM.getTarget().isByteAddressable()) {
+    VTableType = llvm::ArrayType::get(CGM.Int8PtrTy, VTLayout->getNumVTableComponents());
+  } else {
+    // TODO: We may do better here
+    for(auto it: VTLayout->getAddressPoints())
+    {
+      unifiedAddressPoints.insert(it.second);
+    }
+    VTableType = CGM.getTypes().GetVTableType(*VTLayout, asmjs);
+  }
   // Construction vtable symbols are not part of the Itanium ABI, so we cannot
   // guarantee that they actually will be available externally. Instead, when
   // emitting an available_externally VTT, we provide references to an internal
@@ -752,7 +766,7 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
 
   // Create the variable that will hold the construction vtable.
   llvm::GlobalVariable *VTable = 
-    CGM.CreateOrReplaceCXXRuntimeVariable(Name, ArrayType, Linkage);
+    CGM.CreateOrReplaceCXXRuntimeVariable(Name, VTableType, Linkage);
   CGM.setGlobalVisibility(VTable, RD);
 
   // V-tables are always unnamed_addr.
@@ -763,9 +777,10 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
 
   // Create and set the initializer.
   llvm::Constant *Init = CreateVTableInitializer(
+      RD,
       Base.getBase(), VTLayout->vtable_component_begin(),
       VTLayout->getNumVTableComponents(), VTLayout->vtable_thunk_begin(),
-      VTLayout->getNumVTableThunks(), RTTI);
+      VTLayout->getNumVTableThunks(), RTTI, unifiedAddressPoints);
   VTable->setInitializer(Init);
   
   return VTable;
@@ -951,25 +966,115 @@ llvm::Type* CodeGenTypes::GetVTableBaseType()
   return ResultType;
 }
 
-llvm::Type* CodeGenTypes::GetVTableType(const CXXRecordDecl* RD)
+static llvm::Type* getVTableSubObjectType(CodeGenModule& CGM,
+                                          VTableLayout::vtable_component_iterator begin,
+                                          VTableLayout::vtable_component_iterator end,
+                                          uint32_t extraOffsets,
+                                          bool asmjs)
 {
-  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
-  uint32_t virtualMethodsCount = VTContext.getVTableLayout(RD).getPrimaryVirtualMethodsCount();
-  return GetVTableType(virtualMethodsCount, RD->hasAttr<AsmJSAttr>());
-}
-
-llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop)
-{
+  llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
+  llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
   llvm::SmallVector<llvm::Type*, 16> VTableTypes;
-  if (withOffsetToTop)
-  {
-    llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
+
+  for (auto C = begin; C!= end; C++) {
+    switch (C->getKind()) {
+    case VTableComponent::CK_VCallOffset:
+    case VTableComponent::CK_VBaseOffset:
+    case VTableComponent::CK_OffsetToTop:
+      VTableTypes.push_back(OffsetTy);
+      break;
+    case VTableComponent::CK_RTTI:
+      VTableTypes.push_back(CGM.getTypes().GetClassTypeInfoType()->getPointerTo());
+      break;
+    case VTableComponent::CK_FunctionPointer:
+    case VTableComponent::CK_CompleteDtorPointer:
+    case VTableComponent::CK_DeletingDtorPointer:
+    case VTableComponent::CK_UnusedFunctionPointer:
+      VTableTypes.push_back(FuncPtrTy);
+      break;
+    };
+  }
+  for (uint32_t i = 0; i < extraOffsets; i++) {
     VTableTypes.push_back(OffsetTy);
   }
+  return llvm::StructType::get(CGM.getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType()));
+}
+
+llvm::Type* CodeGenTypes::GetPrimaryVTableType(const CXXRecordDecl* RD) {
+  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
+  const VTableLayout& VTLayout = VTContext.getVTableLayout(RD);
+  bool asmjs = RD->hasAttr<AsmJSAttr>();
+
+  // CHEERP: We need to unify the address points
+  std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
+  llvm::SmallVector<llvm::Type*, 4> VTableWrapperTypes;
+  // TODO: We may do better here
+  for(auto it: VTLayout.getAddressPoints())
+  {
+    unifiedAddressPoints.insert(it.second);
+  }
+  auto it = unifiedAddressPoints.begin();
+  uint32_t num = it->methods + it->vbases + it->vcalls + asmjs + 1;
+  auto r = getVTableSubObjectType(CGM, VTLayout.vtable_component_begin(), VTLayout.vtable_component_begin() + num, 0, asmjs);
+  return r;
+}
+llvm::Type* CodeGenTypes::GetSecondaryVTableType(const CXXRecordDecl* RD) {
+  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
+  const VTableLayout& VTLayout = VTContext.getVTableLayout(RD);
+  bool asmjs = RD->hasAttr<AsmJSAttr>();
+
+  // CHEERP: We need to unify the address points
+  std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
+  llvm::SmallVector<llvm::Type*, 4> VTableWrapperTypes;
+  // TODO: We may do better here
+  for(auto it: VTLayout.getAddressPoints())
+  {
+    unifiedAddressPoints.insert(it.second);
+  }
+  auto it = unifiedAddressPoints.begin();
+  uint32_t num = it->methods + it->vbases + it->vcalls + asmjs + 1;
+  return getVTableSubObjectType(CGM, VTLayout.vtable_component_begin(), VTLayout.vtable_component_begin() + num, it->methods, asmjs);
+}
+
+llvm::Type* CodeGenTypes::GetVTableType(const VTableLayout& VTLayout, bool asmjs)
+{
+  // CHEERP: We need to unify the address points
+  std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
+  llvm::SmallVector<llvm::Type*, 4> VTableWrapperTypes;
+  // TODO: We may do better here
+  for(auto it: VTLayout.getAddressPoints())
+  {
+    unifiedAddressPoints.insert(it.second);
+  }
+  auto comp = VTLayout.vtable_component_begin();
+  for (const auto& it: unifiedAddressPoints) {
+    assert(comp != VTLayout.vtable_component_end());
+    uint32_t num = it.methods + it.vbases + it.vcalls + asmjs + 1;
+    VTableWrapperTypes.push_back(getVTableSubObjectType(CGM, comp, comp+num, 0, asmjs));
+    comp += num;
+  }
+  return llvm::StructType::get(getLLVMContext(), VTableWrapperTypes);
+}
+
+llvm::Type* CodeGenTypes::GetBasicVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop)
+{
+  llvm::SmallVector<llvm::Type*, 16> VTableTypes;
+  llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
   llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
+
+  if (withOffsetToTop)
+  {
+    // Offset to top
+    VTableTypes.push_back(OffsetTy);
+  }
+
+  // RTTI
   VTableTypes.push_back(GetClassTypeInfoType()->getPointerTo());
+
+  // Virtual functions
   for(uint32_t j=0;j<virtualMethodsCount;j++)
     VTableTypes.push_back(FuncPtrTy);
+
   return llvm::StructType::get(getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(GetVTableBaseType()));
 }
 

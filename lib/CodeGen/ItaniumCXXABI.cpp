@@ -1077,7 +1077,7 @@ llvm::Value *ItaniumCXXABI::EmitTypeid(CodeGenFunction &CGF,
     Value = CGF.GetVTablePtr(ThisPtr, StdTypeInfoPtrTy->getPointerTo());
     Value = CGF.Builder.CreateConstInBoundsGEP1_64(Value, -1ULL);
   } else {
-    llvm::Type* VTableType = CGM.getTypes().GetVTableType(SrcRecordTy->getAsCXXRecordDecl())->getPointerTo();
+    llvm::Type* VTableType = CGM.getTypes().GetPrimaryVTableType(SrcRecordTy->getAsCXXRecordDecl())->getPointerTo();
     Value = CGF.GetVTablePtr(ThisPtr, VTableType);
     bool asmjs = SrcRecordTy->getAsCXXRecordDecl()->hasAttr<AsmJSAttr>(); 
     int offset = asmjs? 1 : 0;
@@ -1209,16 +1209,26 @@ ItaniumCXXABI::GetVirtualBaseClassOffset(CodeGenFunction &CGF,
                                          llvm::Value *This,
                                          const CXXRecordDecl *ClassDecl,
                                          const CXXRecordDecl *BaseClassDecl) {
-  llvm::Value *VTablePtr = CGF.GetVTablePtr(This, CGM.Int8PtrTy);
-  CharUnits VBaseOffsetOffset =
-      CGM.getItaniumVTableContext().getVirtualBaseOffsetOffset(ClassDecl,
-                                                               BaseClassDecl);
-
-  llvm::Value *VBaseOffsetPtr =
-    CGF.Builder.CreateConstGEP1_64(VTablePtr, VBaseOffsetOffset.getQuantity(),
-                                   "vbase.offset.ptr");
-  VBaseOffsetPtr = CGF.Builder.CreateBitCast(VBaseOffsetPtr,
+  llvm::Value *VBaseOffsetPtr = nullptr;
+  bool asmjs = ClassDecl->hasAttr<AsmJSAttr>();
+  if (!CGM.getTarget().isByteAddressable() && !asmjs) {
+    llvm::Type* VTableType = CGM.getTypes().GetPrimaryVTableType(ClassDecl)->getPointerTo();
+    llvm::Value *VTablePtr = CGF.GetVTablePtr(This, VTableType);
+    CharUnits VBaseOffsetOffset =
+        CGM.getItaniumVTableContext().getVirtualBaseOffsetOffset(ClassDecl,
+                                                                 BaseClassDecl);
+    VBaseOffsetPtr = CGF.Builder.CreateStructGEP(VTablePtr, VBaseOffsetOffset.getQuantity());
+  } else {
+    llvm::Value *VTablePtr = CGF.GetVTablePtr(This, CGM.Int8PtrTy);
+    CharUnits VBaseOffsetOffset =
+        CGM.getItaniumVTableContext().getVirtualBaseOffsetOffset(ClassDecl,
+                                                                 BaseClassDecl);
+    VBaseOffsetPtr =
+      CGF.Builder.CreateConstGEP1_64(VTablePtr, VBaseOffsetOffset.getQuantity(),
+                                     "vbase.offset.ptr");
+    VBaseOffsetPtr = CGF.Builder.CreateBitCast(VBaseOffsetPtr,
                                              CGM.PtrDiffTy->getPointerTo());
+  }
 
   llvm::Value *VBaseOffset =
     CGF.Builder.CreateLoad(VBaseOffsetPtr, "vbase.offset");
@@ -1360,10 +1370,23 @@ void ItaniumCXXABI::emitVTableDefinitions(CodeGenVTables &CGVT,
   llvm::Constant *RTTI =
       CGM.GetAddrOfRTTIDescriptor(CGM.getContext().getTagDeclType(RD));
 
+
+  // CHEERP: We need to unify the address points
+  std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
+  if(!CGM.getTarget().isByteAddressable()) {
+    ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
+    const VTableLayout& VL = VTContext.getVTableLayout(RD);
+    llvm::SmallVector<llvm::Type*, 4> VTableWrapperTypes;
+    // TODO: We may do better here
+    for(auto it: VL.getAddressPoints())
+    {
+      unifiedAddressPoints.insert(it.second);
+    }
+  }
   // Create and set the initializer.
   llvm::Constant *Init = CGVT.CreateVTableInitializer(
-      RD, VTLayout.vtable_component_begin(), VTLayout.getNumVTableComponents(),
-      VTLayout.vtable_thunk_begin(), VTLayout.getNumVTableThunks(), RTTI);
+      RD, RD, VTLayout.vtable_component_begin(), VTLayout.getNumVTableComponents(),
+      VTLayout.vtable_thunk_begin(), VTLayout.getNumVTableThunks(), RTTI, unifiedAddressPoints);
   VTable->setInitializer(Init);
 
   // Set the correct linkage.
@@ -1461,21 +1484,7 @@ llvm::GlobalVariable *ItaniumCXXABI::getAddrOfVTable(const CXXRecordDecl *RD,
   if(CGM.getTarget().isByteAddressable()) {
     VTableType = llvm::ArrayType::get(CGM.Int8PtrTy, VTContext.getVTableLayout(RD).getNumVTableComponents());
   } else {
-    // Create a type safe structure for vtables. The first field is an a pointer to RTTI info
-    // and the rests are function pointers
-    // TODO: When virtual bases are supported, the layout may be more complex, but it's fine as long as
-    // the vtable for derived classes is always only extending the vtable for base classes
-    // TODO: Now we generate an object of vtable objects, it would be better to generate different objects
-    llvm::SmallVector<llvm::Type*, 4> VTableWrapperTypes;
-    // We need to unify the address points
-    std::set<VTableLayout::AddressPointInfo> unifiedAddressPoints;
-    // TODO: We may do better here
-    for(auto it: VTContext.getVTableLayout(RD).getAddressPoints())
-      unifiedAddressPoints.insert(it.second);
-    for(auto it: unifiedAddressPoints) {
-      VTableWrapperTypes.push_back(CGM.getTypes().GetVTableType(it.methods, RD->hasAttr<AsmJSAttr>()));
-    }
-    VTableType = llvm::StructType::get(CGM.getLLVMContext(), VTableWrapperTypes);
+    VTableType = CGM.getTypes().GetVTableType(VTContext.getVTableLayout(RD), RD->hasAttr<AsmJSAttr>());
   }
 
   VTable = CGM.CreateOrReplaceCXXRuntimeVariable(
@@ -1507,7 +1516,7 @@ llvm::Value *ItaniumCXXABI::getVirtualFunctionPointer(CodeGenFunction &CGF,
     VTable = CGF.GetVTablePtr(This, Ty);
   } else {
     const CXXRecordDecl *RD = cast<CXXMethodDecl>(GD.getDecl())->getParent();
-    llvm::Type* VTableType = CGM.getTypes().GetVTableType(RD)->getPointerTo();
+    llvm::Type* VTableType = CGM.getTypes().GetPrimaryVTableType(RD)->getPointerTo();
     VTable = CGF.GetVTablePtr(This, VTableType);
   }
 
@@ -2724,7 +2733,7 @@ void ItaniumRTTIBuilder::BuildVTablePointer(const Type *Ty) {
         CGM.getLangOpts().getCheerpMode() == LangOptions::CHEERP_MODE_Wast ||
         CGM.getLangOpts().getCheerpMode() == LangOptions::CHEERP_MODE_Wasm);
     }
-    llvm::Type* WrapperTypes[] = {CGM.getTypes().GetVTableType(8, asmjs)};
+    llvm::Type* WrapperTypes[] = {CGM.getTypes().GetBasicVTableType(8, asmjs)};
     llvm::Constant *VTable = CGM.getModule().getOrInsertGlobal(VTableName, llvm::StructType::get(CGM.getLLVMContext(), WrapperTypes, false, NULL));
     llvm::Constant *Zero = llvm::ConstantInt::get(CGM.Int32Ty, 0);
     llvm::SmallVector<llvm::Constant*, 2> GepIndexes;

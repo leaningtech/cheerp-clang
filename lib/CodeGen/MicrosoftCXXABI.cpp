@@ -1264,9 +1264,10 @@ void MicrosoftCXXABI::emitVTableDefinitions(CodeGenVTables &CGVT,
     const VTableLayout &VTLayout =
       VFTContext.getVFTableLayout(RD, Info->FullOffsetInMDC);
     llvm::Constant *Init = CGVT.CreateVTableInitializer(
-        RD, VTLayout.vtable_component_begin(),
+        RD, RD, VTLayout.vtable_component_begin(),
         VTLayout.getNumVTableComponents(), VTLayout.vtable_thunk_begin(),
-        VTLayout.getNumVTableThunks(), RTTI);
+        VTLayout.getNumVTableThunks(), RTTI,
+        std::set<VTableLayout::AddressPointInfo>());
 
     VTable->setInitializer(Init);
   }

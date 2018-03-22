@@ -16,6 +16,7 @@
 
 #include "CGCall.h"
 #include "clang/AST/GlobalDecl.h"
+#include "clang/AST/VTableBuilder.h"
 #include "clang/CodeGen/CGFunctionInfo.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/Module.h"
@@ -201,9 +202,12 @@ public:
 
   llvm::Type* GetVTableBaseType();
 
-  llvm::Type* GetVTableType(const CXXRecordDecl* RD);
+  llvm::Type* GetPrimaryVTableType(const CXXRecordDecl* RD);
+  llvm::Type* GetSecondaryVTableType(const CXXRecordDecl* RD);
 
-  llvm::Type* GetVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop);
+  llvm::Type* GetVTableType(const VTableLayout& VTLayout, bool isVbase);
+
+  llvm::Type* GetBasicVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop);
 
   llvm::Type* GetClassTypeInfoType();
 
