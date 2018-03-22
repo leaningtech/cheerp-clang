@@ -788,6 +788,8 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
       VTLayout->getNumVTableComponents(), VTLayout->vtable_thunk_begin(),
       VTLayout->getNumVTableThunks(), RTTI, unifiedAddressPoints);
   VTable->setInitializer(Init);
+  if (asmjs)
+        VTable->setSection("asmjs");
   
   return VTable;
 }
