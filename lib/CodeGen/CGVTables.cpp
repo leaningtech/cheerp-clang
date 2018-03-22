@@ -640,30 +640,40 @@ void CodeGenVTables::EmitThunks(GlobalDecl GD) {
 }
 
 void CodeGenVTables::addVTableComponent(
-    AggregateBuilderPublic &builder, const VTableLayout &layout,
+    AggregateBuilderPublic &builder, const CXXRecordDecl *LayoutClass, const VTableLayout &layout,
     unsigned idx, llvm::Constant *rtti, unsigned &nextVTableThunkIndex) {
   auto &component = layout.vtable_components()[idx];
 
   auto addOffsetConstant = [&](CharUnits offset) {
-    llvm::ConstantInt* c = llvm::ConstantInt::get(CGM.PtrDiffTy, offset.getQuantity());
-    if(CGM.getTarget().isByteAddressable())
-      c = llvm::ConstantExpr::getIntToPtr(c, CGM.Int8PtrTy);
+    llvm::Constant* c = llvm::ConstantInt::get(CGM.PtrDiffTy, offset.getQuantity());
+    c = llvm::ConstantExpr::getIntToPtr(c, CGM.Int8PtrTy);
     builder.add(c);
   };
+
+  bool asmjs = LayoutClass->hasAttr<AsmJSAttr>();
 
   llvm::PointerType* elemType = CGM.getTarget().isByteAddressable() ? CGM.Int8PtrTy : llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
 
   switch (component.getKind()) {
   case VTableComponent::CK_VCallOffset:
-    return addOffsetConstant(component.getVCallOffset());
+    if(!CGM.getTarget().isByteAddressable() && !asmjs) {
+      int32_t Offset = 0;
+      if (LayoutClass != component.getVCall() && component.getVCall() != nullptr)
+        Offset =  CGM.ComputeVirtualBaseIdOffset(LayoutClass, component.getVCall());
+      return builder.addInt(CGM.PtrDiffTy, Offset);
+    } else
+      return addOffsetConstant(component.getVCallOffset());
 
   case VTableComponent::CK_VBaseOffset:
-    return addOffsetConstant(component.getVBaseOffset());
-
-  case VTableComponent::CK_VBase:
-    return OffsetConstant(CGM.ComputeVirtualBaseIdOffset(RD, Component.getVBase()));
+    if(!CGM.getTarget().isByteAddressable() && !asmjs) {
+      int32_t Offset = CGM.ComputeVirtualBaseIdOffset(LayoutClass, component.getVBase());
+      return builder.addInt(CGM.PtrDiffTy, Offset);
+    } else
+      return addOffsetConstant(component.getVBaseOffset());
 
   case VTableComponent::CK_OffsetToTop:
+    if(!CGM.getTarget().isByteAddressable())
+       return builder.addInt(CGM.PtrDiffTy, component.getOffsetToTop().getQuantity());
     return addOffsetConstant(component.getOffsetToTop());
 
   case VTableComponent::CK_RTTI:
@@ -794,7 +804,7 @@ void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
     size_t thisIndex = layout.getVTableOffset(i);
     size_t nextIndex = thisIndex + layout.getVTableSize(i);
     for (unsigned i = thisIndex; i != nextIndex; ++i) {
-      addVTableComponent(vtableElem, layout, i, rtti, nextVTableThunkIndex);
+      addVTableComponent(vtableElem, LayoutClass, layout, i, rtti, nextVTableThunkIndex);
     }
     vtableElem.finishAndAddTo(builder);
   }
@@ -806,7 +816,7 @@ void CodeGenVTables::createVTableInitializer(ConstantStructBuilder &builder,
       size_t thisIndex = layout.getVTableOffset(i);
       size_t nextIndex = thisIndex + layout.getVTableSize(i);
       for (unsigned i = thisIndex; i != nextIndex; ++i) {
-        addVTableComponent(vtableElem, layout, i, rtti, nextVTableThunkIndex);
+        addVTableComponent(vtableElem, LayoutClass, layout, i, rtti, nextVTableThunkIndex);
       }
       vtableElem.finishAndAddTo(builder, cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType(asmjs)), asmjs);
     }
@@ -822,6 +832,7 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   if (CGDebugInfo *DI = CGM.getModuleDebugInfo())
     DI->completeClassData(Base.getBase());
 
+  bool asmjs = RD->hasAttr<AsmJSAttr>();
   std::unique_ptr<VTableLayout> VTLayout(
       getItaniumVTableContext().createConstructionVTableLayout(
           Base.getBase(), Base.getBaseOffset(), BaseIsVirtual, RD));
@@ -1171,25 +1182,79 @@ llvm::Type* CodeGenTypes::GetVTableBaseType()
   return ResultType;
 }
 
-llvm::Type* CodeGenTypes::GetVTableType(const CXXRecordDecl* RD)
+llvm::Type* CodeGenTypes::GetVTableSubObjectType(CodeGenModule& CGM,
+                                          const VTableComponent* begin,
+                                          const VTableComponent* end,
+                                          uint32_t extraOffsets,
+                                          bool asmjs)
 {
-  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
-  uint32_t virtualMethodsCount = VTContext.getVTableLayout(RD).getPrimaryVirtualMethodsCount();
-  return GetVTableType(virtualMethodsCount, RD->hasAttr<AsmJSAttr>());
-}
-
-llvm::Type* CodeGenTypes::GetVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop)
-{
+  llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
+  llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
   llvm::SmallVector<llvm::Type*, 16> VTableTypes;
-  if (withOffsetToTop)
-  {
-    llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
+
+  for (auto C = begin; C!= end; C++) {
+    switch (C->getKind()) {
+    case VTableComponent::CK_VCallOffset:
+    case VTableComponent::CK_VBaseOffset:
+    case VTableComponent::CK_OffsetToTop:
+      VTableTypes.push_back(OffsetTy);
+      break;
+    case VTableComponent::CK_RTTI:
+      VTableTypes.push_back(CGM.getTypes().GetClassTypeInfoType()->getPointerTo());
+      break;
+    case VTableComponent::CK_FunctionPointer:
+    case VTableComponent::CK_CompleteDtorPointer:
+    case VTableComponent::CK_DeletingDtorPointer:
+    case VTableComponent::CK_UnusedFunctionPointer:
+      VTableTypes.push_back(FuncPtrTy);
+      break;
+    };
+  }
+  for (uint32_t i = 0; i < extraOffsets; i++) {
     VTableTypes.push_back(OffsetTy);
   }
+  return llvm::StructType::get(CGM.getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType()));
+}
+
+llvm::Type* CodeGenTypes::GetPrimaryVTableType(const CXXRecordDecl* RD) {
+  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
+  const VTableLayout& VTLayout = VTContext.getVTableLayout(RD);
+  bool asmjs = RD->hasAttr<AsmJSAttr>();
+
+  auto firstComp = VTLayout.vtable_components().begin() + VTLayout.getVTableOffset(0);
+  auto lastComp = firstComp + VTLayout.getVTableSize(0);
+  return GetVTableSubObjectType(CGM, firstComp, lastComp, 0, asmjs);
+}
+
+llvm::Type* CodeGenTypes::GetSecondaryVTableType(const CXXRecordDecl* RD) {
+  ItaniumVTableContext &VTContext = CGM.getItaniumVTableContext();
+  const VTableLayout& VTLayout = VTContext.getVTableLayout(RD);
+  bool asmjs = RD->hasAttr<AsmJSAttr>();
+
+  auto firstComp = VTLayout.vtable_components().begin() + VTLayout.getVTableOffset(0);
+  auto lastComp = firstComp + VTLayout.getVTableSize(0);
+  return GetVTableSubObjectType(CGM, firstComp, lastComp, VTLayout.getPrimaryVirtualMethodsCount(), asmjs);
+}
+
+llvm::Type* CodeGenTypes::GetBasicVTableType(uint32_t virtualMethodsCount, bool withOffsetToTop)
+{
+  llvm::SmallVector<llvm::Type*, 16> VTableTypes;
+  llvm::Type* OffsetTy = CGM.getTypes().ConvertType(CGM.getContext().getPointerDiffType());
   llvm::Type* FuncPtrTy = llvm::FunctionType::get( CGM.Int32Ty, true )->getPointerTo();
+
+  if (withOffsetToTop)
+  {
+    // Offset to top
+    VTableTypes.push_back(OffsetTy);
+  }
+
+  // RTTI
   VTableTypes.push_back(GetClassTypeInfoType()->getPointerTo());
+
+  // Virtual functions
   for(uint32_t j=0;j<virtualMethodsCount;j++)
     VTableTypes.push_back(FuncPtrTy);
+
   return llvm::StructType::get(getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(GetVTableBaseType()));
 }
 
