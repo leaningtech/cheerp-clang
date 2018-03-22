@@ -880,7 +880,9 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   ConstantInitBuilder builder(CGM);
   auto components = builder.beginStruct();
   createVTableInitializer(components, RD, *VTLayout, RTTI);
-  components.finishAndSetAsInitializer(VTable);
+  components.finishAndSetAsInitializer(VTable, nullptr, asmjs);
+  if (asmjs)
+    VTable->setSection("asmjs");
 
   // Set properties only after the initializer has been set to ensure that the
   // GV is treated as definition and not declaration.
