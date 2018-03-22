@@ -1150,6 +1150,17 @@ Sema::ActOnCXXNew(SourceLocation StartLoc, bool UseGlobal,
     Attrs = Attrs->getNext();
   }
 
+  // Also try on the declspec
+  Attrs = D.getDeclSpec().getAttributes().getList();
+  while(Attrs)
+  {
+    if (Attrs->getKind() == AttributeList::AT_NoInit)
+    {
+      isNoInit = true;
+      break;
+    }
+    Attrs = Attrs->getNext();
+  }
   return BuildCXXNew(SourceRange(StartLoc, D.getLocEnd()), UseGlobal,
                      PlacementLParen,
                      PlacementArgs,
