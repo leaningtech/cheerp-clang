@@ -68,6 +68,7 @@ private:
   void maybeEmitThunkForVTable(GlobalDecl GD, const ThunkInfo &Thunk);
 
   void addVTableComponent(AggregateBuilderPublic &builder,
+                          const CXXRecordDecl *LayoutClass,
                           const VTableLayout &layout, unsigned idx,
                           llvm::Constant *rtti,
                           unsigned &nextVTableThunkIndex);
@@ -76,7 +77,7 @@ public:
   /// Add vtable components for the given vtable layout to the given
   /// global initializer.
   void createVTableInitializer(ConstantStructBuilder &builder,
-                               const CXXRecordDecl *RD,
+                               const CXXRecordDecl *LayoutClass,
                                const VTableLayout &layout,
                                llvm::Constant *rtti);
 
