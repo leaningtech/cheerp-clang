@@ -879,7 +879,9 @@ CodeGenVTables::GenerateConstructionVTable(const CXXRecordDecl *RD,
   ConstantInitBuilder builder(CGM);
   auto components = builder.beginStruct();
   createVTableInitializer(components, RD, *VTLayout, RTTI);
-  components.finishAndSetAsInitializer(VTable);
+  components.finishAndSetAsInitializer(VTable, nullptr, asmjs);
+  if (asmjs)
+    VTable->setSection("asmjs");
 
   CGM.EmitVTableTypeMetadata(VTable, *VTLayout.get());
 
