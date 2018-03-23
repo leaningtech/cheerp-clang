@@ -451,12 +451,39 @@ void CodeGenVTables::emitThunk(GlobalDecl GD, ThunkInfo Thunk,
 
   // There's already a declaration with the same name, check if it has the same
   // type or if we need to replace it.
-  if (Entry->getType()->getElementType() !=
-      CGM.getTypes().GetFunctionTypeForVTable(CGM.getTarget().isByteAddressable()?GD:GD.getWithDecl(OriginalMethod))) {
+  // CHEERP: If there are virtual bases it is possible that the type of `this` mismatches
+  // between GD and Entry, but one is directbase of the other. We keep the thunk
+  // with the most basic `this` type
+  bool EntryIsDirectBase = false;
+  bool CurrentIsDirectBase = false;
+  llvm::FunctionType* EntryTy = cast<llvm::FunctionType>(Entry->getType()->getElementType());
+  llvm::FunctionType* CurrentTy = cast<llvm::FunctionType>(CGM.getTypes()
+      .GetFunctionTypeForVTable(CGM.getTarget().isByteAddressable()?GD:GD.getWithDecl(OriginalMethod)));
+  if (!CGM.getTarget().isByteAddressable()) {
+    // Geth the `this` type. It can be the first or second parameter (if there is a
+    // struct return pointer)
+    bool sret = cast<llvm::Function>(Entry)->hasStructRetAttr();
+    llvm::StructType* EntryThisTy = cast<llvm::StructType>(EntryTy->getParamType(sret? 1 : 0)->getPointerElementType());
+    llvm::StructType* CurrentThisTy = cast<llvm::StructType>(CurrentTy->getParamType(sret? 1: 0)->getPointerElementType());
+    // Check if one of the types is directbase of the other (check all the directbase hierarchy)
+    for (llvm::StructType* I = EntryThisTy; I != nullptr; I = I->getDirectBase()) {
+      if (I == CurrentThisTy) {
+        EntryIsDirectBase = true;
+        break;
+      }
+    }
+    for (llvm::StructType* I = CurrentThisTy; I != nullptr; I = I->getDirectBase()) {
+      if (I == EntryThisTy) {
+        CurrentIsDirectBase = true;
+        break;
+      }
+    }
+  }
+  if (EntryTy != CurrentTy && !EntryIsDirectBase) {
     llvm::GlobalValue *OldThunkFn = Entry;
 
     // If the types mismatch then we have to rewrite the definition.
-    assert(OldThunkFn->isDeclaration() &&
+    assert((OldThunkFn->isDeclaration() || CurrentIsDirectBase) &&
            "Shouldn't replace non-declaration");
 
     // Remove the name from the old thunk function and get a new thunk.
