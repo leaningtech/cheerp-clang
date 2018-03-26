@@ -338,18 +338,6 @@ void InstrProfStats::reportDiagnostics(DiagnosticsEngine &Diags,
 }
 
 void CodeGenModule::Release() {
-  //Output the function map for cheerp
-  if (!cheerpFunctionMap.empty())
-  {
-    llvm::StructType* st=cast<llvm::StructType>(cheerpFunctionMap[0]->getType());
-    llvm::Constant* nulls[] = { llvm::ConstantPointerNull::get(cast<llvm::PointerType>(st->getElementType(0))),
-                                llvm::ConstantPointerNull::get(cast<llvm::PointerType>(st->getElementType(1)))};
-    cheerpFunctionMap.push_back(llvm::ConstantStruct::getAnon(nulls));
-    llvm::ArrayType* arrayType=llvm::ArrayType::get(st, cheerpFunctionMap.size());
-    llvm::Constant* mapConst = llvm::ConstantArray::get(arrayType, cheerpFunctionMap);
-    new llvm::GlobalVariable(getModule(), arrayType, true,
-        llvm::GlobalVariable::AppendingLinkage, mapConst, "cheerpFuncMap");
-  }
   EmitDeferred();
   applyReplacements();
   checkAliases();

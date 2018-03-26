@@ -477,10 +477,6 @@ private:
 
   std::unique_ptr<SanitizerMetadata> SanitizerMD;
 
-  // The vector of methods to be included in the function map for cheerp server side
-  llvm::SmallVector<llvm::Constant*, 4> cheerpFunctionMap;
-  /// @}
-
   llvm::DenseMap<const Decl *, bool> DeferredEmptyCoverageMappingDecls;
 
   std::unique_ptr<CoverageMappingModuleGen> CoverageMapping;
