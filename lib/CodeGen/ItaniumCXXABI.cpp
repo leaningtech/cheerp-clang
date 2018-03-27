@@ -1490,6 +1490,22 @@ llvm::Value *ItaniumCXXABI::EmitDynamicCastToVoid(CodeGenFunction &CGF,
   auto *ClassDecl =
       cast<CXXRecordDecl>(SrcRecordTy->getAs<RecordType>()->getDecl());
   // Get the vtable pointer.
+  if (!CGM.getTarget().isByteAddressable()) {
+    CXXRecordDecl* SrcDecl = ClassDecl;
+    llvm::Type* VTableType = CGM.getTypes().GetSecondaryVTableType(SrcDecl)->getPointerTo();
+    llvm::Value *VTable = CGF.GetVTablePtr(Value, VTableType);
+    bool asmjs = SrcDecl->hasAttr<AsmJSAttr>();
+    llvm::Value* OffsetToTop = nullptr;
+    if (asmjs) {
+      OffsetToTop = CGF.Builder.CreateStructGEP(VTableType->getPointerElementType(), VTable, 0);
+      OffsetToTop = CGF.Builder.CreateLoad(OffsetToTop, "offset.to.top");
+    } else {
+      OffsetToTop = llvm::ConstantInt::get(CGM.Int32Ty, 0);
+    }
+    llvm::Value *Ret = CGF.GenerateVirtualcast(Value, CGM.VoidPtrTy, OffsetToTop);
+    return Ret;
+  }
+
   llvm::Value *VTable = CGF.GetVTablePtr(ThisAddr, PtrDiffLTy->getPointerTo(),
       ClassDecl);
 
