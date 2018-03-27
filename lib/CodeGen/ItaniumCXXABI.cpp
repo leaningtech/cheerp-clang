@@ -1183,6 +1183,22 @@ llvm::Value *ItaniumCXXABI::EmitDynamicCastToVoid(CodeGenFunction &CGF,
   llvm::Type *DestLTy = CGF.ConvertType(DestTy);
 
   // Get the vtable pointer.
+  if (!CGM.getTarget().isByteAddressable()) {
+    CXXRecordDecl* SrcDecl = cast<CXXRecordDecl>(SrcRecordTy.getTypePtr()->castAs<RecordType>()->getDecl());
+    llvm::Type* VTableType = CGM.getTypes().GetSecondaryVTableType(SrcDecl)->getPointerTo();
+    llvm::Value *VTable = CGF.GetVTablePtr(Value, VTableType);
+    bool asmjs = SrcDecl->hasAttr<AsmJSAttr>();
+    llvm::Value* OffsetToTop = nullptr;
+    if (asmjs) {
+      OffsetToTop = CGF.Builder.CreateStructGEP(VTable, 0);
+      OffsetToTop = CGF.Builder.CreateLoad(OffsetToTop, "offset.to.top");
+    } else {
+      OffsetToTop = llvm::ConstantInt::get(CGM.Int32Ty, 0);
+    }
+    llvm::Value *Ret = CGF.GenerateVirtualcast(Value, CGM.VoidPtrTy, OffsetToTop);
+    return Ret;
+  }
+
   llvm::Value *VTable = CGF.GetVTablePtr(Value, PtrDiffLTy->getPointerTo());
 
   // Get the offset-to-top from the vtable.

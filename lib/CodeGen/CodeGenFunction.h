@@ -1732,6 +1732,9 @@ public:
                                  const CXXRecordDecl *Derived,
                                  llvm::Value* BaseIdOffset);
   llvm::Value * GenerateVirtualcast(llvm::Value* Value,
+                                 llvm::Type *DestTy,
+                                 llvm::Value* VirtualOffset);
+  llvm::Value * GenerateVirtualcast(llvm::Value* Value,
                                  const CXXRecordDecl *VBase,
                                  llvm::Value* VirtualOffset);
   llvm::Value *GetAddressOfDerivedClass(llvm::Value *Value,
