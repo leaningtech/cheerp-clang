@@ -448,9 +448,13 @@ CodeGenFunction::GetAddressOfDerivedClass(llvm::Value *Value,
     CGM.GetNonVirtualBaseClassOffset(Derived, PathBegin, PathEnd);
 
   bool asmjs = CurFn->getSection() == StringRef("asmjs");
-  if (!NonVirtualOffset && (getTarget().isByteAddressable() || asmjs)) {
+  if (!NonVirtualOffset) {
     // No offset, we can just cast back.
-    return Builder.CreateBitCast(Value, DerivedPtrTy);
+    if(getTarget().isByteAddressable() || asmjs) {
+      return Builder.CreateBitCast(Value, DerivedPtrTy);
+    } else {
+      return GenerateDowncast(Value, Derived, 0u);
+    }
   }
 
   llvm::BasicBlock *CastNull = nullptr;
