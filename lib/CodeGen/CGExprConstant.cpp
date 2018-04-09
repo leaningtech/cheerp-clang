@@ -435,7 +435,7 @@ void ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
       if (CGM.getTarget().isByteAddressable())
         VTableType = llvm::FunctionType::get(CGM.Int32Ty, /*isVarArg=*/true)->getPointerTo()->getPointerTo();
       else
-        VTableType = CGM.getTypes().GetVTableBaseType()->getPointerTo();
+        VTableType = CGM.getTypes().GetVTableBaseType(RD->hasAttr<AsmJSAttr>())->getPointerTo();
       AppendBytes(Offset, llvm::ConstantExpr::getBitCast(VTableAddressPoint, VTableType));
     }
 
