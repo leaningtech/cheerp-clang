@@ -1060,6 +1060,11 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
   bool cheerp = !CGF.getTarget().isByteAddressable();
   bool asmjs = CGF.CurFn->getSection() == StringRef("asmjs");
   bool user_defined_new = false;
+  bool use_array = false;
+  if (IsArray) {
+    if (const CXXRecordDecl* RD = (*allocType)->getAsCXXRecordDecl())
+      use_array = !RD->hasTrivialDestructor();
+  }
   for(auto redecl: Callee->redecls())
   {
     if(!redecl->hasAttr<DefaultNewAttr>())
@@ -1077,7 +1082,7 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     llvm::Type* types[] = { CGF.ConvertType(retType) };
 
     CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                IsArray? llvm::Intrinsic::cheerp_allocate_array :
+                                use_array? llvm::Intrinsic::cheerp_allocate_array :
                                          llvm::Intrinsic::cheerp_allocate,
                                 types);
     llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
@@ -1090,7 +1095,7 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     // always be the case.
     llvm::Type* types[] = { Args[0].RV.getScalarVal()->getType() };
     CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                IsArray? llvm::Intrinsic::cheerp_deallocate_array :
+                                use_array? llvm::Intrinsic::cheerp_deallocate_array :
                                          llvm::Intrinsic::cheerp_deallocate,
                                 types);
     llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
