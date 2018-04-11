@@ -1088,7 +1088,7 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
   }
   // TODO: user defined delete?
-  else if(IsDelete && cheerp)
+  else if(IsDelete && cheerp && !(asmjs && user_defined_new))
   {
     QualType retType = CGF.getContext().getPointerType(allocType);
     llvm::Type* types[] = { CGF.ConvertType(retType) };
