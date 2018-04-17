@@ -734,7 +734,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
       if (stop == Inits.size()) {
         // Break this vtable here
         llvm::StructType* directBase = cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType(asmjs));
-        llvm::Constant* VTable = llvm::ConstantStruct::getAnon(Inits, false, directBase);
+        llvm::Constant* VTable = llvm::ConstantStruct::getAnon(Inits, false, directBase, asmjs);
         WrapperInits.push_back(VTable);
         Inits.clear();
         ++it;
@@ -747,7 +747,7 @@ llvm::Constant *CodeGenVTables::CreateVTableInitializer(
     ArrayType = llvm::ArrayType::get(Int8PtrTy, NumComponents);
     return llvm::ConstantArray::get(ArrayType, Inits);
   } else
-    return llvm::ConstantStruct::getAnon(WrapperInits);
+    return llvm::ConstantStruct::getAnon(WrapperInits, false, NULL, asmjs);
 }
 
 llvm::GlobalVariable *
@@ -1038,9 +1038,8 @@ static llvm::Type* getVTableSubObjectType(CodeGenModule& CGM,
   for (uint32_t i = 0; i < extraOffsets; i++) {
     VTableTypes.push_back(OffsetTy);
   }
-  llvm::StructType* ret = llvm::StructType::get(CGM.getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType(asmjs)));
-  if (asmjs)
-    ret->setAsmJS();
+  llvm::StructType* ret = llvm::StructType::get(CGM.getLLVMContext(), VTableTypes,
+                            false, cast<llvm::StructType>(CGM.getTypes().GetVTableBaseType(asmjs)), asmjs);
   return ret;
 }
 
@@ -1097,7 +1096,7 @@ llvm::Type* CodeGenTypes::GetVTableType(const VTableLayout& VTLayout, bool asmjs
     VTableWrapperTypes.push_back(getVTableSubObjectType(CGM, comp, comp+num, 0, asmjs));
     comp += num;
   }
-  return llvm::StructType::get(getLLVMContext(), VTableWrapperTypes);
+  return llvm::StructType::get(getLLVMContext(), VTableWrapperTypes, false, NULL, asmjs);
 }
 
 llvm::Type* CodeGenTypes::GetBasicVTableType(uint32_t virtualMethodsCount, bool asmjs)
@@ -1119,7 +1118,7 @@ llvm::Type* CodeGenTypes::GetBasicVTableType(uint32_t virtualMethodsCount, bool 
   for(uint32_t j=0;j<virtualMethodsCount;j++)
     VTableTypes.push_back(FuncPtrTy);
 
-  return llvm::StructType::get(getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(GetVTableBaseType(asmjs)));
+  return llvm::StructType::get(getLLVMContext(), VTableTypes, false, cast<llvm::StructType>(GetVTableBaseType(asmjs)), asmjs);
 }
 
 llvm::Type* CodeGenTypes::GetClassTypeInfoType()

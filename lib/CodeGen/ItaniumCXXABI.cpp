@@ -2780,7 +2780,7 @@ void ItaniumRTTIBuilder::BuildVTablePointer(const Type *Ty) {
         CGM.getLangOpts().getCheerpMode() == LangOptions::CHEERP_MODE_Wasm);
     }
     llvm::Type* WrapperTypes[] = {CGM.getTypes().GetBasicVTableType(8, asmjs)};
-    llvm::Constant *VTable = CGM.getModule().getOrInsertGlobal(VTableName, llvm::StructType::get(CGM.getLLVMContext(), WrapperTypes, false, NULL));
+    llvm::Constant *VTable = CGM.getModule().getOrInsertGlobal(VTableName, llvm::StructType::get(CGM.getLLVMContext(), WrapperTypes, false, NULL, asmjs));
     llvm::Constant *Zero = llvm::ConstantInt::get(CGM.Int32Ty, 0);
     llvm::SmallVector<llvm::Constant*, 2> GepIndexes;
     GepIndexes.push_back(Zero);
@@ -2853,6 +2853,13 @@ llvm::Constant *ItaniumRTTIBuilder::BuildTypeInfo(QualType Ty, bool Force) {
   // We want to operate on the canonical type.
   Ty = CGM.getContext().getCanonicalType(Ty);
 
+  // CHEERP: TODO duplicate typeinfo for basic types
+  bool asmjs = false;
+  if (CGM.getLangOpts().getCheerpMode() == LangOptions::CHEERP_MODE_AsmJS ||
+      CGM.getLangOpts().getCheerpMode() == LangOptions::CHEERP_MODE_Wast ||
+      CGM.getLangOpts().getCheerpMode() == LangOptions::CHEERP_MODE_Wasm) {
+    asmjs = true;
+  }
   // Check if we've already emitted an RTTI descriptor for this type.
   SmallString<256> OutName;
   llvm::raw_svector_ostream Out(OutName);
@@ -2954,6 +2961,7 @@ llvm::Constant *ItaniumRTTIBuilder::BuildTypeInfo(QualType Ty, bool Force) {
   case Type::Record: {
     const CXXRecordDecl *RD =
       cast<CXXRecordDecl>(cast<RecordType>(Ty)->getDecl());
+    asmjs = RD->hasAttr<AsmJSAttr>();
     if (!RD->hasDefinition() || !RD->getNumBases()) {
       // We don't need to emit any fields.
       break;
@@ -2990,7 +2998,7 @@ llvm::Constant *ItaniumRTTIBuilder::BuildTypeInfo(QualType Ty, bool Force) {
   }
 
   llvm::Type* directBase = CGM.getTarget().isByteAddressable() ? NULL : CGM.getTypes().GetClassTypeInfoType();
-  llvm::Constant *Init = llvm::ConstantStruct::getAnon(Fields, false, directBase ? cast<llvm::StructType>(directBase) : NULL);
+  llvm::Constant *Init = llvm::ConstantStruct::getAnon(Fields, false, directBase ? cast<llvm::StructType>(directBase) : NULL, asmjs);
 
   llvm::GlobalVariable *GV =
     new llvm::GlobalVariable(CGM.getModule(), Init->getType(),
@@ -3255,7 +3263,7 @@ void ItaniumRTTIBuilder::BuildVMIClassTypeInfo(const CXXRecordDecl *RD) {
       OffsetFlags |= BCTI_Public;
 
     baseFields.push_back(llvm::ConstantInt::get(LongLTy, OffsetFlags));
-    basesFields.push_back(llvm::ConstantStruct::getAnon(baseFields));
+    basesFields.push_back(llvm::ConstantStruct::getAnon(baseFields, false, NULL, asmjs));
   }
   if(!CGM.getTarget().isByteAddressable()) {
     for (auto it = CGLayout.vbases_begin(); it != CGLayout.vbases_end(); ++it) {
@@ -3269,7 +3277,7 @@ void ItaniumRTTIBuilder::BuildVMIClassTypeInfo(const CXXRecordDecl *RD) {
       else
         Offset = CGLayout.getTotalOffsetToBase(it->second);
       baseFields.push_back(llvm::ConstantInt::get(LongLTy, Offset));
-      basesFields.push_back(llvm::ConstantStruct::getAnon(baseFields));
+      basesFields.push_back(llvm::ConstantStruct::getAnon(baseFields, false, NULL, asmjs));
     }
   }
   llvm::ArrayType* basesArrayType = llvm::ArrayType::get(basesFields[0]->getType(), basesFields.size());
