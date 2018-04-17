@@ -14,6 +14,9 @@
 
 #include "CGCXXABI.h"
 
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/Cheerp/Utility.h"
+
 using namespace clang;
 using namespace CodeGen;
 
@@ -230,16 +233,27 @@ void CGCXXABI::ReadArrayCookie(CodeGenFunction &CGF, llvm::Value *ptr,
     return;
   }
 
-  if (CGF.getTarget().isByteAddressable()) {
-    ptr = CGF.Builder.CreateBitCast(ptr, charPtrTy);
-    cookieSize = getArrayCookieSizeImpl(eltTy);
-    allocPtr = CGF.Builder.CreateConstInBoundsGEP1_64(ptr,
-                                                      -cookieSize.getQuantity());
-  } else {
+  bool asmjs = CGF.CurFn->getSection() == StringRef("asmjs") ||
+               cheerp::TypeSupport::isAsmJSPointer(ptr->getType());
+  if (!CGF.getTarget().isByteAddressable() && !asmjs) {
     allocPtr = ptr;
     cookieSize = CharUnits::Zero();
+    llvm::Type* elemType = allocPtr->getType();
+    llvm::Function* GetLen = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
+        llvm::Intrinsic::cheerp_get_array_len, {elemType});
+    numElements = CGF.Builder.CreateCall(GetLen, {allocPtr});
+  } else {
+    ptr = CGF.Builder.CreateBitCast(ptr, charPtrTy);
+    cookieSize = getArrayCookieSizeImpl(eltTy);
+    if (asmjs) {
+      allocPtr = CGF.Builder.CreateConstInBoundsGEP1_32(ptr,
+                                                      -cookieSize.getQuantity());
+    } else {
+      allocPtr = CGF.Builder.CreateConstInBoundsGEP1_64(ptr,
+                                                        -cookieSize.getQuantity());
+    }
+    numElements = readArrayCookieImpl(CGF, allocPtr, cookieSize);
   }
-  numElements = readArrayCookieImpl(CGF, allocPtr, cookieSize);
 }
 
 llvm::Value *CGCXXABI::readArrayCookieImpl(CodeGenFunction &CGF,
