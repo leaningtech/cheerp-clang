@@ -1087,15 +1087,12 @@ static RValue EmitNewDeleteCall(CodeGenFunction &CGF,
     llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
     RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
   }
-  // TODO: user defined delete?
   else if(IsDelete && cheerp && !(asmjs && user_defined_new))
   {
     QualType retType = CGF.getContext().getPointerType(allocType);
     llvm::Type* types[] = { CGF.ConvertType(retType) };
     CalleeAddr = llvm::Intrinsic::getDeclaration(&CGF.CGM.getModule(),
-                                use_array? llvm::Intrinsic::cheerp_deallocate_array :
-                                         llvm::Intrinsic::cheerp_deallocate,
-                                types);
+                                llvm::Intrinsic::cheerp_deallocate, types);
     llvm::Value* Arg[] = { Args[0].RV.getScalarVal() };
     RV = RValue::get(CGF.Builder.CreateCall(CalleeAddr, Arg));
   }
