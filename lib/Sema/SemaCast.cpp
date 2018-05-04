@@ -263,15 +263,27 @@ Sema::ActOnCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
     CheckExtraCXXDefaultArguments(D);
   }
 
+  AttributeList* Attrs = D.getDeclSpec().getAttributes().getList();
+  bool isCheerpSafe = false;
+  while(Attrs)
+  {
+    if (Attrs->getKind() == AttributeList::AT_SafeCast)
+    {
+      isCheerpSafe = true;
+      break;
+    }
+    Attrs = Attrs->getNext();
+  }
+
   return BuildCXXNamedCast(OpLoc, Kind, TInfo, E,
                            SourceRange(LAngleBracketLoc, RAngleBracketLoc),
-                           SourceRange(LParenLoc, RParenLoc));
+                           SourceRange(LParenLoc, RParenLoc), isCheerpSafe);
 }
 
 ExprResult
 Sema::BuildCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
                         TypeSourceInfo *DestTInfo, Expr *E,
-                        SourceRange AngleBrackets, SourceRange Parens) {
+                        SourceRange AngleBrackets, SourceRange Parens, bool isCheerpSafe) {
   ExprResult Ex = E;
   QualType DestType = DestTInfo->getType();
 
@@ -283,6 +295,7 @@ Sema::BuildCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
   Op.OpRange = SourceRange(OpLoc, Parens.getEnd());
   Op.DestRange = AngleBrackets;
 
+  CastExpr* Ret = nullptr;
   switch (Kind) {
   default: llvm_unreachable("Unknown C++ cast!");
 
@@ -293,10 +306,11 @@ Sema::BuildCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
         return ExprError();
       DiscardMisalignedMemberAddress(DestType.getTypePtr(), E);
     }
-    return Op.complete(CXXConstCastExpr::Create(Context, Op.ResultType,
+    Ret = CXXConstCastExpr::Create(Context, Op.ResultType,
                                   Op.ValueKind, Op.SrcExpr.get(), DestTInfo,
                                                 OpLoc, Parens.getEnd(),
-                                                AngleBrackets));
+                                                AngleBrackets);
+    break;
 
   case tok::kw_dynamic_cast: {
     // OpenCL C++ 1.0 s2.9: dynamic_cast is not supported.
@@ -310,11 +324,12 @@ Sema::BuildCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
       if (Op.SrcExpr.isInvalid())
         return ExprError();
     }
-    return Op.complete(CXXDynamicCastExpr::Create(Context, Op.ResultType,
+    Ret = CXXDynamicCastExpr::Create(Context, Op.ResultType,
                                     Op.ValueKind, Op.Kind, Op.SrcExpr.get(),
                                                   &Op.BasePath, DestTInfo,
                                                   OpLoc, Parens.getEnd(),
-                                                  AngleBrackets));
+                                                  AngleBrackets);
+    break;
   }
   case tok::kw_reinterpret_cast: {
     if (!TypeDependent) {
@@ -323,11 +338,12 @@ Sema::BuildCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
         return ExprError();
       DiscardMisalignedMemberAddress(DestType.getTypePtr(), E);
     }
-    return Op.complete(CXXReinterpretCastExpr::Create(Context, Op.ResultType,
+    Ret = CXXReinterpretCastExpr::Create(Context, Op.ResultType,
                                     Op.ValueKind, Op.Kind, Op.SrcExpr.get(),
                                                       nullptr, DestTInfo, OpLoc,
                                                       Parens.getEnd(),
-                                                      AngleBrackets));
+                                                      AngleBrackets);
+    break;
   }
   case tok::kw_static_cast: {
     if (!TypeDependent) {
@@ -336,14 +352,17 @@ Sema::BuildCXXNamedCast(SourceLocation OpLoc, tok::TokenKind Kind,
         return ExprError();
       DiscardMisalignedMemberAddress(DestType.getTypePtr(), E);
     }
-
-    return Op.complete(CXXStaticCastExpr::Create(Context, Op.ResultType,
+    
+    Ret = CXXStaticCastExpr::Create(Context, Op.ResultType,
                                    Op.ValueKind, Op.Kind, Op.SrcExpr.get(),
                                                  &Op.BasePath, DestTInfo,
                                                  OpLoc, Parens.getEnd(),
-                                                 AngleBrackets));
+                                                 AngleBrackets);
+    break;
   }
   }
+  Ret->setCheerpSafe(isCheerpSafe);
+  return Op.complete(Ret);
 }
 
 /// Try to diagnose a failed overloaded cast.  Returns true if
@@ -2756,8 +2775,9 @@ static void DiagnoseCastQual(Sema &Self, const ExprResult &SrcExpr,
 ExprResult Sema::BuildCStyleCastExpr(SourceLocation LPLoc,
                                      TypeSourceInfo *CastTypeInfo,
                                      SourceLocation RPLoc,
-                                     Expr *CastExpr) {
-  CastOperation Op(*this, CastTypeInfo->getType(), CastExpr);
+                                     Expr *CastExpr,
+                                     bool isCheerpSafe) {
+  CastOperation Op(*this, CastTypeInfo->getType(), CastExpr);  
   Op.DestRange = CastTypeInfo->getTypeLoc().getSourceRange();
   Op.OpRange = SourceRange(LPLoc, CastExpr->getEndLoc());
 
@@ -2774,9 +2794,11 @@ ExprResult Sema::BuildCStyleCastExpr(SourceLocation LPLoc,
   // -Wcast-qual
   DiagnoseCastQual(Op.Self, Op.SrcExpr, Op.DestType);
 
-  return Op.complete(CStyleCastExpr::Create(Context, Op.ResultType,
+  clang::CastExpr* Ret = CStyleCastExpr::Create(Context, Op.ResultType,
                               Op.ValueKind, Op.Kind, Op.SrcExpr.get(),
-                              &Op.BasePath, CastTypeInfo, LPLoc, RPLoc));
+                              &Op.BasePath, CastTypeInfo, LPLoc, RPLoc);
+  Ret->setCheerpSafe(isCheerpSafe);
+  return Op.complete(Ret);
 }
 
 ExprResult Sema::BuildCXXFunctionalCastExpr(TypeSourceInfo *CastTypeInfo,
