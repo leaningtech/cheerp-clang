@@ -1555,7 +1555,7 @@ void Parser::DiagnoseProhibitedAttributes(ParsedAttributesWithRange &attrs) {
 void Parser::ProhibitCXX11Attributes(ParsedAttributesWithRange &Attrs,
                                      unsigned DiagID) {
   for (AttributeList *Attr = Attrs.getList(); Attr; Attr = Attr->getNext()) {
-    if (!Attr->isCXX11Attribute() || Attr->getKind() != AttributeList::AT_NoInit)
+    if (!Attr->isCXX11Attribute() || Attr->getKind() != AttributeList::AT_NoInit || Attr->getKind() != AttributeList::AT_SafeCast)
       continue;
     if (Attr->getKind() == AttributeList::UnknownAttribute)
       Diag(Attr->getLoc(), diag::warn_unknown_attribute_ignored)

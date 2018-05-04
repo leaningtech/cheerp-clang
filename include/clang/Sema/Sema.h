@@ -4302,7 +4302,7 @@ public:
   ExprResult BuildCStyleCastExpr(SourceLocation LParenLoc,
                                  TypeSourceInfo *Ty,
                                  SourceLocation RParenLoc,
-                                 Expr *Op);
+                                 Expr *Op, bool isCheerpSafe = false);
   CastKind PrepareScalarCast(ExprResult &src, QualType destType);
 
   /// \brief Build an altivec or OpenCL literal.
@@ -4929,7 +4929,7 @@ public:
                                TypeSourceInfo *Ty,
                                Expr *E,
                                SourceRange AngleBrackets,
-                               SourceRange Parens);
+                               SourceRange Parens, bool isCheerpSafe = false);
 
   ExprResult BuildCXXTypeId(QualType TypeInfoType,
                             SourceLocation TypeidLoc,
