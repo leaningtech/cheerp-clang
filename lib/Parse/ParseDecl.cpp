@@ -1351,7 +1351,7 @@ void Parser::DiagnoseProhibitedAttributes(ParsedAttributesWithRange &attrs) {
 void Parser::ProhibitCXX11Attributes(ParsedAttributesWithRange &attrs) {
   AttributeList *AttrList = attrs.getList();
   while (AttrList) {
-    if (AttrList->isCXX11Attribute() && AttrList->getKind() != AttributeList::AT_NoInit) {
+    if (AttrList->isCXX11Attribute() && AttrList->getKind() != AttributeList::AT_NoInit && AttrList->getKind() != AttributeList::AT_SafeCast) {
       Diag(AttrList->getLoc(), diag::err_attribute_not_type_attr) 
         << AttrList->getName();
       AttrList->setInvalid();

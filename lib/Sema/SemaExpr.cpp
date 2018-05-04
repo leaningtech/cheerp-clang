@@ -5380,6 +5380,19 @@ Sema::ActOnCastExpr(Scope *S, SourceLocation LParenLoc,
     CastExpr = Res.get();
   }
 
+  AttributeList* Attrs = D.getDeclSpec().getAttributes().getList();
+  bool isCheerpSafe = false;
+  while(Attrs)
+  {
+    if (Attrs->getKind() == AttributeList::AT_SafeCast)
+    {
+      Attrs->setUsedAsTypeAttr();
+      isCheerpSafe = true;
+      break;
+    }
+    Attrs = Attrs->getNext();
+  }
+
   checkUnusedDeclAttributes(D);
 
   QualType castType = castTInfo->getType();
@@ -5428,7 +5441,7 @@ Sema::ActOnCastExpr(Scope *S, SourceLocation LParenLoc,
   
   CheckObjCBridgeRelatedCast(castType, CastExpr);
   
-  return BuildCStyleCastExpr(LParenLoc, castTInfo, RParenLoc, CastExpr);
+  return BuildCStyleCastExpr(LParenLoc, castTInfo, RParenLoc, CastExpr, isCheerpSafe);
 }
 
 ExprResult Sema::BuildVectorLiteral(SourceLocation LParenLoc,
