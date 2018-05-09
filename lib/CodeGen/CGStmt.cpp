@@ -2006,7 +2006,16 @@ void CodeGenFunction::EmitAsmStmt(const AsmStmt &S) {
         LargestVectorWidth = std::max(LargestVectorWidth,
                                       VT->getPrimitiveSizeInBits());
     } else {
-      ArgTypes.push_back(Dest.getAddress().getType());
+      if (llvm::Type* AdjTy =
+            getTargetHooks().adjustInlineAsmType(*this, OutputConstraint,
+                                                 Dest.getAddress()->getType()))
+        ArgTypes.push_back(AdjTy);
+      else {
+        ArgTypes.push_back(Dest.getAddress().getType());
+        CGM.getDiags().Report(S.getAsmLoc(),
+                              diag::err_asm_invalid_type_in_input)
+            << OutExpr->getType() << OutputConstraint;
+      }
       Args.push_back(Dest.getPointer());
       Constraints += "=*";
       Constraints += OutputConstraint;
