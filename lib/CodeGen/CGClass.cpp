@@ -1630,11 +1630,11 @@ void CodeGenFunction::EmitDestructorBody(FunctionArgList &Args) {
   // possible to delegate the destructor body to the complete
   // destructor.  Do so.
   if (DtorType == Dtor_Deleting) {
-    if(getTarget().isByteAddressable())
+    if(getTarget().isByteAddressable() || Dtor->getParent()->hasAttr<AsmJSAttr>())
       EnterDtorCleanups(Dtor, Dtor_Deleting);
     EmitCXXDestructorCall(Dtor, Dtor_Complete, /*ForVirtualBase=*/false,
                           /*Delegating=*/false, LoadCXXThisAddress());
-    if(getTarget().isByteAddressable())
+    if(getTarget().isByteAddressable() || Dtor->getParent()->hasAttr<AsmJSAttr>())
       PopCleanupBlock();
     return;
   }
