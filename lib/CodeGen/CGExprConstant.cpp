@@ -1340,8 +1340,17 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
       return C;
     }
   }
-  case APValue::Int:
-    return llvm::ConstantInt::get(VMContext, Value.getInt());
+  case APValue::Int: {
+    llvm::APInt v = Value.getInt();
+    if (CodeGenTypes::isHighInt(DestType)) {
+      llvm::Constant *elements[] = {llvm::ConstantInt::get(Int32Ty, v.getHiBits(32).trunc(32)),
+                                    llvm::ConstantInt::get(Int32Ty, v.trunc(32))};
+      llvm::ArrayType* highIntType = cast<llvm::ArrayType>(getTypes().ConvertType(DestType));
+      return llvm::ConstantArray::get(highIntType, elements);
+    } else {
+      return llvm::ConstantInt::get(VMContext, v);
+    }
+  }
   case APValue::ComplexInt: {
     llvm::Constant *Complex[2];
 
