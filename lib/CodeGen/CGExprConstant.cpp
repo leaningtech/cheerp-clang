@@ -91,14 +91,6 @@ AppendField(const FieldDecl *Field, uint64_t FieldOffset,
 
   CharUnits FieldOffsetInChars = Context.toCharUnitsFromBits(FieldOffset);
 
-  if (CodeGenTypes::isHighInt(Field->getType())) {
-    llvm::APInt v = cast<llvm::ConstantInt>(InitCst)->getValue();
-    llvm::Constant *elements[] = {llvm::ConstantInt::get(CGM.Int32Ty, v.getHiBits(32).trunc(32)), 
-                                  llvm::ConstantInt::get(CGM.Int32Ty, v.trunc(32))};
-    llvm::ArrayType* highIntType = cast<llvm::ArrayType>(CGM.getTypes().ConvertType(Field->getType()));
-    InitCst = llvm::ConstantArray::get(highIntType, elements);
-  }
-
   AppendBytes(FieldOffsetInChars, InitCst);
 }
 
