@@ -2938,6 +2938,9 @@ GenerateStringLiteral(llvm::Constant *C, llvm::GlobalValue::LinkageTypes LT,
       GlobalName, nullptr, llvm::GlobalVariable::NotThreadLocal, AddrSpace);
   GV->setAlignment(Alignment);
   GV->setUnnamedAddr(true);
+  // in asmjs mode all the string literals are in the asmjs section
+  if (CGM.getLangOpts().getCheerpMode() != LangOptions::CHEERP_MODE_GenericJS)
+    GV->setSection("asmjs");
   return GV;
 }
 
