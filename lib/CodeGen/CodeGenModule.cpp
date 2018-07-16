@@ -3663,6 +3663,9 @@ GenerateStringLiteral(llvm::Constant *C, llvm::GlobalValue::LinkageTypes LT,
     GV->setComdat(M.getOrInsertComdat(GV->getName()));
   }
 
+  // in asmjs mode all the string literals are in the asmjs section
+  if (CGM.getLangOpts().getCheerpMode() != LangOptions::CHEERP_MODE_GenericJS)
+    GV->setSection("asmjs");
   return GV;
 }
 
