@@ -1019,7 +1019,7 @@ static void CheckNonNullArguments(Sema &S,
 
 /// Handles the checks for format strings, non-POD arguments to vararg
 /// functions, and NULL arguments passed to non-NULL parameters.
-void Sema::checkCall(NamedDecl *FDecl, ArrayRef<const Expr *> Args,
+void Sema::checkCall(NamedDecl *FDecl, ArrayRef<Expr *> Args,
                      unsigned NumParams, bool IsMemberFunction,
                      SourceLocation Loc, SourceRange Range,
                      VariadicCallType CallType) {
@@ -1058,12 +1058,19 @@ void Sema::checkCall(NamedDecl *FDecl, ArrayRef<const Expr *> Args,
     for (const auto *I : FDecl->specific_attrs<ArgumentWithTypeTagAttr>())
       CheckArgumentWithTypeTag(I, Args.data());
   }
+
+  Scope *S = getScopeForContext(CurContext);
+  if (S && S->getFnParent() && FDecl && isa<FunctionDecl>(FDecl))
+  {
+    if (FunctionDecl* Parent = dyn_cast<FunctionDecl>(S->getFnParent()->getEntity()))
+      CheckCheerpFFICall(Parent, cast<FunctionDecl>(FDecl), Loc, Args);
+  }
 }
 
 /// CheckConstructorCall - Check a constructor call for correctness and safety
 /// properties not enforced by the C type system.
 void Sema::CheckConstructorCall(FunctionDecl *FDecl,
-                                ArrayRef<const Expr *> Args,
+                                ArrayRef<Expr *> Args,
                                 const FunctionProtoType *Proto,
                                 SourceLocation Loc) {
   VariadicCallType CallType =
@@ -1122,7 +1129,7 @@ bool Sema::CheckFunctionCall(FunctionDecl *FDecl, CallExpr *TheCall,
 }
 
 bool Sema::CheckObjCMethodCall(ObjCMethodDecl *Method, SourceLocation lbrac, 
-                               ArrayRef<const Expr *> Args) {
+                               ArrayRef<Expr *> Args) {
   VariadicCallType CallType =
       Method->isVariadic() ? VariadicMethod : VariadicDoesNotApply;
 

@@ -8513,16 +8513,16 @@ private:
   bool CheckFunctionCall(FunctionDecl *FDecl, CallExpr *TheCall,
                          const FunctionProtoType *Proto);
   bool CheckObjCMethodCall(ObjCMethodDecl *Method, SourceLocation loc,
-                           ArrayRef<const Expr *> Args);
+                           ArrayRef<Expr *> Args);
   bool CheckPointerCall(NamedDecl *NDecl, CallExpr *TheCall,
                         const FunctionProtoType *Proto);
   bool CheckOtherCall(CallExpr *TheCall, const FunctionProtoType *Proto);
   void CheckConstructorCall(FunctionDecl *FDecl,
-                            ArrayRef<const Expr *> Args,
+                            ArrayRef<Expr *> Args,
                             const FunctionProtoType *Proto,
                             SourceLocation Loc);
 
-  void checkCall(NamedDecl *FDecl, ArrayRef<const Expr *> Args,
+  void checkCall(NamedDecl *FDecl, ArrayRef<Expr *> Args,
                  unsigned NumParams, bool IsMemberFunction, SourceLocation Loc,
                  SourceRange Range, VariadicCallType CallType);
 
@@ -8765,7 +8765,7 @@ public:
   }
   // CHEERP: Disallow calls to asmjs functions with pointer to basic type parameters from genericjs
   // and calls to functions with pointer to function parameters both ways
-  void CheckCheerpFFICall(const FunctionDecl* Parent, const FunctionDecl* FDecl, SourceLocation Loc, const llvm::ArrayRef<Expr*> Args);
+  void CheckCheerpFFICall(const FunctionDecl* Parent, const FunctionDecl* FDecl, const SourceLocation Loc, const llvm::ArrayRef<Expr*> Args);
 };
 
 /// \brief RAII object that enters a new expression evaluation context.
