@@ -1875,6 +1875,9 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
     // extension.
     auto DestLLVMTy = ConvertType(DestTy);
     llvm::Type *MiddleTy = CGF.CGM.getDataLayout().getIntPtrType(DestLLVMTy);
+    if (CGF.IsHighInt(E->getType())) {
+      Src = CGF.EmitLoadLowBitsOfHighInt(Src);
+    }
     bool InputSigned = E->getType()->isSignedIntegerOrEnumerationType();
     llvm::Value* IntResult =
       Builder.CreateIntCast(Src, MiddleTy, InputSigned, "conv");
@@ -1883,7 +1886,11 @@ Value *ScalarExprEmitter::VisitCastExpr(CastExpr *CE) {
   }
   case CK_PointerToIntegral:
     assert(!DestTy->isBooleanType() && "bool should use PointerToBool");
-    return Builder.CreatePtrToInt(Visit(E), ConvertType(DestTy));
+    if (CGF.IsHighInt(CE->getType())) {
+      return CGF.EmitHighInt(CE->getType(), llvm::ConstantInt::get(CGF.Int32Ty, 0), Builder.CreatePtrToInt(Visit(E), CGF.Int32Ty));
+    } else {
+      return Builder.CreatePtrToInt(Visit(E), ConvertType(DestTy));
+    }
 
   case CK_ToVoid: {
     CGF.EmitIgnoredExpr(E);
