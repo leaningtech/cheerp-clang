@@ -4569,6 +4569,24 @@ static void TryReferenceInitializationCore(Sema &S,
     = S.CompareReferenceRelationship(DeclLoc, cv1T1, cv2T2, DerivedToBase,
                                      ObjCConversion, ObjCLifetimeConversion);
 
+  // CHEERP: forbid taking the address of pointer fields in asmjs structs from
+  // genericjs
+  if (FunctionDecl* FD = S.getCurFunctionDecl()) {
+    if (MemberExpr* ME = dyn_cast<MemberExpr>(Initializer)) {
+      TagDecl* TD = ME->getBase()->getType()->getUnqualifiedDesugaredType()->getAsTagDecl();
+      if (FD->hasAttr<GenericJSAttr>()
+          && TD && TD->hasAttr<AsmJSAttr>()
+          && ME->getType()->hasPointerRepresentation()) {
+        S.Diag(ME->getExprLoc(),
+             diag::err_cheerp_wrong_addrof_ptr_field)
+          << ME->getMemberDecl()
+          << TD->getAttr<AsmJSAttr>()
+          << TD
+          << FD->getAttr<GenericJSAttr>();
+      }
+    }
+  }
+
   // C++0x [dcl.init.ref]p5:
   //   A reference to type "cv1 T1" is initialized by an expression of type
   //   "cv2 T2" as follows:
