@@ -395,9 +395,9 @@ void downcast_reference(B &b) {
   // CHECK-NEXT: br i1 [[AND]]
 }
 
-// CHECK-LABEL: @_Z22indirect_function_callPFviE({{.*}} prologue <{ i32, i8* }> <{ i32 1413876459, i8* bitcast ({ i8**, i8* }* @_ZTIFvPFviEE to i8*) }>
-// CHECK-X32: @_Z22indirect_function_callPFviE({{.*}} prologue <{ i32, i8* }> <{ i32 1413875435, i8* bitcast ({ i8**, i8* }* @_ZTIFvPFviEE to i8*) }>
-// CHECK-X86: @_Z22indirect_function_callPFviE({{.*}} prologue <{ i32, i8* }> <{ i32 1413875435, i8* bitcast ({ i8**, i8* }* @_ZTIFvPFviEE to i8*) }>
+// CHECK-LABEL: @_Z22indirect_function_callPFviE({{.*}} prologue <{ i32, i8* }> <{ i32 1413876459, i8* bitcast ({ i8*, i8* }* @_ZTIFvPFviEE to i8*) }>
+// CHECK-X32: @_Z22indirect_function_callPFviE({{.*}} prologue <{ i32, i8* }> <{ i32 1413875435, i8* bitcast ({ i8*, i8* }* @_ZTIFvPFviEE to i8*) }>
+// CHECK-X86: @_Z22indirect_function_callPFviE({{.*}} prologue <{ i32, i8* }> <{ i32 1413875435, i8* bitcast ({ i8*, i8* }* @_ZTIFvPFviEE to i8*) }>
 void indirect_function_call(void (*p)(int)) {
   // CHECK: [[PTR:%.+]] = bitcast void (i32)* {{.*}} to <{ i32, i8* }>*
 

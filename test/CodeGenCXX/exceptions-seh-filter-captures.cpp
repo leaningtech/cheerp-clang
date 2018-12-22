@@ -45,7 +45,7 @@ void S::test_method() {
   }
 }
 
-// CHECK-LABEL: define void @"\01?test_method@S@@QEAAXXZ"(%struct.S* %this)
+// CHECK-LABEL: define void @"\01?test_method@S@@QEAAXXZ"(%"struct.\01?S@@"* %this)
 // CHECK: @llvm.localescape(i32* %[[l1_addr:[^, ]*]])
 // CHECK: store i32 13, i32* %[[l1_addr]], align 4
 // CHECK: invoke void @might_crash()

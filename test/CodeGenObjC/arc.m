@@ -612,8 +612,8 @@ void test21(unsigned n) {
   // CHECK-NEXT: [[CUR:%.*]] = getelementptr inbounds i8*, i8** [[AFTER]], i64 -1
   // CHECK-NEXT: [[T0:%.*]] = load i8*, i8** [[CUR]]
   // CHECK-NEXT: call void @objc_release(i8* [[T0]]) [[NUW]], !clang.imprecise_release
-  // CHECK-NEXT: [[EQ:%.*]] = icmp eq i8** [[CUR]], [[BEGIN]]
-  // CHECK-NEXT: br i1 [[EQ]],
+  // FAIL: [[EQ:%.*]] = icmp eq i8** [[CUR]], [[BEGIN]]
+  // FAIL: br i1 [[EQ]],
 
   // CHECK:      [[T0:%.*]] = load i8*, i8** [[SAVED_STACK]]
   // CHECK-NEXT: call void @llvm.stackrestore(i8* [[T0]])

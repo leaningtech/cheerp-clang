@@ -18,7 +18,7 @@
 // CHECK: [[TGIARGS]] = !{[[TGIARG1:![0-9]*]]}
 // CHECK: [[TGIARG1]] = !DITemplateValueParameter(
 // CHECK-SAME:                                    type: [[CONST_GUID_PTR:![0-9]*]]
-// CHECK-SAME:                                    value: { i32, i16, i16, [8 x i8] }* @_GUID_12345678_1234_1234_1234_1234567890ab
+// CHECK-SAME:                                    value:{{.*}}{ i32, i16, i16, [8 x i8] }* @_GUID_12345678_1234_1234_1234_1234567890ab
 // CHECK: [[CONST_GUID_PTR]] = !DIDerivedType(tag: DW_TAG_pointer_type
 // CHECK-SAME:                                baseType: [[CONST_GUID:![0-9]*]]
 // CHECK-SAME:                                size: 64

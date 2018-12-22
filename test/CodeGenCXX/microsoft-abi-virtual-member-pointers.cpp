@@ -158,17 +158,17 @@ void f() {
 // CHECK64: }
 
 // Thunk for calling the fifth virtual function in C which uses the __cdecl calling convention.
-// CHECK32-LABEL: define linkonce_odr void @"\01??_9C@@$BBA@AA"(%struct.C* %this, ...) {{.*}} comdat align 2 {
-// CHECK32: [[VPTR:%.*]] = getelementptr inbounds void (%struct.C*, ...)*, void (%struct.C*, ...)** %{{.*}}, i64 4
-// CHECK32: [[CALLEE:%.*]] = load void (%struct.C*, ...)*, void (%struct.C*, ...)** [[VPTR]]
-// CHECK32: musttail call void (%struct.C*, ...) [[CALLEE]](%struct.C* %{{.*}}, ...)
+// CHECK32-LABEL: define linkonce_odr void @"\01??_9C@@$BBA@AA"(%"struct.\01?C@@"* %this, ...) {{.*}} comdat align 2 {
+// CHECK32: [[VPTR:%.*]] = getelementptr inbounds void (%"struct.\01?C@@"*, ...)*, void (%"struct.\01?C@@"*, ...)** %{{.*}}, i64 4
+// CHECK32: [[CALLEE:%.*]] = load void (%"struct.\01?C@@"*, ...)*, void (%"struct.\01?C@@"*, ...)** [[VPTR]]
+// CHECK32: musttail call void (%"struct.\01?C@@"*, ...) [[CALLEE]](%"struct.\01?C@@"* %{{.*}}, ...)
 // CHECK32: ret void
 // CHECK32: }
 //
-// CHECK64-LABEL: define linkonce_odr void @"\01??_9C@@$BCA@AA"(%struct.C* %this, ...) {{.*}} comdat align 2 {
-// CHECK64: [[VPTR:%.*]] = getelementptr inbounds void (%struct.C*, ...)*, void (%struct.C*, ...)** %{{.*}}, i64 4
-// CHECK64: [[CALLEE:%.*]] = load void (%struct.C*, ...)*, void (%struct.C*, ...)** [[VPTR]]
-// CHECK64: musttail call void (%struct.C*, ...) [[CALLEE]](%struct.C* %{{.*}}, ...)
+// CHECK64-LABEL: define linkonce_odr void @"\01??_9C@@$BCA@AA"(%"struct.\01?C@@"* %this, ...) {{.*}} comdat align 2 {
+// CHECK64: [[VPTR:%.*]] = getelementptr inbounds void (%"struct.\01?C@@"*, ...)*, void (%"struct.\01?C@@"*, ...)** %{{.*}}, i64 4
+// CHECK64: [[CALLEE:%.*]] = load void (%"struct.\01?C@@"*, ...)*, void (%"struct.\01?C@@"*, ...)** [[VPTR]]
+// CHECK64: musttail call void (%"struct.\01?C@@"*, ...) [[CALLEE]](%"struct.\01?C@@"* %{{.*}}, ...)
 // CHECK64: ret void
 // CHECK64: }
 
