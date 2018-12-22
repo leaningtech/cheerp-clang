@@ -10,13 +10,13 @@ char c;
 // CHECK-DAG: @c = common global i8 0, align 2
 
 struct test s;
-// CHECK-DAG: @s = common global %struct.test zeroinitializer, align 2
+// CHECK-DAG: @s = common global %struct._Z4test zeroinitializer, align 2
 
 extern char ec;
 // CHECK-DAG: @ec = external global i8, align 2
 
 extern struct test es;
-// CHECK-DAG: @es = external global %struct.test, align 2
+// CHECK-DAG: @es = external global %struct._Z4test, align 2
 
 // Dummy function to make sure external symbols are used.
 void func (void)
