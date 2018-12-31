@@ -8387,6 +8387,10 @@ void cheerp::Link::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back(Args.MakeArgString(getToolChain().GetFilePath("libm.bc")));
     }
   }
+  // Add wasm helper if needed
+  Arg *CheerpMode = Args.getLastArg(options::OPT_cheerp_mode_EQ);
+  if(CheerpMode && CheerpMode->getValue() == StringRef("wasm"))
+    CmdArgs.push_back(Args.MakeArgString(getToolChain().GetFilePath("libwasm.bc")));
 
   // Do not add the same library more than once
   std::set<std::string> usedLibs;
