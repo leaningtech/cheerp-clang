@@ -565,21 +565,19 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
   // type then use it, otherwise use whatever the builder produced for us.
   llvm::Type *ValTy = CGM.getTypes().ConvertRecordDeclType(RD);
   llvm::StructType *DirectBaseTy = NULL;
+  bool isByteLayout = false;
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
     // It makes sense to make the struct packed if the target one is
     if (ValSTy->isPacked() && !Packed)
       ConvertStructToPacked();
     DirectBaseTy = ValSTy->getDirectBase();
+    isByteLayout = ValSTy->hasByteLayout();
   }
 
   llvm::StructType *STy =
       llvm::ConstantStruct::getTypeForElements(CGM.getLLVMContext(),
-                                               Elements, Packed, DirectBaseTy);
+                                               Elements, Packed, DirectBaseTy, isByteLayout, RD->hasAttr<AsmJSAttr>());
   if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
-    if (ValSTy->hasByteLayout())
-      STy->setByteLayout();
-    if (RD->hasAttr<AsmJSAttr>())
-      STy->setAsmJS();
     if (ValSTy->isLayoutIdentical(STy))
       STy = ValSTy;
     else if(!CGM.getTarget().isByteAddressable() && !RD->hasAttr<AsmJSAttr>())
