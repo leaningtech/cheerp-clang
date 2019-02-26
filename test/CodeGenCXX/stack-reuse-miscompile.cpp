@@ -23,13 +23,13 @@ public:
 
 const char * f(S s)
 {
-// CHECK: [[T1:%.*]] = alloca %class.T, align 4
-// CHECK: [[T2:%.*]] = alloca %class.T, align 4
-// CHECK: [[T3:%.*]] = alloca %class.T, align 4
-// CHECK: [[T4:%.*]] = call %class.T* @_ZN1TC1EPKc(%class.T* [[T1]], i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str, i32 0, i32 0))
-// CHECK: [[T5:%.*]] = call %class.T* @_ZN1TC1E1S(%class.T* [[T2]], [2 x i32] %{{.*}})
-// CHECK: call void @_ZNK1T6concatERKS_(%class.T* sret [[T3]], %class.T* [[T1]], %class.T* dereferenceable(16) [[T2]])
-// CHECK: [[T6:%.*]] = call i8* @_ZNK1T3strEv(%class.T* [[T3]])
+// CHECK: [[T1:%.*]] = alloca %class._Z1T, align 4
+// CHECK: [[T2:%.*]] = alloca %class._Z1T, align 4
+// CHECK: [[T3:%.*]] = alloca %class._Z1T, align 4
+// CHECK: [[T4:%.*]] = call %class._Z1T* @_ZN1TC1EPKc(%class._Z1T* [[T1]], i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str, i32 0, i32 0))
+// CHECK: [[T5:%.*]] = call %class._Z1T* @_ZN1TC1E1S(%class._Z1T* [[T2]], [2 x i32] %{{.*}})
+// CHECK: call void @_ZNK1T6concatERKS_(%class._Z1T* sret [[T3]], %class._Z1T* [[T1]], %class._Z1T* dereferenceable(16) [[T2]])
+// CHECK: [[T6:%.*]] = call i8* @_ZNK1T3strEv(%class._Z1T* [[T3]])
 // CHECK: ret i8* [[T6]]
 
   return T("[").concat(T(s)).str();

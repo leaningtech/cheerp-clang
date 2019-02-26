@@ -75,8 +75,8 @@ int filter_expr_capture(void) {
 }
 
 // CHECK-LABEL: define i32 @filter_expr_capture()
-// X64-SAME: personality i8* bitcast (i32 (...)* @__C_specific_handler to i8*)
-// X86-SAME: personality i8* bitcast (i32 (...)* @_except_handler3 to i8*)
+// X64-SAME: personality i8* bitcast (void ()* @__C_specific_handler to i8*)
+// X86-SAME: personality i8* bitcast (void ()* @_except_handler3 to i8*)
 // X64: call void (...) @llvm.localescape(i32* %[[r:[^ ,]*]])
 // X86: call void (...) @llvm.localescape(i32* %[[r:[^ ,]*]], i32* %[[code:[^ ,]*]])
 // CHECK: store i32 42, i32* %[[r]]
@@ -115,8 +115,8 @@ int nested_try(void) {
   return r;
 }
 // CHECK-LABEL: define i32 @nested_try()
-// X64-SAME: personality i8* bitcast (i32 (...)* @__C_specific_handler to i8*)
-// X86-SAME: personality i8* bitcast (i32 (...)* @_except_handler3 to i8*)
+// X64-SAME: personality i8* bitcast (void ()* @__C_specific_handler to i8*)
+// X86-SAME: personality i8* bitcast (void ()* @_except_handler3 to i8*)
 // CHECK: store i32 42, i32* %[[r:[^ ,]*]]
 // CHECK: invoke void @j() #[[NOINLINE]]
 // CHECK:       to label %[[cont:[^ ]*]] unwind label %[[cswitch_inner:[^ ]*]]
@@ -175,8 +175,8 @@ int basic_finally(int g) {
   return g;
 }
 // CHECK-LABEL: define i32 @basic_finally(i32 %g)
-// X64-SAME: personality i8* bitcast (i32 (...)* @__C_specific_handler to i8*)
-// X86-SAME: personality i8* bitcast (i32 (...)* @_except_handler3 to i8*)
+// X64-SAME: personality i8* bitcast (void ()* @__C_specific_handler to i8*)
+// X86-SAME: personality i8* bitcast (void ()* @_except_handler3 to i8*)
 // CHECK: %[[g_addr:[^ ]*]] = alloca i32, align 4
 // CHECK: call void (...) @llvm.localescape(i32* %[[g_addr]])
 // CHECK: store i32 %g, i32* %[[g_addr]]

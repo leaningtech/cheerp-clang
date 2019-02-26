@@ -56,7 +56,7 @@ extern "C" void use_seh() {
 // Make sure we use __C_specific_handler for SEH.
 
 // CHECK-LABEL: define void @use_seh()
-// CHECK-SAME:  personality i8* bitcast (i32 (...)* @__C_specific_handler to i8*)
+// CHECK-SAME:  personality i8* bitcast (void ()* @__C_specific_handler to i8*)
 // CHECK: invoke void @might_throw() #[[NOINLINE:[0-9]+]]
 // CHECK:       to label %[[cont:[^ ]*]] unwind label %[[lpad:[^ ]*]]
 //
