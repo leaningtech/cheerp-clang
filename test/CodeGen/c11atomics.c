@@ -17,15 +17,15 @@ struct elem;
 struct ptr {
     struct elem *ptr;
 };
-// CHECK-DAG: %struct.ptr = type { %struct.elem* }
+// CHECK-DAG: %struct._Z3ptr = type { %struct._Z4elem* }
 
 struct elem {
     _Atomic(struct ptr) link;
 };
-// CHECK-DAG: %struct.elem = type { %struct.ptr }
+// CHECK-DAG: %struct._Z4elem = type { %struct._Z3ptr }
 
 struct ptr object;
-// CHECK-DAG: @object = common global %struct.ptr zeroinitializer
+// CHECK-DAG: @object = common global %struct._Z3ptr zeroinitializer
 
 // CHECK-DAG: @testStructGlobal = global {{.*}} { i16 1, i16 2, i16 3, i16 4 }
 // CHECK-DAG: @testPromotedStructGlobal = global {{.*}} { %{{.*}} { i16 1, i16 2, i16 3 }, [2 x i8] zeroinitializer }
