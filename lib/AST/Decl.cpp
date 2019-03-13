@@ -3602,10 +3602,12 @@ unsigned FieldDecl::getBitWidthValue(const ASTContext &Ctx) const {
   assert(isBitField() && "not a bitfield");
   auto *BitWidth = static_cast<Expr *>(InitStorage.getPointer());
   unsigned FieldSize = BitWidth->EvaluateKnownConstInt(Ctx).getZExtValue();
+  if (getType()->isDependentType())
+    return FieldSize;
   unsigned TypeSize = Ctx.getTypeInfo(getType()).Width;
   if (!Ctx.getTargetInfo().isByteAddressable() && FieldSize > TypeSize)
   {
-    //On NBA targets padding is useless, kill it
+    //On NBA targets bitfield padding is useless, remove it
     FieldSize = TypeSize;
   }
   return FieldSize;
