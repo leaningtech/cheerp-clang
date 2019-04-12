@@ -1093,7 +1093,7 @@ static Address createUnnamedGlobalFrom(CodeGenModule &CGM, const VarDecl &D,
 
   Address SrcPtr = Address(GV, Align);
   if (Ty->isArrayTy())
-    SrcPtr = Builder.CreateConstGEP2_32(GV->getType()->getPointerElementType(), SrcPtr, 0, 0);
+    SrcPtr = Builder.CreateConstArrayGEP(SrcPtr, 0, CharUnits());
   llvm::Type *BP = llvm::PointerType::getInt8PtrTy(CGM.getLLVMContext(), AS);
   if (CGM.getTarget().isByteAddressable() && SrcPtr.getType() != BP)
     SrcPtr = Builder.CreateBitCast(SrcPtr, BP);
@@ -1749,7 +1749,7 @@ void CodeGenFunction::EmitAutoVarInit(const AutoVarEmission &emission) {
 
   if (D.getType()->isArrayType())
   {
-    Loc = Builder.CreateConstGEP2_32(Loc->getType()->getPointerElementType(), Loc, 0, 0);
+    Loc = Builder.CreateConstArrayGEP(Loc, 0, CharUnits());
   }
 
   llvm::Type *BP = CGM.Int8Ty->getPointerTo(Loc.getAddressSpace());
