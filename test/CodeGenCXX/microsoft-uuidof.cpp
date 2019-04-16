@@ -33,12 +33,12 @@ struct __declspec(uuid("{12345678-1234-1234-1234-1234567890ac}")) Curly;
 #ifdef DEFINE_GUID
 // Make sure we can properly generate code when the UUID has curly braces on it.
 GUID thing = __uuidof(Curly);
-// CHECK-DEFINE-GUID: @thing = global %struct._GUID zeroinitializer, align 4
-// CHECK-DEFINE-WRONG-GUID: @thing = global %struct._GUID zeroinitializer, align 4
+// CHECK-DEFINE-GUID: @thing = global %struct._Z5_GUID zeroinitializer, align 4
+// CHECK-DEFINE-WRONG-GUID: @thing = global %struct._Z5_GUID zeroinitializer, align 4
 
 // This gets initialized in a static initializer.
-// CHECK-DEFINE-GUID: @g = global %struct._GUID zeroinitializer, align 4
-// CHECK-DEFINE-WRONG-GUID: @g = global %struct._GUID zeroinitializer, align 4
+// CHECK-DEFINE-GUID: @g = global %struct._Z5_GUID zeroinitializer, align 4
+// CHECK-DEFINE-WRONG-GUID: @g = global %struct._Z5_GUID zeroinitializer, align 4
 GUID g = __uuidof(S1);
 #endif
 
@@ -101,23 +101,23 @@ void fun() {
 
 void gun() {
 #ifdef DEFINE_GUID
-  // CHECK-DEFINE-GUID: %s2_1 = alloca %struct._GUID, align 4
-  // CHECK-DEFINE-WRONG-GUID: %s2_1 = alloca %struct._GUID, align 4
-  // CHECK-DEFINE-GUID: %s2_2 = alloca %struct._GUID, align 4
-  // CHECK-DEFINE-WRONG-GUID: %s2_2 = alloca %struct._GUID, align 4
+  // CHECK-DEFINE-GUID: %s2_1 = alloca %struct._Z5_GUID, align 4
+  // CHECK-DEFINE-WRONG-GUID: %s2_1 = alloca %struct._Z5_GUID, align 4
+  // CHECK-DEFINE-GUID: %s2_2 = alloca %struct._Z5_GUID, align 4
+  // CHECK-DEFINE-WRONG-GUID: %s2_2 = alloca %struct._Z5_GUID, align 4
   GUID s2_1 = __uuidof(S2);
   GUID s2_2 = __uuidof(S2);
 #endif
-  // CHECK: %r = alloca %struct._GUID*, align 4
-  // CHECK: %p = alloca %struct._GUID*, align 4
-  // CHECK: %zeroiid = alloca %struct._GUID*, align 4
+  // CHECK: %r = alloca %struct._Z5_GUID*, align 4
+  // CHECK: %p = alloca %struct._Z5_GUID*, align 4
+  // CHECK: %zeroiid = alloca %struct._Z5_GUID*, align 4
 
-  // CHECK: store %struct._GUID* bitcast ({ i32, i16, i16, [8 x i8] }* @_GUID_87654321_4321_4321_4321_ba0987654321 to %struct._GUID*), %struct._GUID** %r, align 4
+  // CHECK: store %struct._Z5_GUID* bitcast ({ i32, i16, i16, [8 x i8] }* @_GUID_87654321_4321_4321_4321_ba0987654321 to %struct._Z5_GUID*), %struct._Z5_GUID** %r, align 4
   const GUID& r = __uuidof(S2);
-  // CHECK: store %struct._GUID* bitcast ({ i32, i16, i16, [8 x i8] }* @_GUID_87654321_4321_4321_4321_ba0987654321 to %struct._GUID*), %struct._GUID** %p, align 4
+  // CHECK: store %struct._Z5_GUID* bitcast ({ i32, i16, i16, [8 x i8] }* @_GUID_87654321_4321_4321_4321_ba0987654321 to %struct._Z5_GUID*), %struct._Z5_GUID** %p, align 4
   const GUID* p = &__uuidof(S2);
 
   // Special case _uuidof(0), local scope version.
-  // CHECK: store %struct._GUID* bitcast ({ i32, i16, i16, [8 x i8] }* @_GUID_00000000_0000_0000_0000_000000000000 to %struct._GUID*), %struct._GUID** %zeroiid, align 4
+  // CHECK: store %struct._Z5_GUID* bitcast ({ i32, i16, i16, [8 x i8] }* @_GUID_00000000_0000_0000_0000_000000000000 to %struct._Z5_GUID*), %struct._Z5_GUID** %zeroiid, align 4
   const GUID& zeroiid = __uuidof(0);
 }
