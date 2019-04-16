@@ -28,8 +28,8 @@ int safe_div(int numerator, int denominator, int *res) {
 }
 
 // CHECK-LABEL: define i32 @safe_div(i32 %numerator, i32 %denominator, i32* %res)
-// X64-SAME:      personality i8* bitcast (i32 (...)* @__C_specific_handler to i8*)
-// X86-SAME:      personality i8* bitcast (i32 (...)* @_except_handler3 to i8*)
+// X64-SAME:      personality i8* bitcast (void ()* @__C_specific_handler to i8*)
+// X86-SAME:      personality i8* bitcast (void ()* @_except_handler3 to i8*)
 // CHECK: invoke void @try_body(i32 %{{.*}}, i32 %{{.*}}, i32* %{{.*}}) #[[NOINLINE:[0-9]+]]
 // CHECK:       to label %{{.*}} unwind label %[[catchpad:[^ ]*]]
 //
@@ -58,9 +58,9 @@ int safe_div(int numerator, int denominator, int *res) {
 
 // Mingw uses msvcrt, so it can also use _except_handler3.
 // X86-GNU-LABEL: define i32 @safe_div(i32 %numerator, i32 %denominator, i32* %res)
-// X86-GNU-SAME:      personality i8* bitcast (i32 (...)* @_except_handler3 to i8*)
+// X86-GNU-SAME:      personality i8* bitcast (void ()* @_except_handler3 to i8*)
 // X64-GNU-LABEL: define i32 @safe_div(i32 %numerator, i32 %denominator, i32* %res)
-// X64-GNU-SAME:      personality i8* bitcast (i32 (...)* @__C_specific_handler to i8*)
+// X64-GNU-SAME:      personality i8* bitcast (void ()* @__C_specific_handler to i8*)
 
 void j(void);
 

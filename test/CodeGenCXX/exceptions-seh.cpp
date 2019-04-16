@@ -33,7 +33,7 @@ extern "C" void use_cxx() {
 //
 // CXXEH: [[lpad]]
 // CXXEH: cleanuppad
-// CXXEH: call void @"\01??1HasCleanup@@QEAA@XZ"(%struct.HasCleanup* %{{.*}})
+// CXXEH: call void @"\01??1HasCleanup@@QEAA@XZ"(%"struct.\01?HasCleanup@@"* %{{.*}})
 // CXXEH: cleanupret
 
 // NOCXX-LABEL: define void @use_cxx()
@@ -88,7 +88,7 @@ void use_seh_in_lambda() {
 }
 
 // CXXEH-LABEL: define void @"\01?use_seh_in_lambda@@YAXXZ"()
-// CXXEH-SAME:  personality i8* bitcast (i32 (...)* @__CxxFrameHandler3 to i8*)
+// CXXEH-SAME:  personality i8* bitcast (void ()* @__CxxFrameHandler3 to i8*)
 // CXXEH: cleanuppad
 
 // NOCXX-LABEL: define void @"\01?use_seh_in_lambda@@YAXXZ"()
