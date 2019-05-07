@@ -5118,7 +5118,7 @@ public:
                                TypeSourceInfo *Ty,
                                Expr *E,
                                SourceRange AngleBrackets,
-                               SourceRange Parens, bool isCheerpSafe = false);
+                               SourceRange Parens, bool isCheerpSafe);
 
   ExprResult BuildCXXTypeId(QualType TypeInfoType,
                             SourceLocation TypeidLoc,
