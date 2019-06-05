@@ -143,6 +143,8 @@ CharUnits CodeGenFunction::getNaturalTypeAlignment(QualType T,
     const CXXRecordDecl *RD;
     if (forPointeeType && (RD = T->getAsCXXRecordDecl())) {
       Alignment = CGM.getClassPointerAlignment(RD);
+    } else if(CurFuncDecl->hasAttr<GenericJSAttr>()) {
+      Alignment = CharUnits::fromQuantity(1);
     } else {
       Alignment = getContext().getTypeAlignInChars(T);
       if (T.getQualifiers().hasUnaligned())
