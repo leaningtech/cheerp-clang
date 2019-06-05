@@ -1595,6 +1595,8 @@ CharUnits ASTContext::getDeclAlign(const Decl *D, bool ForAlignof) const {
           uint64_t TypeSize = getTypeSize(T.getTypePtr());
           Align = std::max(Align, getTargetInfo().getMinGlobalAlign(TypeSize));
         }
+        if(VD->hasAttr<GenericJSAttr>())
+          Align = 8;
       }
     }
 
