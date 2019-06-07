@@ -3378,7 +3378,7 @@ void Driver::BuildActions(Compilation &C, DerivedArgList &Args,
   // Add a link action if necessary.
   if (!LinkerInputs.empty()) {
     // Cheerp: We need an additional step for to generated JS
-    if (TC.getArch() == llvm::Triple::cheerp)
+    if (C.getDefaultToolChain().getArch() == llvm::Triple::cheerp)
     {
       // First link the whole program
       Action* linkJob = C.MakeAction<LinkJobAction>(LinkerInputs, types::TY_LLVM_BC);
@@ -3525,7 +3525,7 @@ Action *Driver::ConstructPhaseAction(
           Args.hasArg(options::OPT_S) ? types::TY_LTO_IR : types::TY_LTO_BC;
       return C.MakeAction<BackendJobAction>(Input, Output);
     }
-    if (Args.hasArg(options::OPT_emit_llvm) || TC.getArch() == llvm::Triple::cheerp) {
+    if (Args.hasArg(options::OPT_emit_llvm) || C.getDefaultToolChain().getArch() == llvm::Triple::cheerp) {
       types::ID Output =
           Args.hasArg(options::OPT_S) ? types::TY_LLVM_IR : types::TY_LLVM_BC;
       return C.MakeAction<BackendJobAction>(Input, Output);
