@@ -25,6 +25,7 @@
 #include "llvm/Bitcode/BitcodeWriterPass.h"
 #include "llvm/Cheerp/NativeRewriter.h"
 #include "llvm/Cheerp/ExpandStructRegs.h"
+#include "llvm/Cheerp/ByValLowering.h"
 #include "llvm/CodeGen/RegAllocRegistry.h"
 #include "llvm/CodeGen/SchedulerRegistry.h"
 #include "llvm/CodeGen/TargetSubtargetInfo.h"
@@ -542,7 +543,7 @@ getInstrProfOptions(const CodeGenOptions &CodeGenOpts,
 }
 
 static void addCheerpPasses(const PassManagerBuilder &Builder,
-                            PassManagerBase &PM) {
+                            legacy::PassManagerBase &PM) {
   PM.add(createLowerInvokePass());
   PM.add(createCFGSimplificationPass());
   //Run mem2reg first, to remove load/stores for the this argument
@@ -554,8 +555,14 @@ static void addCheerpPasses(const PassManagerBuilder &Builder,
 }
 
 static void addPostInlineCheerpPasses(const PassManagerBuilder &Builder,
-                                      PassManagerBase &PM) {
+                                      legacy::PassManagerBase &PM) {
   PM.add(createExpandStructRegs());
+}
+
+static void addModuleCheerpPasses(const PassManagerBuilder &Builder,
+                            legacy::PassManagerBase &PM) {
+  // Lower byval parameters
+  PM.add(createByValLoweringPass());
 }
 
 void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
@@ -579,6 +586,8 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
                            addPostInlineCheerpPasses);
     PMBuilder.addExtension(PassManagerBuilder::EP_LoopOptimizerEnd,
                            addPostInlineCheerpPasses);
+    PMBuilder.addExtension(PassManagerBuilder::EP_OptimizerLast,
+                           addModuleCheerpPasses);
   }
 
   std::unique_ptr<TargetLibraryInfoImpl> TLII(
