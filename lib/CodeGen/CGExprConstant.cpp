@@ -663,6 +663,7 @@ static bool EmitDesignatedInitUpdater(ConstantEmitter &Emitter,
 bool ConstStructBuilder::Build(InitListExpr *ILE, bool AllowOverwrite) {
   RecordDecl *RD = ILE->getType()->getAs<RecordType>()->getDecl();
   const ASTRecordLayout &Layout = CGM.getContext().getASTRecordLayout(RD);
+  const CGRecordLayout &cgLayout = CGM.getTypes().getCGRecordLayout(RD);
 
   unsigned FieldNo = -1;
   unsigned ElementNo = 0;
@@ -685,6 +686,17 @@ bool ConstStructBuilder::Build(InitListExpr *ILE, bool AllowOverwrite) {
     // Don't emit anonymous bitfields or zero-sized fields.
     if (Field->isUnnamedBitfield() || Field->isZeroSize(CGM.getContext()))
       continue;
+
+    if (cgLayout.getLLVMFieldNo(*Field) == 0xffffffff) {
+      // TODO: Deal with direct base init without ILE
+      if (ElementNo >= ILE->getNumInits())
+        return false;
+      InitListExpr* directBaseInit = dyn_cast<InitListExpr>(ILE->getInit(ElementNo++));
+      if (!directBaseInit)
+        return false;
+      Build(directBaseInit);
+      continue;
+    }
 
     // Get the initializer.  A struct can include fields without initializers,
     // we just use explicit null values for them.
