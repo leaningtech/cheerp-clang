@@ -281,7 +281,6 @@ namespace PR5867 {
     // CHECK: call void @_ZN6PR58671SC1Ev
     // CHECK-NEXT: call void @_ZN6PR58671fENS_1SEi
     // CHECK-NEXT: call void @_ZN6PR58671SD1Ev
-    // CHECK-NEXT: call void @llvm.lifetime.end
     // CHECK-NEXT: ret void
     (f)(S(), 0);
   }
@@ -292,7 +291,6 @@ namespace PR5867 {
     // CHECK: call void @_ZN6PR58671SC1Ev
     // CHECK-NEXT: call void @_ZN6PR58671fENS_1SEi
     // CHECK-NEXT: call void @_ZN6PR58671SD1Ev
-    // CHECK-NEXT: call void @llvm.lifetime.end
     // CHECK-NEXT: ret void
     (f)(S(), 0);
   }
@@ -513,7 +511,6 @@ namespace Elision {
     // CHECK-NEXT: call void @_ZN7Elision1BD1Ev([[B]]* [[BT0]])
     takeA(B().a);
 
-    // CHECK-NEXT: call void @llvm.lifetime.end
     // CHECK-NEXT: call void @_ZN7Elision1BC1Ev([[B]]* [[BT1]])
     // CHECK-NEXT: [[AM:%.*]] = getelementptr inbounds [[B]], [[B]]* [[BT1]], i32 0, i32 0
     // CHECK-NEXT: call void @_ZN7Elision1AC1ERKS0_([[A]]* [[X]], [[A]]* dereferenceable({{[0-9]+}}) [[AM]])
@@ -538,7 +535,6 @@ namespace Elision {
     // CHECK-NEXT: call void @_ZNK7Elision1CcvNS_1AEEv([[A]]* sret [[T0]], [[C]]* [[X]])
     // CHECK-NEXT: call void @_ZNK7Elision1A3fooEv([[A]]* [[T0]])
     // CHECK-NEXT: call void @_ZN7Elision1AD1Ev([[A]]* [[T0]])
-    // CHECK-NEXT: call void @llvm.lifetime.end
     // CHECK-NEXT: ret void
     A(*x).foo();
   }

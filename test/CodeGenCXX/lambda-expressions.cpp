@@ -184,7 +184,7 @@ namespace pr28595 {
   }
 }
 
-// CHECK-LABEL: define internal void @"_ZZ1e1ES_bEN3$_5D2Ev"
+// CHECK-LABEL: define internal void @"_ZZ1e1ES_bEN3$_7D2Ev"
 
 // CHECK-LABEL: define internal i32 @"_ZZ1fvEN3$_88__invokeEii"
 // CHECK: store i32
@@ -194,9 +194,9 @@ namespace pr28595 {
 // CHECK-NEXT: call i32 @"_ZZ1fvENK3$_8clEii"
 // CHECK-NEXT: ret i32
 
-// CHECK-LABEL: define internal void @"_ZZ1hvEN4$_118__invokeEv"(%struct.A* noalias sret %agg.result) {{.*}} {
+// CHECK-LABEL: define internal void @"_ZZ1hvEN4$_138__invokeEv"(%struct._Z1A* noalias sret %agg.result) {{.*}} {
 // CHECK-NOT: =
-// CHECK: call void @"_ZZ1hvENK4$_11clEv"(%struct.A* sret %agg.result,
+// CHECK: call void @"_ZZ1hvENK4$_13clEv"(%struct._Z1A* sret %agg.result,
 // CHECK-NEXT: ret void
 struct A { ~A(); };
 void h() {
