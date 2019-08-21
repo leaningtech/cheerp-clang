@@ -1562,8 +1562,8 @@ llvm::Constant *CodeGenModule::EmitConstantValue(const APValue &Value,
   case APValue::Int: {
     llvm::APInt v = Value.getInt();
     if (CodeGenTypes::isHighInt(DestType)) {
-      llvm::Constant *elements[] = {llvm::ConstantInt::get(Int32Ty, v.getHiBits(32).trunc(32)),
-                                    llvm::ConstantInt::get(Int32Ty, v.trunc(32))};
+      llvm::Constant *elements[] = {llvm::ConstantInt::get(Int32Ty, v.trunc(32)),
+                                    llvm::ConstantInt::get(Int32Ty, v.getHiBits(32).trunc(32))};
       llvm::ArrayType* highIntType = cast<llvm::ArrayType>(getTypes().ConvertType(DestType));
       return llvm::ConstantArray::get(highIntType, elements);
     } else {

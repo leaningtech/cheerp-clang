@@ -443,8 +443,8 @@ public:
                                 E->getExprLoc());
       if(CodeGenFunction::IsHighInt(E->getType())) {
         llvm::Constant* value = result.getValue();
-        llvm::Value *high = value->getAggregateElement(0u);
-        llvm::Value *low = value->getAggregateElement(1u);
+        llvm::Value *high = value->getAggregateElement(1u);
+        llvm::Value *low = value->getAggregateElement(0u);
         return CGF.EmitHighInt(E->getType(), high, low);
       }
       return result.getValue();
@@ -2646,8 +2646,8 @@ LValue ScalarExprEmitter::EmitCompoundAssignLValue(
       llvm::Value* truncatedInt = Builder.CreateTrunc(lhsLow, destPtr.getElementType());
       Builder.CreateStore(truncatedInt, destPtr, /*volatile*/false);
     } else {
-      llvm::Value* highLoc = Builder.CreateStructGEP(OpInfo.LHS->getType()->getPointerElementType(), OpInfo.LHS, 0);
-      llvm::Value* lowLoc = Builder.CreateStructGEP(OpInfo.LHS->getType()->getPointerElementType(), OpInfo.LHS, 1);
+      llvm::Value* highLoc = Builder.CreateStructGEP(OpInfo.LHS->getType()->getPointerElementType(), OpInfo.LHS, 1);
+      llvm::Value* lowLoc = Builder.CreateStructGEP(OpInfo.LHS->getType()->getPointerElementType(), OpInfo.LHS, 0);
       Builder.CreateAlignedStore(lhsHigh, highLoc, CharUnits::fromQuantity(4), /*volatile*/false);
       Builder.CreateAlignedStore(lhsLow, lowLoc, CharUnits::fromQuantity(4), /*volatile*/false);
     }
