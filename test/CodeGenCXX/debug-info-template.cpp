@@ -1,8 +1,8 @@
 // RUN: %clang -S -emit-llvm -target x86_64-unknown_unknown -g %s -o - -std=c++11 | FileCheck %s
 
-// CHECK: @tci = global %"struct.TC<unsigned int, 2, &glb, &foo::e, &foo::f, &foo::g, 1, 2, 3>::nested" zeroinitializer, align 1, !dbg [[TCI:![0-9]+]]
-// CHECK: @tcn = global %struct.TC zeroinitializer, align 1, !dbg [[TCN:![0-9]+]]
-// CHECK: @nn = global %struct.NN zeroinitializer, align 1, !dbg [[NN:![0-9]+]]
+// CHECK: @tci = global %struct._ZN2TCIjLj2EXadL_Z3glbEEXadL_ZN3foo1eEEEXadL_ZNS0_1fEvEEXadL_ZNS0_1gEvEEJLi1ELi2ELi3EEE6nestedE zeroinitializer, align 1, !dbg [[TCI:![0-9]+]]
+// CHECK: @tcn = global %struct._Z2TCIiLin3ELPKi0ELM3fooi0ELMS2_FvvE0ELPFvvE0EJEE zeroinitializer, align 1, !dbg [[TCN:![0-9]+]]
+// CHECK: @nn = global %struct._Z2NNI9tmpl_implL_Z3glbEL_Z3glbEE zeroinitializer, align 1, !dbg [[NN:![0-9]+]]
 
 // CHECK: !DICompileUnit(
 // CHECK: [[EMPTY:![0-9]*]] = !{}
