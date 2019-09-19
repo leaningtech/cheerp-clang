@@ -6,7 +6,7 @@
 // CHECK: [[TGI2ARGS]] = !{[[TGI2ARG1:![0-9]*]]}
 // CHECK: [[TGI2ARG1]] = !DITemplateValueParameter(
 // CHECK-SAME:                                     type: [[CONST_GUID_REF:![0-9]*]]
-// CHECK-SAME:                                     value: { i32, i16, i16, [8 x i8] }* @_GUID_12345678_1234_1234_1234_1234567890ab
+// CHECK-SAME:                                     value:{{.*}}{ i32, i16, i16, [8 x i8] }* @_GUID_12345678_1234_1234_1234_1234567890ab
 // CHECK: [[CONST_GUID_REF]] = !DIDerivedType(tag: DW_TAG_reference_type,
 // CHECK-SAME:                                baseType: [[CONST_GUID:![0-9]*]]
 // CHECK: [[CONST_GUID]] = !DIDerivedType(tag: DW_TAG_const_type
