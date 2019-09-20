@@ -6734,6 +6734,10 @@ static void handleDefaultNewAttr(Sema &S, Decl *D, const AttributeList &Attr) {
   D->addAttr(::new (S.Context) DefaultNewAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
 }
 
+static void handleClientLayoutAttr(Sema &S, Decl *D, const AttributeList &Attr) {
+  D->addAttr(::new (S.Context) ClientLayoutAttr(Attr.getRange(), S.Context, Attr.getAttributeSpellingListIndex()));
+}
+
 //===----------------------------------------------------------------------===//
 // Top Level Sema Entry Points
 //===----------------------------------------------------------------------===//
@@ -7524,6 +7528,9 @@ static void ProcessDeclAttribute(Sema &S, Scope *scope, Decl *D,
     break;
   case AttributeList::AT_DefaultNew:
     handleDefaultNewAttr(S, D, AL);
+    break;
+  case AttributeList::AT_ClientLayout:
+    handleClientLayoutAttr(S, D, AL);
     break;
   }
 }
