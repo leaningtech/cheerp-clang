@@ -1375,6 +1375,8 @@ public:
 
   bool isStdNamespace() const;
 
+  bool isClientNamespace() const;
+
   bool isInlineNamespace() const;
 
   /// \brief Determines whether this context is dependent on a
