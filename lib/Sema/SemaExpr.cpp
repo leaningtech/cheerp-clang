@@ -5684,7 +5684,7 @@ ExprResult Sema::ActOnCallExpr(Scope *Scope, Expr *Fn, SourceLocation LParenLoc,
     if (Scope && Scope->getFnParent())
     {
       if (FunctionDecl* Parent = dyn_cast<FunctionDecl>(Scope->getFnParent()->getEntity()))
-        S.CheckCheerpFFICall(Parent, FD, Fn->getLocStart(), ArgExprs);
+        CheckCheerpFFICall(Parent, FD, Fn->getLocStart(), ArgExprs);
     }
   }
 
