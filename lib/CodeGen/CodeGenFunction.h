@@ -1691,7 +1691,7 @@ public:
   void StartThunk(llvm::Function *Fn, GlobalDecl GD,
                   const CGFunctionInfo &FnInfo, const CXXMethodDecl* OriginalMethod);
 
-  void EmitCallAndReturnForThunk(llvm::Constant *Callee,
+  void EmitCallAndReturnForThunk(const CGCallee& Callee,
                                  const ThunkInfo *Thunk);
 
   void FinishThunk();
