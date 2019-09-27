@@ -306,7 +306,7 @@ void CodeGenFunction::FinishThunk() {
   FinishFunction();
 }
 
-void CodeGenFunction::EmitCallAndReturnForThunk(llvm::Constant *CalleePtr,
+void CodeGenFunction::EmitCallAndReturnForThunk(const CGCallee& Callee,
                                                 const ThunkInfo *Thunk,
                                                 bool IsUnprototyped) {
   assert(isa<CXXMethodDecl>(CurGD.getDecl()) &&
@@ -331,7 +331,7 @@ void CodeGenFunction::EmitCallAndReturnForThunk(llvm::Constant *CalleePtr,
         CGM.ErrorUnsupported(
             MD, "non-trivial argument copy for return-adjusting thunk");
     }
-    EmitMustTailThunk(CurGD, AdjustedThisPtr, CalleePtr);
+    EmitMustTailThunk(CurGD, AdjustedThisPtr, Callee.getFunctionPointer());
     return;
   }
 
@@ -382,7 +382,6 @@ void CodeGenFunction::EmitCallAndReturnForThunk(llvm::Constant *CalleePtr,
 
   // Now emit our call.
   llvm::CallBase *CallOrInvoke;
-  CGCallee Callee = CGCallee::forDirect(CalleePtr, CurGD);
   RValue RV = EmitCall(*CurFnInfo, Callee, Slot, CallArgs, &CallOrInvoke);
 
   // Consider return adjustment if we have ThunkInfo.
@@ -472,11 +471,14 @@ void CodeGenFunction::generateThunk(llvm::Function *Fn,
   else
     Ty = CGM.getTypes().GetFunctionType(FnInfo);
 
-  llvm::Constant *Callee = nullptr;
+  CGCallee Callee;
   if(Thunk.isMemberPointerThunk && OriginalMethod->isVirtual())
     Callee = CGM.getCXXABI().getVirtualFunctionPointer(*this, OriginalMethod, LoadCXXThisAddress(), Ty, SourceLocation());
   else
-    Callee = CGM.GetAddrOfFunction(GD, Ty, /*ForVTable=*/true);
+  {
+    const CXXMethodDecl *MD = cast<CXXMethodDecl>(CurGD.getDecl());
+    Callee = CGCallee::forDirect(CGM.GetAddrOfFunction(GD, Ty, /*ForVTable=*/true), GD);
+  }
 
   // Fix up the function type for an unprototyped musttail call.
   if (IsUnprototyped)
