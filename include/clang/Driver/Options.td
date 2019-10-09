@@ -3149,6 +3149,8 @@ defm whole_file : BooleanFFlag<"whole-file">, Group<gfortran_Group>;
 
 def cheerp_mode_EQ : Joined<["-"], "cheerp-mode=">, Flags<[CC1Option]>,
   Group<CompileOnly_Group>, HelpText<"Specify which mode to use by default [genericjs/asmjs]">;
+def cheerp_linear_output_EQ : Joined<["-"], "cheerp-linear-output=">, Flags<[CC1Option]>,
+  Group<CompileOnly_Group>, HelpText<"Output format for the linear memory part of the program [wasm/wast/asmjs]">;
 def cheerp_linear_heap_size : Joined<["-"], "cheerp-linear-heap-size=">, Flags<[DriverOption]>,
   HelpText<"Set wasm/asm.js heap size (in MB, default is 8)">;
 def cheerp_linear_stack_size : Joined<["-"], "cheerp-linear-stack-size=">, Flags<[DriverOption]>,
