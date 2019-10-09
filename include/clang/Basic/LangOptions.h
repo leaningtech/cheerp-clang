@@ -95,12 +95,11 @@ public:
     FPC_Fast        // Aggressively fuse FP ops (E.g. FMA).
   };
 
-  enum CheerpModeTy {
-    CHEERP_MODE_GenericJS = 0,  // -cheerp-mode=genericjs
-    CHEERP_MODE_AsmJS,          // -cheerp-mode=asmjs
-    CHEERP_MODE_Wast,           // -cheerp-mode=wast
-    CHEERP_MODE_Wasm,           // -cheerp-mode=wasm
-    CHEERP_MODE_Invalid
+  enum CheerpLinearOutputTy {
+    CHEERP_LINEAR_OUTPUT_Wasm,
+    CHEERP_LINEAR_OUTPUT_Wast,
+    CHEERP_LINEAR_OUTPUT_AsmJs,
+    CHEERP_LINEAR_OUTPUT_Invalid
   };
 public:
   /// \brief Set of enabled sanitizers.

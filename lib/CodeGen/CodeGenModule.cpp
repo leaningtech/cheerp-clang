@@ -3679,8 +3679,8 @@ GenerateStringLiteral(llvm::Constant *C, llvm::GlobalValue::LinkageTypes LT,
     GV->setComdat(M.getOrInsertComdat(GV->getName()));
   }
 
-  // in asmjs mode all the string literals are in the asmjs section
-  if (CGM.getLangOpts().getCheerpMode() != LangOptions::CHEERP_MODE_GenericJS)
+  // In the Wasm environment all the string literals are in the asmjs section
+  if (CGM.getContext().getTargetInfo().getTriple().getEnvironment() == llvm::Triple::Wasm)
     GV->setSection("asmjs");
   return GV;
 }
