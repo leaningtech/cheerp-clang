@@ -3907,7 +3907,7 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
       TC = llvm::make_unique<toolchains::Contiki>(*this, Target, Args);
       break;
     case llvm::Triple::WebBrowser:
-      TC = new toolchains::Cheerp(*this, Target, Args);
+      TC = llvm::make_unique<toolchains::Cheerp>(*this, Target, Args);
       break;
     default:
       // Of these targets, Hexagon is the only one that might have
