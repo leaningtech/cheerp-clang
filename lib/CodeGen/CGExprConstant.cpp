@@ -449,6 +449,8 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
                                CharUnits Offset) {
   const ASTRecordLayout &Layout = CGM.getContext().getASTRecordLayout(RD);
 
+  SmallVector<BaseInfo, 8> Bases;
+
   if (const CXXRecordDecl *CD = dyn_cast<CXXRecordDecl>(RD)) {
     // Add a vtable pointer, if we need one.
     if (CD->isDynamicClass() && !Layout.getPrimaryBase()) {
@@ -466,7 +468,6 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
 
     // Accumulate and sort bases, in order to visit them in address order, which
     // may not be the same as declaration order.
-    SmallVector<BaseInfo, 8> Bases;
     Bases.reserve(CD->getNumBases());
     unsigned BaseNo = 0;
     for (CXXRecordDecl::base_class_const_iterator Base = CD->bases_begin(),
@@ -489,8 +490,8 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
       }
       else
       {
-        llvm::Constant* BaseConstant = ConstStructBuilder::BuildStruct(CGM, CGF, Val.getStructBase(Base.Index), Base.Decl);
-        AppendBytes(Base.Offset, BaseConstant);
+        // We need to put the non-primary bases after all the fields
+        break;
       }
     }
   }
@@ -532,6 +533,14 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
     }
   }
 
+  if (!CGM.getTarget().isByteAddressable()) {
+    for (unsigned I = 1, N = Bases.size(); I < N; ++I) {
+      BaseInfo &Base = Bases[I];
+
+      llvm::Constant* BaseConstant = ConstStructBuilder::BuildStruct(Emitter, Val.getStructBase(Base.Index), Base.Decl);
+      AppendBytes(Base.Offset, BaseConstant);
+    }
+  }
   return true;
 }
 
