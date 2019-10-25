@@ -207,6 +207,7 @@ public:
   /// Returns true if the root namespace of the given declaration is the 'std'
   /// C++ namespace.
   static bool isInStdNamespace(const Decl *D);
+  static bool isInClientNamespace(const Decl *D);
 
 private:
   ManagedAnalysis *&getAnalysisImpl(const void* tag);
