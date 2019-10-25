@@ -40,6 +40,7 @@
 #include "clang/Sema/ParsedTemplate.h"
 #include "clang/Sema/Scope.h"
 #include "clang/Sema/ScopeInfo.h"
+#include "clang/Sema/SemaCheerp.h"
 #include "clang/Sema/SemaInternal.h"
 #include "clang/Sema/Template.h"
 #include "clang/Sema/TemplateDeduction.h"
@@ -8484,6 +8485,8 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
           NewFD->setTemplateParameterListsInfo(Context,
                                                TemplateParamLists.drop_back(1));
         }
+
+
       } else {
         // This is a function template specialization.
         isFunctionTemplateSpecialization = true;
@@ -8853,6 +8856,9 @@ Sema::ActOnFunctionDeclarator(Scope *S, Declarator &D, DeclContext *DC,
 
   // Handle attributes.
   ProcessDeclAttributes(S, NewFD, D);
+
+  //Perform all checks related to functions and methods. Currently limited to [[cheerp::jsexport]] attribute but expansible
+  cheerp::checkFunction(NewFD, *this);
 
   if (getLangOpts().OpenCL) {
     // OpenCL v1.1 s6.5: Using an address space qualifier in a function return
