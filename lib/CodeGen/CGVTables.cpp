@@ -641,7 +641,7 @@ void CodeGenVTables::EmitThunks(GlobalDecl GD) {
 }
 
 void CodeGenVTables::addVTableComponent(
-    AggregateBuilderPublic &builder, const CXXRecordDecl *LayoutClass, const VTableLayout &layout,
+    ConstantAggregateBuilderBase &builder, const CXXRecordDecl *LayoutClass, const VTableLayout &layout,
     unsigned idx, llvm::Constant *rtti, unsigned &nextVTableThunkIndex) {
   auto &component = layout.vtable_components()[idx];
 
