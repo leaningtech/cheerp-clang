@@ -9,10 +9,13 @@
 #include "WebAssembly.h"
 #include "CommonArgs.h"
 #include "clang/Driver/Compilation.h"
+#include "clang/Driver/DriverDiagnostic.h"
 #include "clang/Driver/Driver.h"
 #include "clang/Driver/DriverDiagnostic.h"
 #include "clang/Driver/Options.h"
+#include "llvm/ADT/StringSwitch.h"
 #include "llvm/Option/ArgList.h"
+#include "llvm/Support/Path.h"
 
 using namespace clang::driver;
 using namespace clang::driver::tools;
