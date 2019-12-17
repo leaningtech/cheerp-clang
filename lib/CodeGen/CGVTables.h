@@ -29,7 +29,7 @@ namespace CodeGen {
   class CodeGenModule;
   class ConstantArrayBuilder;
   class ConstantStructBuilder;
-  class AggregateBuilderPublic;
+  class ConstantAggregateBuilderBase;
 
 class CodeGenVTables {
   CodeGenModule &CGM;
@@ -67,7 +67,7 @@ private:
   /// the ABI.
   void maybeEmitThunkForVTable(GlobalDecl GD, const ThunkInfo &Thunk);
 
-  void addVTableComponent(AggregateBuilderPublic &builder,
+  void addVTableComponent(ConstantAggregateBuilderBase &builder,
                           const CXXRecordDecl *LayoutClass,
                           const VTableLayout &layout, unsigned idx,
                           llvm::Constant *rtti,
