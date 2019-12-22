@@ -1386,7 +1386,6 @@ Value *ScalarExprEmitter::EmitScalarConversion(Value *Src, QualType SrcType,
       BinOp.LHS = CGF.EmitHighInt(DstType, zero, zero);
       BinOp.Ty = DstType;
       BinOp.Opcode = BO_Sub;
-      BinOp.FPContractable = false;
 
       llvm::Value *resultInverted = EmitSub(BinOp);
       result = Builder.CreateSelect(negative, resultInverted, result);
@@ -2653,7 +2652,6 @@ ScalarExprEmitter::EmitScalarPrePostIncDec(const UnaryOperator *E, LValue LV,
       BinOp.RHS = amt;
       BinOp.Ty = E->getType();
       BinOp.Opcode = BO_Add;
-      BinOp.FPContractable = false;
       BinOp.E = E;
       value = EmitAdd(BinOp);
     } else if (E->canOverflow() && type->isSignedIntegerOrEnumerationType()) {
