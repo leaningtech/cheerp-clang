@@ -578,6 +578,11 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
   // TLI with an unknown target otherwise.
   Triple TargetTriple(TheModule->getTargetTriple());
 
+  std::unique_ptr<TargetLibraryInfoImpl> TLII(
+      createTLII(TargetTriple, CodeGenOpts));
+
+  PassManagerBuilderWrapper PMBuilder(TargetTriple, CodeGenOpts, LangOpts);
+
   if (TargetTriple.getArch() == llvm::Triple::cheerp)
   {
     PMBuilder.addExtension(PassManagerBuilder::EP_EarlyAsPossible,
@@ -589,11 +594,6 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
     PMBuilder.addExtension(PassManagerBuilder::EP_OptimizerLast,
                            addModuleCheerpPasses);
   }
-
-  std::unique_ptr<TargetLibraryInfoImpl> TLII(
-      createTLII(TargetTriple, CodeGenOpts));
-
-  PassManagerBuilderWrapper PMBuilder(TargetTriple, CodeGenOpts, LangOpts);
 
   // At O0 and O1 we only run the always inliner which is more efficient. At
   // higher optimization levels we run the normal inliner.
