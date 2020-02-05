@@ -43,7 +43,7 @@ struct StaticDiagInfoRec {
   unsigned SFINAE : 2;
   unsigned WarnNoWerror : 1;
   unsigned WarnShowInSystemHeader : 1;
-  unsigned Category : 5;
+  unsigned Category : 6;
 
   uint16_t OptionGroupIndex;
 
