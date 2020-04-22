@@ -432,7 +432,8 @@ CGRecordLowering::accumulateBitFields(RecordDecl::field_iterator Field,
     }
     // Add bitfields to the run as long as they qualify.
     if (Field != FieldEnd && Field->getBitWidthValue(Context) != 0 &&
-        Tail == getFieldBitOffset(*Field)) {
+        Tail == getFieldBitOffset(*Field) &&
+        (Types.getTarget().isByteAddressable() || Tail % 32 != 0)) {
       Tail += Field->getBitWidthValue(Context);
       ++Field;
       continue;
