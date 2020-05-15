@@ -19,9 +19,9 @@ class X : public A, public B {
 A *B::getAsA() {
   return static_cast<X*>(this);
 
-  // CHECK-LABEL: define %class.A* @_ZN1B6getAsAEv
-  // CHECK: %[[THIS:.*]] = load %class.B*, %class.B**
-  // CHECK-NEXT: %[[BC:.*]] = bitcast %class.B* %[[THIS]] to i8*
+  // CHECK-LABEL: define %class._Z1A* @_ZN1B6getAsAEv
+  // CHECK: %[[THIS:.*]] = load %class._Z1B*, %class._Z1B**
+  // CHECK-NEXT: %[[BC:.*]] = bitcast %class._Z1B* %[[THIS]] to i8*
   // CHECK-NEXT: getelementptr inbounds i8, i8* %[[BC]], i64 -4
 }
 
