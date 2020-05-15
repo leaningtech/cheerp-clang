@@ -8,26 +8,26 @@ struct S {
   virtual void vm1(int *, int * __attribute__((noescape)));
 };
 
-// CHECK: define void @_ZN1SC2EPiS0_(%struct.S* {{.*}}, {{.*}}, {{.*}} nocapture)
-// CHECK: define void @_ZN1SC1EPiS0_(%struct.S* {{.*}}, {{.*}}, {{.*}} nocapture) {{.*}} {
-// CHECK: call void @_ZN1SC2EPiS0_(%struct.S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
+// CHECK: define void @_ZN1SC2EPiS0_(%struct._Z1S* {{.*}}, {{.*}}, {{.*}} nocapture)
+// CHECK: define void @_ZN1SC1EPiS0_(%struct._Z1S* {{.*}}, {{.*}}, {{.*}} nocapture) {{.*}} {
+// CHECK: call void @_ZN1SC2EPiS0_(%struct._Z1S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
 
 S::S(int *, int * __attribute__((noescape))) {}
 
-// CHECK: define {{.*}} %struct.S* @_ZN1SaSEPi(%struct.S* {{.*}}, {{.*}} nocapture)
+// CHECK: define {{.*}} %struct._Z1S* @_ZN1SaSEPi(%struct._Z1S* {{.*}}, {{.*}} nocapture)
 S &S::operator=(int * __attribute__((noescape))) { return *this; }
 
-// CHECK: define void @_ZN1S2m0EPiS0_(%struct.S* {{.*}}, {{.*}} nocapture)
+// CHECK: define void @_ZN1S2m0EPiS0_(%struct._Z1S* {{.*}}, {{.*}} nocapture)
 void S::m0(int *, int * __attribute__((noescape))) {}
 
-// CHECK: define void @_ZN1S3vm1EPiS0_(%struct.S* {{.*}}, {{.*}} nocapture)
+// CHECK: define void @_ZN1S3vm1EPiS0_(%struct._Z1S* {{.*}}, {{.*}} nocapture)
 void S::vm1(int *, int * __attribute__((noescape))) {}
 
 // CHECK-LABEL: define void @_Z5test0P1SPiS1_(
-// CHECK: call void @_ZN1SC1EPiS0_(%struct.S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
-// CHECK: call {{.*}} %struct.S* @_ZN1SaSEPi(%struct.S* {{.*}}, {{.*}} nocapture {{.*}})
-// CHECK: call void @_ZN1S2m0EPiS0_(%struct.S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
-// CHECK: call void {{.*}}(%struct.S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
+// CHECK: call void @_ZN1SC1EPiS0_(%struct._Z1S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
+// CHECK: call {{.*}} %struct._Z1S* @_ZN1SaSEPi(%struct._Z1S* {{.*}}, {{.*}} nocapture {{.*}})
+// CHECK: call void @_ZN1S2m0EPiS0_(%struct._Z1S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
+// CHECK: call void {{.*}}(%struct._Z1S* {{.*}}, {{.*}}, {{.*}} nocapture {{.*}})
 void test0(S *s, int *p0, int *p1) {
   S t(p0, p1);
   t = p1;
