@@ -95,6 +95,11 @@ void CodeGenTypes::addRecordTypeName(const RecordDecl *RD,
 llvm::Type *CodeGenTypes::ConvertTypeForMem(QualType T) {
   llvm::Type *R = ConvertType(T);
 
+  if (R->isIntegerTy(64)) {
+    llvm::Type *EltTy = llvm::IntegerType::get(getLLVMContext(), 32);
+    // We really want to use the same struct for signed and unsigned
+    return llvm::ArrayType::get(EltTy, 2);
+  }
   // If this is a non-bool type, don't map it.
   if (!R->isIntegerTy(1))
     return R;
