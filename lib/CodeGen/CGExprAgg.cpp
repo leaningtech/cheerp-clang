@@ -490,7 +490,7 @@ void AggExprEmitter::EmitArrayInit(Address DestPtr, llvm::ArrayType *AType,
   if (NumInitElements * elementSize.getQuantity() > 16 &&
       elementType.isTriviallyCopyableType(CGF.getContext())) {
     CodeGen::CodeGenModule &CGM = CGF.CGM;
-    ConstantEmitter Emitter(CGM);
+    ConstantEmitter Emitter(CGM, &CGF);
     LangAS AS = ArrayQTy.getAddressSpace();
     if (llvm::Constant *C = Emitter.tryEmitForInitializer(E, AS, ArrayQTy)) {
       auto GV = new llvm::GlobalVariable(
@@ -502,6 +502,8 @@ void AggExprEmitter::EmitArrayInit(Address DestPtr, llvm::ArrayType *AType,
       Emitter.finalize(GV);
       CharUnits Align = CGM.getContext().getTypeAlignInChars(ArrayQTy);
       GV->setAlignment(Align.getQuantity());
+      if(CGF.CurFn->getSection() == StringRef("asmjs"))
+        GV->setSection("asmjs");
       EmitFinalDestCopy(ArrayQTy, CGF.MakeAddrLValue(GV, ArrayQTy, Align));
       return;
     }
