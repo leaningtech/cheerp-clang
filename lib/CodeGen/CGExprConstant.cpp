@@ -1973,7 +1973,9 @@ private:
     }
     }
 
-    C = llvm::ConstantExpr::getGetElementPtr(C->getType()->getPointerElementType(), C, Indexes);
+    assert(!Indexes.empty());
+    if(Indexes.size() > 1)
+      C = llvm::ConstantExpr::getGetElementPtr(C->getType()->getPointerElementType(), C, Indexes);
 
     if (OffsetVal == 0)
       return C;
