@@ -549,6 +549,18 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
 
   CharUnits LayoutSizeInChars = Layout.getSize();
 
+  // Fix the packed attribute before the final padding is computed
+  llvm::Type *ValTy = CGM.getTypes().ConvertRecordDeclType(RD);
+  llvm::StructType *DirectBaseTy = NULL;
+  bool isByteLayout = false;
+  if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
+    // It makes sense to make the struct packed if the target one is
+    if (ValSTy->isPacked() && !Packed)
+      ConvertStructToPacked();
+    DirectBaseTy = ValSTy->getDirectBase();
+    isByteLayout = ValSTy->hasByteLayout();
+  }
+
   if (NextFieldOffsetInChars > LayoutSizeInChars) {
     // If the struct is bigger than the size of the record type,
     // we must have a flexible array member at the end.
@@ -584,17 +596,6 @@ llvm::Constant *ConstStructBuilder::Finalize(const RecordDecl* RD) {
 
   // Pick the type to use.  If the type is layout identical to the ConvertType
   // type then use it, otherwise use whatever the builder produced for us.
-  llvm::Type *ValTy = CGM.getTypes().ConvertRecordDeclType(RD);
-  llvm::StructType *DirectBaseTy = NULL;
-  bool isByteLayout = false;
-  if (llvm::StructType *ValSTy = dyn_cast<llvm::StructType>(ValTy)) {
-    // It makes sense to make the struct packed if the target one is
-    if (ValSTy->isPacked() && !Packed)
-      ConvertStructToPacked();
-    DirectBaseTy = ValSTy->getDirectBase();
-    isByteLayout = ValSTy->hasByteLayout();
-  }
-
   llvm::StructType *STy =
       llvm::ConstantStruct::getTypeForElements(CGM.getLLVMContext(),
                                                Elements, Packed, DirectBaseTy, isByteLayout, RD->hasAttr<AsmJSAttr>());
