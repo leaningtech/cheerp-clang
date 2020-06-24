@@ -31,7 +31,7 @@
 #include "clang/Basic/TargetInfo.h"
 #include "clang/CodeGen/CGFunctionInfo.h"
 #include "clang/Frontend/FrontendDiagnostic.h"
-#include "clang/Sema/SemaCheerp.h"
+#include "clang/CodeGen/CodeGenCheerp.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/Dominators.h"
 #include "llvm/IR/Intrinsics.h"
