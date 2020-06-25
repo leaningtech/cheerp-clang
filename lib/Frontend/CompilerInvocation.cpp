@@ -2364,6 +2364,53 @@ static const StringRef GetInputKindName(InputKind IK) {
   llvm_unreachable("unknown input language");
 }
 
+static void ParseCheerpArgs(LangOptions &Opts, ArgList &Args,
+                          DiagnosticsEngine &Diags) {
+  const Arg *CheerpMode = Args.getLastArg(OPT_cheerp_mode_EQ);
+  const Arg *CheerpLinearOutput = Args.getLastArg(OPT_cheerp_linear_output_EQ);
+  if (CheerpMode && CheerpLinearOutput)
+  {
+    Diags.Report(diag::err_drv_argument_not_allowed_with)
+      << CheerpMode->getAsString(Args) << CheerpLinearOutput->getAsString(Args);
+  }
+  else if (CheerpMode)
+  {
+    LangOptions::CheerpLinearOutputTy s
+      = llvm::StringSwitch<LangOptions::CheerpLinearOutputTy>(CheerpMode->getValue())
+        .Case("genericjs", LangOptions::CHEERP_LINEAR_OUTPUT_AsmJs)
+        .Case("asmjs", LangOptions::CHEERP_LINEAR_OUTPUT_AsmJs)
+        .Case("wast", LangOptions::CHEERP_LINEAR_OUTPUT_Wast)
+        .Case("wasm", LangOptions::CHEERP_LINEAR_OUTPUT_Wasm)
+        .Default(LangOptions::CHEERP_LINEAR_OUTPUT_Invalid);
+
+    Opts.setCheerpLinearOutput(s);
+    if (s == LangOptions::CHEERP_LINEAR_OUTPUT_Invalid)
+    {
+      Diags.Report(diag::err_drv_invalid_value)
+      << CheerpMode->getAsString(Args) << CheerpMode->getValue();
+    }
+  }
+  else if (CheerpLinearOutput)
+  {
+    LangOptions::CheerpLinearOutputTy s =
+      llvm::StringSwitch<LangOptions::CheerpLinearOutputTy>(CheerpLinearOutput->getValue())
+        .Case("wasm", LangOptions::CHEERP_LINEAR_OUTPUT_Wasm)
+        .Case("wast", LangOptions::CHEERP_LINEAR_OUTPUT_Wast)
+        .Case("asmjs", LangOptions::CHEERP_LINEAR_OUTPUT_AsmJs)
+        .Default(LangOptions::CHEERP_LINEAR_OUTPUT_Invalid);
+    Opts.setCheerpLinearOutput(s);
+    if (s == LangOptions::CHEERP_LINEAR_OUTPUT_Invalid)
+    {
+      Diags.Report(diag::err_drv_invalid_value)
+      << CheerpLinearOutput->getAsString(Args) << CheerpLinearOutput->getValue();
+    }
+  }
+  if (const Arg *A = Args.getLastArg(OPT_cheerp_wasm_anyref)) {
+    Opts.CheerpAnyref = 1;
+  }
+
+}
+
 static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
                           const TargetOptions &TargetOpts,
                           PreprocessorOptions &PPOpts,
@@ -2423,50 +2470,6 @@ static void ParseLangArgs(LangOptions &Opts, ArgList &Args, InputKind IK,
     if (Name == "full" || Name == "branch") {
       Opts.CFProtectionBranch = 1;
     }
-  }
-
-  // Parse cheerp options
-  const Arg *CheerpMode = Args.getLastArg(OPT_cheerp_mode_EQ);
-  const Arg *CheerpLinearOutput = Args.getLastArg(OPT_cheerp_linear_output_EQ);
-  if (CheerpMode && CheerpLinearOutput)
-  {
-    Diags.Report(diag::err_drv_argument_not_allowed_with)
-      << CheerpMode->getAsString(Args) << CheerpLinearOutput->getAsString(Args);
-  }
-  else if (CheerpMode)
-  {
-    LangOptions::CheerpLinearOutputTy s
-      = llvm::StringSwitch<LangOptions::CheerpLinearOutputTy>(CheerpMode->getValue())
-        .Case("genericjs", LangOptions::CHEERP_LINEAR_OUTPUT_AsmJs)
-        .Case("asmjs", LangOptions::CHEERP_LINEAR_OUTPUT_AsmJs)
-        .Case("wast", LangOptions::CHEERP_LINEAR_OUTPUT_Wast)
-        .Case("wasm", LangOptions::CHEERP_LINEAR_OUTPUT_Wasm)
-        .Default(LangOptions::CHEERP_LINEAR_OUTPUT_Invalid);
-
-    Opts.setCheerpLinearOutput(s);
-    if (s == LangOptions::CHEERP_LINEAR_OUTPUT_Invalid)
-    {
-      Diags.Report(diag::err_drv_invalid_value)
-      << CheerpMode->getAsString(Args) << CheerpMode->getValue();
-    }
-  }
-  else if (CheerpLinearOutput)
-  {
-    LangOptions::CheerpLinearOutputTy s =
-      llvm::StringSwitch<LangOptions::CheerpLinearOutputTy>(CheerpLinearOutput->getValue())
-        .Case("wasm", LangOptions::CHEERP_LINEAR_OUTPUT_Wasm)
-        .Case("wast", LangOptions::CHEERP_LINEAR_OUTPUT_Wast)
-        .Case("asmjs", LangOptions::CHEERP_LINEAR_OUTPUT_AsmJs)
-        .Default(LangOptions::CHEERP_LINEAR_OUTPUT_Invalid);
-    Opts.setCheerpLinearOutput(s);
-    if (s == LangOptions::CHEERP_LINEAR_OUTPUT_Invalid)
-    {
-      Diags.Report(diag::err_drv_invalid_value)
-      << CheerpLinearOutput->getAsString(Args) << CheerpLinearOutput->getValue();
-    }
-  }
-  if (const Arg *A = Args.getLastArg(OPT_cheerp_wasm_anyref)) {
-    Opts.CheerpAnyref = 1;
   }
 
   // -cl-std only applies for OpenCL language standards.
@@ -3462,6 +3465,7 @@ bool CompilerInvocation::CreateFromArgs(CompilerInvocation &Res,
       Res.getDiagnosticOpts().Warnings.push_back("no-stdlibcxx-not-found");
     }
   }
+  ParseCheerpArgs(LangOpts, Args, Diags);
 
   LangOpts.FunctionAlignment =
       getLastArgIntValue(Args, OPT_function_alignment, 0, Diags);
