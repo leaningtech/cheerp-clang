@@ -297,6 +297,14 @@ StmtResult Sema::ActOnGCCAsmStmt(SourceLocation AsmLoc, bool IsSimple,
     if (Info.allowsMemory() &&
         checkExprMemoryConstraintCompat(*this, OutputExpr, Info, false))
       return StmtError();
+    
+    // CHEERP: int64 is not really a scalar, so don't allow it in inline asm
+    QualType OutTy = OutputExpr->getType().getDesugaredType(Context);
+    if (OutTy->isBuiltinType() && cast<BuiltinType>(OutTy.getTypePtr())->isHighInt()) {
+      return StmtError(Diag(Literal->getLocStart(),
+                            diag::err_asm_invalid_type_in_input)
+                       << OutputExpr->getType() << Info.getConstraintStr());
+    }
 
     OutputConstraintInfos.push_back(Info);
 
@@ -426,6 +434,14 @@ StmtResult Sema::ActOnGCCAsmStmt(SourceLocation AsmLoc, bool IsSimple,
             << InputExpr->getType() << Info.getConstraintStr()
             << InputExpr->getSourceRange());
       }
+    }
+
+    // CHEERP: int64 is not really a scalar, so don't allow it in inline asm
+    QualType InTy = InputExpr->getType().getDesugaredType(Context);
+    if (InTy->isBuiltinType() && cast<BuiltinType>(InTy.getTypePtr())->isHighInt()) {
+      return StmtError(Diag(Literal->getLocStart(),
+                            diag::err_asm_invalid_type_in_input)
+                       << InputExpr->getType() << Info.getConstraintStr());
     }
 
     InputConstraintInfos.push_back(Info);
