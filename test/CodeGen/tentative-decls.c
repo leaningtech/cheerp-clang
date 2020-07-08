@@ -7,10 +7,10 @@ int (*a)[] = &r;
 
 struct s0;
 struct s0 x;
-// CHECK-DAG: @x = common {{(dso_local )?}}global %struct.s0 zeroinitializer
+// CHECK-DAG: @x = common {{(dso_local )?}}global %struct._Z2s0 zeroinitializer
 
 struct s0 y;
-// CHECK-DAG: @y = common {{(dso_local )?}}global %struct.s0 zeroinitializer
+// CHECK-DAG: @y = common {{(dso_local )?}}global %struct._Z2s0 zeroinitializer
 struct s0 *f0() {
   return &y;
 }
