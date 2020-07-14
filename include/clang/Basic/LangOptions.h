@@ -179,7 +179,6 @@ public:
 
   enum CheerpLinearOutputTy {
     CHEERP_LINEAR_OUTPUT_Wasm,
-    CHEERP_LINEAR_OUTPUT_Wast,
     CHEERP_LINEAR_OUTPUT_AsmJs,
     CHEERP_LINEAR_OUTPUT_Invalid
   };
