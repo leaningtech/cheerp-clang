@@ -95,11 +95,6 @@ void CodeGenTypes::addRecordTypeName(const RecordDecl *RD,
 llvm::Type *CodeGenTypes::ConvertTypeForMem(QualType T) {
   llvm::Type *R = ConvertType(T);
 
-  if (isHighInt(T)) {
-    llvm::Type *EltTy = llvm::IntegerType::get(getLLVMContext(), 32);
-    // We really want to use the same struct for signed and unsigned
-    return llvm::ArrayType::get(EltTy, 2);
-  }
   // If this is a non-bool type, don't map it.
   if (!R->isIntegerTy(1))
     return R;
@@ -845,13 +840,4 @@ bool CodeGenTypes::isZeroInitializable(QualType T) {
 
 bool CodeGenTypes::isZeroInitializable(const RecordDecl *RD) {
   return getCGRecordLayout(RD).isZeroInitializable();
-}
-
-bool CodeGenTypes::isHighInt(QualType Ty) {
-  if(const EnumType* et = dyn_cast<EnumType>(Ty.getCanonicalType())) {
-    Ty = et->getDecl()->getIntegerType();
-  }
-  if(const BuiltinType* bt = dyn_cast<BuiltinType>(Ty.getCanonicalType()))
-    return bt->isHighInt();
-  return false;
 }
