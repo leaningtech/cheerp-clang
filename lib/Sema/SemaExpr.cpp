@@ -5690,7 +5690,7 @@ ExprResult Sema::ActOnCallExpr(Scope *Scope, Expr *Fn, SourceLocation LParenLoc,
     if (Scope && Scope->getFnParent())
     {
       if (FunctionDecl* Parent = dyn_cast<FunctionDecl>(Scope->getFnParent()->getEntity()))
-        CheckCheerpFFICall(Parent, FD, Fn->getLocStart(), ArgExprs);
+        CheckCheerpFFICall(Parent, FD, Fn->getBeginLoc(), ArgExprs);
     }
   }
 
@@ -17152,7 +17152,7 @@ void Sema::CheckCheerpFFICall(const FunctionDecl* Parent, const FunctionDecl* FD
       const Type* pt = p != pe ? (*p)->getType().getTypePtr() : nullptr;
       Expr* aNoCast = (*a)->IgnoreImpCasts();
       if (t->hasPointerRepresentation() && !t->getPointeeType().isNull() && t->getPointeeType()->isFunctionType() && !aNoCast->getType()->isFunctionProtoType()) {
-        auto d = Diag((*a)->getLocStart(),
+        auto d = Diag((*a)->getBeginLoc(),
              diag::err_cheerp_wrong_func_pointer_param)
           << FDecl << FDecl->getAttr<AsmJSAttr>()
           << Parent << Parent->getAttr<GenericJSAttr>();
@@ -17169,7 +17169,7 @@ void Sema::CheckCheerpFFICall(const FunctionDecl* Parent, const FunctionDecl* FD
            (isa<StringLiteral>(aNoCast) || isa<PredefinedExpr>(aNoCast)))
             continue;
 
-        auto d = Diag((*a)->getLocStart(),
+        auto d = Diag((*a)->getBeginLoc(),
              diag::err_cheerp_wrong_basic_pointer_param)
           << FDecl << FDecl->getAttr<AsmJSAttr>()
           << Parent << Parent->getAttr<GenericJSAttr>();
@@ -17180,7 +17180,7 @@ void Sema::CheckCheerpFFICall(const FunctionDecl* Parent, const FunctionDecl* FD
 
         d << "pointer";
       } else if (pt && pt->isReferenceType() && pt->getPointeeType()->isFundamentalType()) {
-        Diag((*a)->getLocStart(), diag::err_cheerp_wrong_basic_pointer_param)
+        Diag((*a)->getBeginLoc(), diag::err_cheerp_wrong_basic_pointer_param)
           << FDecl << FDecl->getAttr<AsmJSAttr>()
           << Parent << Parent->getAttr<GenericJSAttr>()
           << *p
@@ -17188,7 +17188,7 @@ void Sema::CheckCheerpFFICall(const FunctionDecl* Parent, const FunctionDecl* FD
       } else if (auto ut = dyn_cast<BuiltinType>(t->getUnqualifiedDesugaredType())) {
         if(ut->isSpecificBuiltinType(BuiltinType::ULongLong) ||
            ut->isSpecificBuiltinType(BuiltinType::LongLong)) {
-          auto d = Diag((*a)->getLocStart(),
+          auto d = Diag((*a)->getBeginLoc(),
                diag::err_cheerp_wrong_64bit_param)
             << FDecl << FDecl->getAttr<AsmJSAttr>()
             << Parent << Parent->getAttr<GenericJSAttr>();
