@@ -153,7 +153,7 @@ struct Derived {
   struct Base B;
 };
 struct Derived D = {{}, .B.A = 42};
-// CHECK: @D = global %struct.Derived { %struct.Base { %struct.anon.4 { i32 42 } } }, align 4
+// CHECK: @D = global %struct._Z7Derived { %struct._Z4Base { %struct._ZN4BaseUt148_3_E { i32 42 } } }, align 4
 
 void test1(int argc, char **argv)
 {
@@ -162,7 +162,7 @@ void test1(int argc, char **argv)
     .b = 1024,
   };
 
-  // CHECK: bitcast %union.anon.5* %u2
+  // CHECK: bitcast %"union._ZZ5test1E3$_3"* %u2
   // CHECK: call void @llvm.memset
    union { int i; float f; } u2 = { };
 

@@ -16,39 +16,39 @@ int bar() {
   return s.foo(0);
 }
 
-// LINUX: @_ZN1S3fooEi.ifunc = ifunc i32 (%struct.S*, i32), i32 (%struct.S*, i32)* ()* @_ZN1S3fooEi.resolver
+// LINUX: @_ZN1S3fooEi.ifunc = ifunc i32 (%struct._Z1S*, i32), i32 (%struct._Z1S*, i32)* ()* @_ZN1S3fooEi.resolver
 
-// LINUX: define i32 @_ZN1S3fooEi(%struct.S* %this, i32)
+// LINUX: define i32 @_ZN1S3fooEi(%struct._Z1S* %this, i32)
 // LINUX: ret i32 2
 
 // WINDOWS: define dso_local i32 @"?foo@S@@QEAAHH@Z"(%struct.S* %this, i32)
 // WINDOWS: ret i32 2
 
-// LINUX: define i32 @_ZN1S3fooEi.sse4.2(%struct.S* %this, i32)
+// LINUX: define i32 @_ZN1S3fooEi.sse4.2(%struct._Z1S* %this, i32)
 // LINUX: ret i32 0
 
 // WINDOWS: define dso_local i32 @"?foo@S@@QEAAHH@Z.sse4.2"(%struct.S* %this, i32)
 // WINDOWS: ret i32 0
 
-// LINUX: define i32 @_ZN1S3fooEi.arch_ivybridge(%struct.S* %this, i32)
+// LINUX: define i32 @_ZN1S3fooEi.arch_ivybridge(%struct._Z1S* %this, i32)
 // LINUX: ret i32 1
 
 // WINDOWS: define dso_local i32 @"?foo@S@@QEAAHH@Z.arch_ivybridge"(%struct.S* %this, i32)
 // WINDOWS: ret i32 1
 
 // LINUX: define i32 @_Z3barv()
-// LINUX: %s = alloca %struct.S, align 1
-// LINUX: %call = call i32 @_ZN1S3fooEi.ifunc(%struct.S* %s, i32 0)
+// LINUX: %s = alloca %struct._Z1S, align 1
+// LINUX: %call = call i32 @_ZN1S3fooEi.ifunc(%struct._Z1S* %s, i32 0)
 
 // WINDOWS: define dso_local i32 @"?bar@@YAHXZ"()
 // WINDOWS: %s = alloca %struct.S, align 1
 // WINDOWS: %call = call i32 @"?foo@S@@QEAAHH@Z.resolver"(%struct.S* %s, i32 0)
 
-// LINUX: define i32 (%struct.S*, i32)* @_ZN1S3fooEi.resolver() comdat
-// LINUX: ret i32 (%struct.S*, i32)* @_ZN1S3fooEi.arch_sandybridge
-// LINUX: ret i32 (%struct.S*, i32)* @_ZN1S3fooEi.arch_ivybridge
-// LINUX: ret i32 (%struct.S*, i32)* @_ZN1S3fooEi.sse4.2
-// LINUX: ret i32 (%struct.S*, i32)* @_ZN1S3fooEi
+// LINUX: define i32 (%struct._Z1S*, i32)* @_ZN1S3fooEi.resolver() comdat
+// LINUX: ret i32 (%struct._Z1S*, i32)* @_ZN1S3fooEi.arch_sandybridge
+// LINUX: ret i32 (%struct._Z1S*, i32)* @_ZN1S3fooEi.arch_ivybridge
+// LINUX: ret i32 (%struct._Z1S*, i32)* @_ZN1S3fooEi.sse4.2
+// LINUX: ret i32 (%struct._Z1S*, i32)* @_ZN1S3fooEi
 
 // WINDOWS: define dso_local i32 @"?foo@S@@QEAAHH@Z.resolver"(%struct.S*, i32) comdat
 // WINDOWS: call i32 @"?foo@S@@QEAAHH@Z.arch_sandybridge"(%struct.S* %0, i32 %1)
@@ -56,6 +56,6 @@ int bar() {
 // WINDOWS: call i32 @"?foo@S@@QEAAHH@Z.sse4.2"(%struct.S* %0, i32 %1)
 // WINDOWS: call i32 @"?foo@S@@QEAAHH@Z"(%struct.S* %0, i32 %1)
 
-// LINUX: declare i32 @_ZN1S3fooEi.arch_sandybridge(%struct.S*, i32)
+// LINUX: declare i32 @_ZN1S3fooEi.arch_sandybridge(%struct._Z1S*, i32)
 
 // WINDOWS: declare dso_local i32 @"?foo@S@@QEAAHH@Z.arch_sandybridge"(%struct.S*, i32)
