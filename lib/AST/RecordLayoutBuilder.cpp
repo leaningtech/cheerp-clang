@@ -16,6 +16,7 @@
 #include "clang/AST/DeclObjC.h"
 #include "clang/AST/Expr.h"
 #include "clang/Basic/TargetInfo.h"
+#include "clang/Sema/SemaDiagnostic.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/MathExtras.h"
