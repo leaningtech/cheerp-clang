@@ -30,44 +30,44 @@ template<typename T> void used(T &) noexcept;
 // PATTERN-NOT: undef
 // ZERO-NOT: undef
 
-// PATTERN: @__const.test_empty_uninit.uninit = private unnamed_addr constant %struct.empty { i8 -86 }, align 1
+// PATTERN: @__const.test_empty_uninit.uninit = private unnamed_addr constant %struct._Z5empty { i8 -86 }, align 1
 struct empty {};
-// PATTERN: @__const.test_small_uninit.uninit = private unnamed_addr constant %struct.small { i8 -86 }, align 1
-// PATTERN: @__const.test_small_custom.custom = private unnamed_addr constant %struct.small { i8 42 }, align 1
-// ZERO: @__const.test_small_custom.custom = private unnamed_addr constant %struct.small { i8 42 }, align 1
+// PATTERN: @__const.test_small_uninit.uninit = private unnamed_addr constant %struct._Z5small { i8 -86 }, align 1
+// PATTERN: @__const.test_small_custom.custom = private unnamed_addr constant %struct._Z5small { i8 42 }, align 1
+// ZERO: @__const.test_small_custom.custom = private unnamed_addr constant %struct._Z5small { i8 42 }, align 1
 struct small { char c; };
-// PATTERN: @__const.test_smallinit_uninit.uninit = private unnamed_addr constant %struct.smallinit { i8 -86 }, align 1
-// PATTERN: @__const.test_smallinit_braces.braces = private unnamed_addr constant %struct.smallinit { i8 -86 }, align 1
-// PATTERN: @__const.test_smallinit_custom.custom = private unnamed_addr constant %struct.smallinit { i8 -86 }, align 1
+// PATTERN: @__const.test_smallinit_uninit.uninit = private unnamed_addr constant %struct._Z9smallinit { i8 -86 }, align 1
+// PATTERN: @__const.test_smallinit_braces.braces = private unnamed_addr constant %struct._Z9smallinit { i8 -86 }, align 1
+// PATTERN: @__const.test_smallinit_custom.custom = private unnamed_addr constant %struct._Z9smallinit { i8 -86 }, align 1
 struct smallinit { char c = 42; };
-// PATTERN: @__const.test_smallpartinit_uninit.uninit = private unnamed_addr constant %struct.smallpartinit { i8 -86, i8 -86 }, align 1
-// PATTERN: @__const.test_smallpartinit_braces.braces = private unnamed_addr constant %struct.smallpartinit { i8 -86, i8 -86 }, align 1
-// PATTERN: @__const.test_smallpartinit_custom.custom = private unnamed_addr constant %struct.smallpartinit { i8 -86, i8 -86 }, align 1
+// PATTERN: @__const.test_smallpartinit_uninit.uninit = private unnamed_addr constant %struct._Z13smallpartinit { i8 -86, i8 -86 }, align 1
+// PATTERN: @__const.test_smallpartinit_braces.braces = private unnamed_addr constant %struct._Z13smallpartinit { i8 -86, i8 -86 }, align 1
+// PATTERN: @__const.test_smallpartinit_custom.custom = private unnamed_addr constant %struct._Z13smallpartinit { i8 -86, i8 -86 }, align 1
 struct smallpartinit { char c = 42, d; };
-// PATTERN: @__const.test_nullinit_uninit.uninit = private unnamed_addr constant %struct.nullinit { i8* inttoptr (i64 -6148914691236517206 to i8*) }, align 8
-// PATTERN: @__const.test_nullinit_braces.braces = private unnamed_addr constant %struct.nullinit { i8* inttoptr (i64 -6148914691236517206 to i8*) }, align 8
-// PATTERN: @__const.test_nullinit_custom.custom = private unnamed_addr constant %struct.nullinit { i8* inttoptr (i64 -6148914691236517206 to i8*) }, align 8
+// PATTERN: @__const.test_nullinit_uninit.uninit = private unnamed_addr constant %struct._Z8nullinit { i8* inttoptr (i64 -6148914691236517206 to i8*) }, align 8
+// PATTERN: @__const.test_nullinit_braces.braces = private unnamed_addr constant %struct._Z8nullinit { i8* inttoptr (i64 -6148914691236517206 to i8*) }, align 8
+// PATTERN: @__const.test_nullinit_custom.custom = private unnamed_addr constant %struct._Z8nullinit { i8* inttoptr (i64 -6148914691236517206 to i8*) }, align 8
 struct nullinit { char* null = nullptr; };
-// PATTERN: @__const.test_padded_uninit.uninit = private unnamed_addr constant %struct.padded { i8 -86, i32 -1431655766 }, align 4
-// PATTERN: @__const.test_padded_custom.custom = private unnamed_addr constant %struct.padded { i8 42, i32 13371337 }, align 4
-// ZERO: @__const.test_padded_custom.custom = private unnamed_addr constant %struct.padded { i8 42, i32 13371337 }, align 4
+// PATTERN: @__const.test_padded_uninit.uninit = private unnamed_addr constant %struct._Z6padded { i8 -86, i32 -1431655766 }, align 4
+// PATTERN: @__const.test_padded_custom.custom = private unnamed_addr constant %struct._Z6padded { i8 42, i32 13371337 }, align 4
+// ZERO: @__const.test_padded_custom.custom = private unnamed_addr constant %struct._Z6padded { i8 42, i32 13371337 }, align 4
 struct padded { char c; int i; };
-// PATTERN: @__const.test_paddednullinit_uninit.uninit = private unnamed_addr constant %struct.paddednullinit { i8 -86, i32 -1431655766 }, align 4
-// PATTERN: @__const.test_paddednullinit_braces.braces = private unnamed_addr constant %struct.paddednullinit { i8 -86, i32 -1431655766 }, align 4
-// PATTERN: @__const.test_paddednullinit_custom.custom = private unnamed_addr constant %struct.paddednullinit { i8 -86, i32 -1431655766 }, align 4
+// PATTERN: @__const.test_paddednullinit_uninit.uninit = private unnamed_addr constant %struct._Z14paddednullinit { i8 -86, i32 -1431655766 }, align 4
+// PATTERN: @__const.test_paddednullinit_braces.braces = private unnamed_addr constant %struct._Z14paddednullinit { i8 -86, i32 -1431655766 }, align 4
+// PATTERN: @__const.test_paddednullinit_custom.custom = private unnamed_addr constant %struct._Z14paddednullinit { i8 -86, i32 -1431655766 }, align 4
 struct paddednullinit { char c = 0; int i = 0; };
-// PATTERN: @__const.test_bitfield_uninit.uninit = private unnamed_addr constant %struct.bitfield { i8 -86, [3 x i8] c"\AA\AA\AA" }, align 4
-// PATTERN: @__const.test_bitfield_custom.custom = private unnamed_addr constant %struct.bitfield { i8 20, [3 x i8] zeroinitializer }, align 4
-// ZERO: @__const.test_bitfield_custom.custom = private unnamed_addr constant %struct.bitfield { i8 20, [3 x i8] zeroinitializer }, align 4
+// PATTERN: @__const.test_bitfield_uninit.uninit = private unnamed_addr constant %struct._Z8bitfield { i8 -86, [3 x i8] c"\AA\AA\AA" }, align 4
+// PATTERN: @__const.test_bitfield_custom.custom = private unnamed_addr constant %struct._Z8bitfield { i8 20, [3 x i8] zeroinitializer }, align 4
+// ZERO: @__const.test_bitfield_custom.custom = private unnamed_addr constant %struct._Z8bitfield { i8 20, [3 x i8] zeroinitializer }, align 4
 struct bitfield { int i : 4; int j : 2; };
-// PATTERN: @__const.test_bitfieldaligned_uninit.uninit = private unnamed_addr constant %struct.bitfieldaligned { i8 -86, [3 x i8] c"\AA\AA\AA", i8 -86, [3 x i8] c"\AA\AA\AA" }, align 4
-// PATTERN: @__const.test_bitfieldaligned_custom.custom = private unnamed_addr constant %struct.bitfieldaligned { i8 4, [3 x i8] zeroinitializer, i8 1, [3 x i8] zeroinitializer }, align 4
-// ZERO: @__const.test_bitfieldaligned_custom.custom = private unnamed_addr constant %struct.bitfieldaligned { i8 4, [3 x i8] zeroinitializer, i8 1, [3 x i8] zeroinitializer }, align 4
+// PATTERN: @__const.test_bitfieldaligned_uninit.uninit = private unnamed_addr constant %struct._Z15bitfieldaligned { i8 -86, [3 x i8] c"\AA\AA\AA", i8 -86, [3 x i8] c"\AA\AA\AA" }, align 4
+// PATTERN: @__const.test_bitfieldaligned_custom.custom = private unnamed_addr constant %struct._Z15bitfieldaligned { i8 4, [3 x i8] zeroinitializer, i8 1, [3 x i8] zeroinitializer }, align 4
+// ZERO: @__const.test_bitfieldaligned_custom.custom = private unnamed_addr constant %struct._Z15bitfieldaligned { i8 4, [3 x i8] zeroinitializer, i8 1, [3 x i8] zeroinitializer }, align 4
 struct bitfieldaligned { int i : 4; int : 0; int j : 2; };
 struct big { unsigned a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z; };
-// PATTERN: @__const.test_arraytail_uninit.uninit = private unnamed_addr constant %struct.arraytail { i32 -1431655766, [0 x i32] zeroinitializer }, align 4
-// PATTERN: @__const.test_arraytail_custom.custom = private unnamed_addr constant %struct.arraytail { i32 57005, [0 x i32] zeroinitializer }, align 4
-// ZERO: @__const.test_arraytail_custom.custom = private unnamed_addr constant %struct.arraytail { i32 57005, [0 x i32] zeroinitializer }, align 4
+// PATTERN: @__const.test_arraytail_uninit.uninit = private unnamed_addr constant %struct._Z9arraytail { i32 -1431655766, [0 x i32] zeroinitializer }, align 4
+// PATTERN: @__const.test_arraytail_custom.custom = private unnamed_addr constant %struct._Z9arraytail { i32 57005, [0 x i32] zeroinitializer }, align 4
+// ZERO: @__const.test_arraytail_custom.custom = private unnamed_addr constant %struct._Z9arraytail { i32 57005, [0 x i32] zeroinitializer }, align 4
 struct arraytail { int i; int arr[]; };
 // PATTERN: @__const.test_int1_uninit.uninit = private unnamed_addr constant [1 x i32] [i32 -1431655766], align 4
 // PATTERN: @__const.test_int1_custom.custom = private unnamed_addr constant [1 x i32] [i32 858993459], align 4
@@ -78,56 +78,56 @@ struct arraytail { int i; int arr[]; };
 // PATTERN: @__const.test_intptr4_uninit.uninit = private unnamed_addr constant [4 x i32*] [i32* inttoptr (i64 -6148914691236517206 to i32*), i32* inttoptr (i64 -6148914691236517206 to i32*), i32* inttoptr (i64 -6148914691236517206 to i32*), i32* inttoptr (i64 -6148914691236517206 to i32*)], align 16
 // PATTERN: @__const.test_intptr4_custom.custom = private unnamed_addr constant [4 x i32*] [i32* inttoptr (i64 572662306 to i32*), i32* inttoptr (i64 572662306 to i32*), i32* inttoptr (i64 572662306 to i32*), i32* inttoptr (i64 572662306 to i32*)], align 16
 // ZERO: @__const.test_intptr4_custom.custom = private unnamed_addr constant [4 x i32*] [i32* inttoptr (i64 572662306 to i32*), i32* inttoptr (i64 572662306 to i32*), i32* inttoptr (i64 572662306 to i32*), i32* inttoptr (i64 572662306 to i32*)], align 16
-// PATTERN: @__const.test_tailpad4_uninit.uninit = private unnamed_addr constant [4 x %struct.tailpad] [%struct.tailpad { i16 -21846, i8 -86 }, %struct.tailpad { i16 -21846, i8 -86 }, %struct.tailpad { i16 -21846, i8 -86 }, %struct.tailpad { i16 -21846, i8 -86 }], align 16
-// PATTERN: @__const.test_tailpad4_custom.custom = private unnamed_addr constant [4 x %struct.tailpad] [%struct.tailpad { i16 257, i8 1 }, %struct.tailpad { i16 257, i8 1 }, %struct.tailpad { i16 257, i8 1 }, %struct.tailpad { i16 257, i8 1 }], align 16
-// ZERO: @__const.test_tailpad4_custom.custom = private unnamed_addr constant [4 x %struct.tailpad] [%struct.tailpad { i16 257, i8 1 }, %struct.tailpad { i16 257, i8 1 }, %struct.tailpad { i16 257, i8 1 }, %struct.tailpad { i16 257, i8 1 }], align 16
+// PATTERN: @__const.test_tailpad4_uninit.uninit = private unnamed_addr constant [4 x %struct._Z7tailpad] [%struct._Z7tailpad { i16 -21846, i8 -86 }, %struct._Z7tailpad { i16 -21846, i8 -86 }, %struct._Z7tailpad { i16 -21846, i8 -86 }, %struct._Z7tailpad { i16 -21846, i8 -86 }], align 16
+// PATTERN: @__const.test_tailpad4_custom.custom = private unnamed_addr constant [4 x %struct._Z7tailpad] [%struct._Z7tailpad { i16 257, i8 1 }, %struct._Z7tailpad { i16 257, i8 1 }, %struct._Z7tailpad { i16 257, i8 1 }, %struct._Z7tailpad { i16 257, i8 1 }], align 16
+// ZERO: @__const.test_tailpad4_custom.custom = private unnamed_addr constant [4 x %struct._Z7tailpad] [%struct._Z7tailpad { i16 257, i8 1 }, %struct._Z7tailpad { i16 257, i8 1 }, %struct._Z7tailpad { i16 257, i8 1 }, %struct._Z7tailpad { i16 257, i8 1 }], align 16
 struct tailpad { short s; char c; };
-// PATTERN: @__const.test_atomicnotlockfree_uninit.uninit = private unnamed_addr constant %struct.notlockfree { [4 x i64] [i64 -6148914691236517206, i64 -6148914691236517206, i64 -6148914691236517206, i64 -6148914691236517206] }, align 8
+// PATTERN: @__const.test_atomicnotlockfree_uninit.uninit = private unnamed_addr constant %struct._Z11notlockfree { [4 x i64] [i64 -6148914691236517206, i64 -6148914691236517206, i64 -6148914691236517206, i64 -6148914691236517206] }, align 8
 struct notlockfree { long long a[4]; };
-// PATTERN: @__const.test_atomicpadded_uninit.uninit = private unnamed_addr constant %struct.padded { i8 -86, i32 -1431655766 }, align 8
-// PATTERN: @__const.test_atomictailpad_uninit.uninit = private unnamed_addr constant %struct.tailpad { i16 -21846, i8 -86 }, align 4
-// PATTERN: @__const.test_complexfloat_uninit.uninit = private unnamed_addr constant { float, float } { float 0xFFFFFFFFE0000000, float 0xFFFFFFFFE0000000 }, align 4
-// PATTERN: @__const.test_complexfloat_braces.braces = private unnamed_addr constant { float, float } { float 0xFFFFFFFFE0000000, float 0xFFFFFFFFE0000000 }, align 4
-// PATTERN: @__const.test_complexfloat_custom.custom = private unnamed_addr constant { float, float } { float 0xFFFFFFFFE0000000, float 0xFFFFFFFFE0000000 }, align 4
-// PATTERN: @__const.test_complexdouble_uninit.uninit = private unnamed_addr constant { double, double } { double 0xFFFFFFFFFFFFFFFF, double 0xFFFFFFFFFFFFFFFF }, align 8
-// PATTERN: @__const.test_complexdouble_braces.braces = private unnamed_addr constant { double, double } { double 0xFFFFFFFFFFFFFFFF, double 0xFFFFFFFFFFFFFFFF }, align 8
-// PATTERN: @__const.test_complexdouble_custom.custom = private unnamed_addr constant { double, double } { double 0xFFFFFFFFFFFFFFFF, double 0xFFFFFFFFFFFFFFFF }, align 8
-// PATTERN: @__const.test_semivolatile_uninit.uninit = private unnamed_addr constant %struct.semivolatile { i32 -1431655766, i32 -1431655766 }, align 4
-// PATTERN: @__const.test_semivolatile_custom.custom = private unnamed_addr constant %struct.semivolatile { i32 1145324612, i32 1145324612 }, align 4
+// PATTERN: @__const.test_atomicpadded_uninit.uninit = private unnamed_addr constant %struct._Z6padded { i8 -86, i32 -1431655766 }, align 8
+// PATTERN: @__const.test_atomictailpad_uninit.uninit = private unnamed_addr constant %struct._Z7tailpad { i16 -21846, i8 -86 }, align 4
+// PATTERN: @__const.test_complexfloat_uninit.uninit = private unnamed_addr constant %complex._ZTSf { float 0xFFFFFFFFE0000000, float 0xFFFFFFFFE0000000 }, align 4
+// PATTERN: @__const.test_complexfloat_braces.braces = private unnamed_addr constant %complex._ZTSf { float 0xFFFFFFFFE0000000, float 0xFFFFFFFFE0000000 }, align 4
+// PATTERN: @__const.test_complexfloat_custom.custom = private unnamed_addr constant %complex._ZTSf { float 0xFFFFFFFFE0000000, float 0xFFFFFFFFE0000000 }, align 4
+// PATTERN: @__const.test_complexdouble_uninit.uninit = private unnamed_addr constant %complex._ZTSd { double 0xFFFFFFFFFFFFFFFF, double 0xFFFFFFFFFFFFFFFF }, align 8
+// PATTERN: @__const.test_complexdouble_braces.braces = private unnamed_addr constant %complex._ZTSd { double 0xFFFFFFFFFFFFFFFF, double 0xFFFFFFFFFFFFFFFF }, align 8
+// PATTERN: @__const.test_complexdouble_custom.custom = private unnamed_addr constant %complex._ZTSd { double 0xFFFFFFFFFFFFFFFF, double 0xFFFFFFFFFFFFFFFF }, align 8
+// PATTERN: @__const.test_semivolatile_uninit.uninit = private unnamed_addr constant %struct._Z12semivolatile { i32 -1431655766, i32 -1431655766 }, align 4
+// PATTERN: @__const.test_semivolatile_custom.custom = private unnamed_addr constant %struct._Z12semivolatile { i32 1145324612, i32 1145324612 }, align 4
 struct semivolatile { int i; volatile int vi; };
-// PATTERN: @__const.test_semivolatileinit_uninit.uninit = private unnamed_addr constant %struct.semivolatileinit { i32 -1431655766, i32 -1431655766 }, align 4
-// PATTERN: @__const.test_semivolatileinit_braces.braces = private unnamed_addr constant %struct.semivolatileinit { i32 -1431655766, i32 -1431655766 }, align 4
-// PATTERN: @__const.test_semivolatileinit_custom.custom = private unnamed_addr constant %struct.semivolatileinit { i32 -1431655766, i32 -1431655766 }, align 4
-// ZERO: @__const.test_semivolatile_custom.custom = private unnamed_addr constant %struct.semivolatile { i32 1145324612, i32 1145324612 }, align 4
+// PATTERN: @__const.test_semivolatileinit_uninit.uninit = private unnamed_addr constant %struct._Z16semivolatileinit { i32 -1431655766, i32 -1431655766 }, align 4
+// PATTERN: @__const.test_semivolatileinit_braces.braces = private unnamed_addr constant %struct._Z16semivolatileinit { i32 -1431655766, i32 -1431655766 }, align 4
+// PATTERN: @__const.test_semivolatileinit_custom.custom = private unnamed_addr constant %struct._Z16semivolatileinit { i32 -1431655766, i32 -1431655766 }, align 4
+// ZERO: @__const.test_semivolatile_custom.custom = private unnamed_addr constant %struct._Z12semivolatile { i32 1145324612, i32 1145324612 }, align 4
 struct semivolatileinit { int i = 0x11111111; volatile int vi = 0x11111111; };
-// PATTERN: @__const.test_base_uninit.uninit = private unnamed_addr constant %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, align 8
-// PATTERN: @__const.test_base_braces.braces = private unnamed_addr constant %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, align 8
+// PATTERN: @__const.test_base_uninit.uninit = private unnamed_addr constant %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, align 8
+// PATTERN: @__const.test_base_braces.braces = private unnamed_addr constant %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, align 8
 struct base { virtual ~base(); };
-// PATTERN: @__const.test_derived_uninit.uninit = private unnamed_addr constant %struct.derived { %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } }, align 8
-// PATTERN: @__const.test_derived_braces.braces = private unnamed_addr constant %struct.derived { %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } }, align 8
+// PATTERN: @__const.test_derived_uninit.uninit = private unnamed_addr constant %struct._Z7derived { %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } }, align 8
+// PATTERN: @__const.test_derived_braces.braces = private unnamed_addr constant %struct._Z7derived { %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } }, align 8
 struct derived : public base {};
-// PATTERN: @__const.test_virtualderived_uninit.uninit = private unnamed_addr constant %struct.virtualderived { %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, %struct.derived { %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } } }, align 8
-// PATTERN: @__const.test_virtualderived_braces.braces = private unnamed_addr constant %struct.virtualderived { %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, %struct.derived { %struct.base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } } }, align 8
+// PATTERN: @__const.test_virtualderived_uninit.uninit = private unnamed_addr constant %struct._Z14virtualderived { %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, %struct._Z7derived { %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } } }, align 8
+// PATTERN: @__const.test_virtualderived_braces.braces = private unnamed_addr constant %struct._Z14virtualderived { %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) }, %struct._Z7derived { %struct._Z4base { i32 (...)** inttoptr (i64 -6148914691236517206 to i32 (...)**) } } }, align 8
 struct virtualderived : public virtual base, public virtual derived {};
-// PATTERN: @__const.test_matching_uninit.uninit = private unnamed_addr constant %union.matching { i32 -1431655766 }, align 4
+// PATTERN: @__const.test_matching_uninit.uninit = private unnamed_addr constant %union._Z8matching { i32 -1431655766 }, align 4
 // PATTERN: @__const.test_matching_custom.custom = private unnamed_addr constant { float } { float 6.145500e+04 }, align 4
 union matching { int i; float f; };
-// PATTERN: @__const.test_matchingreverse_uninit.uninit = private unnamed_addr constant %union.matchingreverse { float 0xFFFFFFFFE0000000 }, align 4
+// PATTERN: @__const.test_matchingreverse_uninit.uninit = private unnamed_addr constant %union._Z15matchingreverse { float 0xFFFFFFFFE0000000 }, align 4
 // PATTERN: @__const.test_matchingreverse_custom.custom = private unnamed_addr constant { i32 } { i32 61455 }, align 4
 // ZERO: @__const.test_matching_custom.custom = private unnamed_addr constant { float } { float 6.145500e+04 }, align 4
 union matchingreverse { float f; int i; };
-// PATTERN: @__const.test_unmatched_uninit.uninit = private unnamed_addr constant %union.unmatched { i32 -1431655766 }, align 4
-// PATTERN: @__const.test_unmatched_custom.custom = private unnamed_addr constant %union.unmatched { i32 1001242351 }, align 4
+// PATTERN: @__const.test_unmatched_uninit.uninit = private unnamed_addr constant %union._Z9unmatched { i32 -1431655766 }, align 4
+// PATTERN: @__const.test_unmatched_custom.custom = private unnamed_addr constant %union._Z9unmatched { i32 1001242351 }, align 4
 // ZERO: @__const.test_matchingreverse_custom.custom = private unnamed_addr constant { i32 } { i32 61455 }, align 4
 union unmatched { char c; int i; };
-// PATTERN: @__const.test_unmatchedreverse_uninit.uninit = private unnamed_addr constant %union.unmatchedreverse { i32 -1431655766 }, align 4
+// PATTERN: @__const.test_unmatchedreverse_uninit.uninit = private unnamed_addr constant %union._Z16unmatchedreverse { i32 -1431655766 }, align 4
 // PATTERN: @__const.test_unmatchedreverse_custom.custom = private unnamed_addr constant { i8, [3 x i8] } { i8 42, [3 x i8] zeroinitializer }, align 4
-// ZERO: @__const.test_unmatched_custom.custom = private unnamed_addr constant %union.unmatched { i32 1001242351 }, align 4
+// ZERO: @__const.test_unmatched_custom.custom = private unnamed_addr constant %union._Z9unmatched { i32 1001242351 }, align 4
 union unmatchedreverse { int i; char c; };
-// PATTERN: @__const.test_unmatchedfp_uninit.uninit = private unnamed_addr constant %union.unmatchedfp { double 0xFFFFFFFFFFFFFFFF }, align 8
-// PATTERN: @__const.test_unmatchedfp_custom.custom = private unnamed_addr constant %union.unmatchedfp { double 0x400921FB54442D18 }, align 8
+// PATTERN: @__const.test_unmatchedfp_uninit.uninit = private unnamed_addr constant %union._Z11unmatchedfp { double 0xFFFFFFFFFFFFFFFF }, align 8
+// PATTERN: @__const.test_unmatchedfp_custom.custom = private unnamed_addr constant %union._Z11unmatchedfp { double 0x400921FB54442D18 }, align 8
 // ZERO: @__const.test_unmatchedreverse_custom.custom = private unnamed_addr constant { i8, [3 x i8] } { i8 42, [3 x i8] zeroinitializer }, align 4
-// ZERO: @__const.test_unmatchedfp_custom.custom = private unnamed_addr constant %union.unmatchedfp { double 0x400921FB54442D18 }, align 8
+// ZERO: @__const.test_unmatchedfp_custom.custom = private unnamed_addr constant %union._Z11unmatchedfp { double 0x400921FB54442D18 }, align 8
 union unmatchedfp { float f; double d; };
 enum emptyenum {};
 enum smallenum { VALUE };

@@ -177,23 +177,23 @@ int templ_use() {
 // WINDOWS: call i32 @"?foo@?$templ@N@@QEAAHH@Z.sse4.2"
 // WINDOWS: call i32 @"?foo@?$templ@N@@QEAAHH@Z"
 
-// LINUX: define linkonce_odr i32 @_ZN1S3fooEi.sse4.2(%struct.S* %this, i32)
+// LINUX: define linkonce_odr i32 @_ZN1S3fooEi.sse4.2(%struct._Z1S* %this, i32)
 // LINUX: ret i32 0
 
 // WINDOWS: define linkonce_odr dso_local i32 @"?foo@S@@QEAAHH@Z.sse4.2"(%struct.S* %this, i32)
 // WINDOWS: ret i32 0
 
-// LINUX: declare i32 @_ZN1S3fooEi.arch_sandybridge(%struct.S*, i32)
+// LINUX: declare i32 @_ZN1S3fooEi.arch_sandybridge(%struct._Z1S*, i32)
 
 // WINDOWS: declare dso_local i32 @"?foo@S@@QEAAHH@Z.arch_sandybridge"(%struct.S*, i32)
 
-// LINUX: define linkonce_odr i32 @_ZN1S3fooEi.arch_ivybridge(%struct.S* %this, i32)
+// LINUX: define linkonce_odr i32 @_ZN1S3fooEi.arch_ivybridge(%struct._Z1S* %this, i32)
 // LINUX: ret i32 1
 
 // WINDOWS: define linkonce_odr dso_local i32 @"?foo@S@@QEAAHH@Z.arch_ivybridge"(%struct.S* %this, i32)
 // WINDOWS: ret i32 1
 
-// LINUX: define linkonce_odr i32 @_ZN1S3fooEi(%struct.S* %this, i32)
+// LINUX: define linkonce_odr i32 @_ZN1S3fooEi(%struct._Z1S* %this, i32)
 // LINUX: ret i32 2
 
 // WINDOWS: define linkonce_odr dso_local i32 @"?foo@S@@QEAAHH@Z"(%struct.S* %this, i32)
