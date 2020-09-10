@@ -537,6 +537,9 @@ bool ConstStructBuilder::Build(const APValue &Val, const RecordDecl *RD,
     for (unsigned I = 1, N = Bases.size(); I < N; ++I) {
       BaseInfo &Base = Bases[I];
 
+      // Ignore empty bases
+      if(Base.Decl->isEmpty())
+        continue;
       llvm::Constant* BaseConstant = ConstStructBuilder::BuildStruct(Emitter, Val.getStructBase(Base.Index), Base.Decl);
       AppendBytes(Base.Offset, BaseConstant);
     }
