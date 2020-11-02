@@ -566,6 +566,8 @@ void EmitAssemblyHelper::CreatePasses(legacy::PassManager &MPM,
                            addPostInlineCheerpPasses);
     PMBuilder.addExtension(PassManagerBuilder::EP_LoopOptimizerEnd,
                            addPostInlineCheerpPasses);
+    PMBuilder.addExtension(PassManagerBuilder::EP_EnabledOnOptLevel0,
+                           addModuleCheerpPasses);
     PMBuilder.addExtension(PassManagerBuilder::EP_OptimizerLast,
                            addModuleCheerpPasses);
   }
