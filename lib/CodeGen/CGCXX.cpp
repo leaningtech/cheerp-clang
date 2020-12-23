@@ -212,6 +212,7 @@ llvm::Function *CodeGenModule::codegenCXXStructor(GlobalDecl GD) {
 
   setFunctionLinkage(GD, Fn);
 
+  auto *MD = cast<CXXMethodDecl>(GD.getDecl());
   if (MD->hasAttr<AsmJSAttr>())
     Fn->setSection("asmjs");
 
